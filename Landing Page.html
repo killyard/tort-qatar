@@ -1,0 +1,466 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Tört Qatar — Enter</title>
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --ink:#1d2a23;--ink-soft:rgba(29,42,35,.72);--ink-mute:rgba(29,42,35,.48);
+    --ink-line:rgba(29,42,35,.13);
+    --serif:"Fraunces","Cormorant Garamond",Georgia,serif;
+    --sans:"Inter",ui-sans-serif,system-ui,-apple-system,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;height:100%;overflow:hidden;background:#9fd2ef;
+    font-family:var(--sans);color:var(--ink);-webkit-font-smoothing:antialiased}
+
+  /* ── Scene ─────────────────────────────────────────────── */
+  .scene{position:fixed;inset:0;overflow:hidden}
+  .scene::after{
+    content:"";position:absolute;inset:0;pointer-events:none;
+    mix-blend-mode:overlay;opacity:.18;
+    background-image:radial-gradient(rgba(255,255,255,.5) 1px,transparent 1.4px),
+                     radial-gradient(rgba(0,0,0,.25) 1px,transparent 1.6px);
+    background-size:3px 3px,5px 5px;background-position:0 0,1px 2px;
+  }
+  .scene::before{
+    content:"";position:absolute;inset:0;pointer-events:none;z-index:2;
+    background:
+      linear-gradient(to bottom,rgba(123,178,217,.28) 0%,rgba(123,178,217,0) 18%,rgba(123,178,217,0) 70%,rgba(120,176,93,.18) 100%),
+      radial-gradient(120% 80% at 50% 60%,transparent 50%,rgba(20,40,60,.18) 100%);
+  }
+  .scene-img{
+    position:absolute;left:50%;top:50%;
+    width:max(100vw,calc(100vh*1.5));height:max(100vh,calc(100vw/1.5));
+    transform:translate(-50%,-50%);will-change:transform;
+    user-select:none;-webkit-user-drag:none;pointer-events:none;
+  }
+  .scene-img.parallax{
+    transform:translate(calc(-50% + var(--px,0px)),calc(-50% + var(--py,0px))) scale(1.04);
+    transition:transform .4s cubic-bezier(.2,.7,.1,1);
+  }
+  .door-halo{
+    position:absolute;left:50%;top:70%;width:90px;height:170px;
+    transform:translate(-50%,-50%);
+    background:radial-gradient(50% 50% at 50% 50%,rgba(255,228,170,.32),rgba(255,228,170,0) 70%);
+    z-index:4;pointer-events:none;animation:halo 6s ease-in-out infinite;filter:blur(2px);
+  }
+  @keyframes halo{0%,100%{opacity:.55}50%{opacity:.85}}
+  .sun{
+    position:absolute;z-index:3;pointer-events:none;
+    width:520px;height:520px;left:78%;top:8%;transform:translate(-50%,-50%);
+    background:radial-gradient(closest-side,rgba(255,240,210,.5),rgba(255,240,210,0) 70%);
+    filter:blur(8px);
+  }
+
+  /* ── Top bar ─────────────────────────────────────────── */
+  .top{
+    position:absolute;inset:0 0 auto 0;z-index:10;
+    display:flex;align-items:center;justify-content:space-between;
+    padding:26px 36px;pointer-events:none;
+  }
+  .top>*{pointer-events:auto}
+  .brand{display:flex;align-items:center;gap:12px;color:var(--ink);text-decoration:none}
+  .brand-mark{
+    width:34px;height:34px;border-radius:11px;
+    background:rgba(255,255,255,.62);
+    backdrop-filter:blur(14px) saturate(140%);-webkit-backdrop-filter:blur(14px) saturate(140%);
+    border:.5px solid rgba(255,255,255,.7);
+    box-shadow:0 1px 0 rgba(255,255,255,.7) inset,0 6px 18px rgba(30,60,90,.12);
+    display:grid;place-items:center;
+  }
+  .brand-mark svg{display:block}
+  .brand-name{font-family:var(--serif);font-weight:400;font-size:20px;letter-spacing:.01em;line-height:1}
+  .brand-name em{font-style:italic;font-weight:300;color:var(--ink-soft)}
+  .nav{
+    display:flex;align-items:center;gap:6px;
+    background:rgba(255,255,255,.5);
+    backdrop-filter:blur(18px) saturate(160%);-webkit-backdrop-filter:blur(18px) saturate(160%);
+    border:.5px solid rgba(255,255,255,.7);
+    box-shadow:0 1px 0 rgba(255,255,255,.6) inset,0 8px 24px rgba(30,60,90,.10);
+    padding:5px;border-radius:999px;
+  }
+  .nav a{
+    color:var(--ink);text-decoration:none;font-size:13px;font-weight:500;
+    letter-spacing:.005em;padding:8px 14px;border-radius:999px;transition:background .18s ease;
+  }
+  .nav a:hover{background:rgba(255,255,255,.55)}
+  .nav a.cta{
+    background:var(--ink);color:#f3efe6;padding:8px 16px;
+    transition:transform .18s ease,background .18s ease;
+  }
+  .nav a.cta:hover{background:#0f1a14;transform:translateY(-1px)}
+
+  /* ── Enter CTA ───────────────────────────────────────── */
+  .stage{position:absolute;inset:0;z-index:5;pointer-events:none}
+  .door-stack{
+    position:absolute;left:50%;top:88%;
+    transform:translate(-50%,-50%);
+    display:flex;flex-direction:column;align-items:center;gap:10px;
+    pointer-events:auto;
+  }
+  .enter{
+    display:inline-flex;align-items:center;gap:12px;
+    padding:4px 4px 4px 22px;border-radius:999px;
+    background:rgba(255,255,255,.78);
+    backdrop-filter:blur(16px) saturate(160%);-webkit-backdrop-filter:blur(16px) saturate(160%);
+    border:.5px solid rgba(255,255,255,.9);
+    box-shadow:0 1px 0 rgba(255,255,255,.9) inset,0 -1px 0 rgba(30,50,30,.06) inset,
+               0 12px 30px rgba(20,60,90,.22),0 2px 6px rgba(20,60,90,.14);
+    color:var(--ink);cursor:pointer;font-size:15px;font-weight:500;
+    font-family:var(--sans);border:none;outline:none;
+    transition:transform .2s ease,box-shadow .2s ease,background .2s ease;
+  }
+  .enter:hover{
+    transform:translateY(-1px);background:rgba(255,255,255,.86);
+    box-shadow:0 1px 0 rgba(255,255,255,1) inset,0 -1px 0 rgba(30,50,30,.06) inset,
+               0 18px 40px rgba(20,60,90,.28),0 2px 6px rgba(20,60,90,.16);
+  }
+  .enter .chev{
+    width:34px;height:34px;border-radius:999px;
+    background:var(--ink);color:#f3efe6;display:grid;place-items:center;
+    transition:transform .2s ease,background .2s ease;
+  }
+  .enter:hover .chev{background:#0f1a14;transform:translateX(2px)}
+  .enter .chev svg{display:block}
+  .helper{
+    display:flex;align-items:center;gap:8px;
+    color:rgba(255,255,255,.88);font-size:11.5px;letter-spacing:.02em;
+    text-shadow:0 1px 6px rgba(10,40,70,.45);
+  }
+  .helper .dot{width:5px;height:5px;border-radius:999px;background:#a9eb88;box-shadow:0 0 0 4px rgba(169,235,136,.22)}
+
+  /* ── Side rails ──────────────────────────────────────── */
+  .rail{
+    position:absolute;top:50%;transform:translateY(-50%);z-index:8;
+    display:flex;flex-direction:column;gap:10px;align-items:center;
+    color:rgba(255,255,255,.78);font-size:10.5px;letter-spacing:.22em;text-transform:uppercase;
+    text-shadow:0 1px 6px rgba(10,40,70,.35);
+  }
+  .rail.left{left:18px}.rail.right{right:18px}
+  .rail .tick{width:1px;height:36px;background:linear-gradient(to bottom,rgba(255,255,255,0),rgba(255,255,255,.7),rgba(255,255,255,0))}
+  .rail .v{writing-mode:vertical-rl;transform:rotate(180deg)}
+
+  /* ── Bottom meta ─────────────────────────────────────── */
+  .meta{
+    position:absolute;left:0;right:0;bottom:0;z-index:10;
+    display:flex;align-items:flex-end;justify-content:space-between;
+    padding:0 36px 24px;color:rgba(255,255,255,.85);
+    font-size:11.5px;letter-spacing:.04em;text-shadow:0 1px 6px rgba(10,40,70,.35);pointer-events:none;
+  }
+  .meta>*{pointer-events:auto}
+  .meta .left,.meta .right{display:flex;align-items:center;gap:14px}
+  .meta .pill{
+    display:inline-flex;align-items:center;gap:8px;
+    background:rgba(255,255,255,.18);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+    border:.5px solid rgba(255,255,255,.28);padding:7px 12px;border-radius:999px;color:#fff;
+  }
+  .meta .pill b{font-weight:500;color:#fff}
+  .meta .copy{opacity:.85}
+  .weather{display:flex;align-items:center;gap:10px;color:#fff}
+  .weather .t{font-family:var(--serif);font-weight:300;font-size:18px;line-height:1}
+  .weather .l{opacity:.78}
+
+  /* ══════════════════════════════════════════════════════
+     AUTH SCREEN — yurt door image with overlaid form
+  ══════════════════════════════════════════════════════ */
+  .auth-screen{
+    position:fixed;inset:0;z-index:200;
+    background:rgba(8,18,12,.72);
+    backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);
+    display:flex;align-items:center;justify-content:center;
+    opacity:0;pointer-events:none;
+    transition:opacity .35s ease;
+  }
+  .auth-screen.open{opacity:1;pointer-events:auto}
+
+  /* Close button — top-right corner */
+  .auth-close{
+    position:absolute;top:20px;right:24px;
+    width:36px;height:36px;border-radius:999px;
+    background:rgba(255,255,255,.18);border:.5px solid rgba(255,255,255,.3);
+    color:#fff;font-size:16px;cursor:pointer;
+    display:grid;place-items:center;
+    transition:background .15s;z-index:10;
+  }
+  .auth-close:hover{background:rgba(255,255,255,.28)}
+
+  /* Image frame — sized to viewport, preserving 1344:756 ≈ 1.778 ratio */
+  .auth-frame{
+    position:relative;
+    width:min(94vw, calc(86vh * 1.778));
+    /* height is auto — driven by width */
+    transform:scale(.96);
+    transition:transform .4s cubic-bezier(.34,1.56,.64,1);
+  }
+  .auth-screen.open .auth-frame{transform:scale(1)}
+
+  .auth-bg{
+    display:block;width:100%;height:auto;
+    border-radius:8px;
+    user-select:none;-webkit-user-drag:none;pointer-events:none;
+  }
+
+  /* Form overlay — positioned over the white door opening
+     (measured from auth form.png: x 34%→66%, y 30%→95%) */
+  .auth-overlay{
+    position:absolute;
+    left:34%;right:34%;   /* ≈32% wide, centred in door gap */
+    top:30%;bottom:5%;    /* full height of white door interior */
+    display:flex;flex-direction:column;align-items:stretch;
+    padding:10% 10% 6%;
+    gap:0;
+    overflow-y:auto;overflow-x:hidden;
+    scrollbar-width:none;
+  }
+  .auth-overlay::-webkit-scrollbar{display:none}
+
+  /* Form title */
+  .af-title{
+    font-family:var(--serif);font-weight:400;
+    font-size:clamp(13px,1.8vw,20px);
+    color:var(--ink);text-align:center;
+    margin:0 0 .8em;letter-spacing:.01em;line-height:1.2;
+  }
+
+  /* Google button */
+  .af-google{
+    display:flex;align-items:center;justify-content:center;gap:8px;
+    width:100%;padding:clamp(6px,0.8vw,10px) 8px;
+    border-radius:8px;
+    border:.5px solid rgba(29,42,35,.18);
+    background:rgba(255,255,255,.82);
+    color:var(--ink);font-size:clamp(10px,1.1vw,13px);font-weight:500;
+    font-family:var(--sans);cursor:pointer;
+    transition:background .18s,transform .15s;
+    margin-bottom:.55em;
+  }
+  .af-google:hover{background:rgba(255,255,255,.96);transform:translateY(-1px)}
+
+  /* Divider "or" */
+  .af-sep{
+    display:flex;align-items:center;gap:6px;
+    color:var(--ink-mute);font-size:clamp(9px,.9vw,11px);
+    margin:.45em 0;
+  }
+  .af-sep::before,.af-sep::after{content:'';flex:1;height:.5px;background:var(--ink-line)}
+
+  /* Inputs */
+  .af-input{
+    width:100%;padding:clamp(5px,0.7vw,9px) clamp(7px,0.9vw,11px);
+    border-radius:7px;border:.5px solid rgba(29,42,35,.18);
+    background:rgba(255,255,255,.62);
+    font-size:clamp(10px,1.05vw,13px);font-family:var(--sans);color:var(--ink);
+    outline:none;transition:border-color .15s,background .15s;
+    margin-bottom:.4em;
+  }
+  .af-input:focus{border-color:rgba(29,42,35,.45);background:rgba(255,255,255,.82)}
+  .af-input::placeholder{color:var(--ink-mute)}
+
+  /* Forgot password */
+  .af-forgot{
+    font-size:clamp(8px,.85vw,10.5px);color:var(--ink-mute);
+    text-decoration:none;text-align:right;
+    display:block;margin-bottom:.6em;
+    transition:color .15s;
+  }
+  .af-forgot:hover{color:var(--ink)}
+
+  /* Sign in (primary) */
+  .af-primary{
+    width:100%;padding:clamp(6px,0.8vw,10px);
+    border-radius:8px;border:none;
+    background:var(--ink);color:#f3efe6;
+    font-size:clamp(10px,1.1vw,13px);font-weight:600;
+    font-family:var(--sans);cursor:pointer;
+    transition:background .18s,transform .15s;
+    margin-bottom:.5em;
+  }
+  .af-primary:hover{background:#0f1a14;transform:translateY(-1px)}
+
+  /* Guest */
+  .af-guest{
+    width:100%;padding:clamp(5px,0.7vw,9px);
+    border-radius:8px;border:.5px solid rgba(29,42,35,.18);
+    background:rgba(255,255,255,.5);
+    color:var(--ink-soft);font-size:clamp(9px,1vw,12px);font-weight:500;
+    font-family:var(--sans);cursor:pointer;
+    transition:background .18s,transform .15s;
+  }
+  .af-guest:hover{background:rgba(255,255,255,.8);transform:translateY(-1px)}
+
+  @media(max-width:760px){
+    .top{padding:18px}.meta{padding:0 18px 18px}
+    .nav a:not(.cta){display:none}.rail{display:none}
+    .door-stack{top:84%}
+    .auth-frame{width:98vw}
+    .auth-overlay{padding:6% 7% 4%}
+  }
+</style>
+</head>
+<body>
+
+<!-- ── Hero scene ─────────────────────────────────────────── -->
+<div class="scene" id="scene">
+  <img class="scene-img" id="sceneImg" src="hero-steppe.png" alt="" />
+  <div class="sun"></div>
+  <div class="door-halo"></div>
+</div>
+
+<!-- ── Top bar ──────────────────────────────────────────────── -->
+<header class="top">
+  <a class="brand" href="#">
+    <span class="brand-mark" aria-hidden="true">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1d2a23" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="3.4"/>
+        <path d="M12 2.5L12 8.6 M21.5 12L15.4 12 M12 21.5L12 15.4 M2.5 12L8.6 12 M19 5L14.7 9.3 M19 19L14.7 14.7 M5 19L9.3 14.7 M5 5L9.3 9.3"/>
+      </svg>
+    </span>
+    <span class="brand-name">Tört&nbsp;Qatar<em> · steppe atlas</em></span>
+  </a>
+  <nav class="nav" aria-label="primary">
+    <a href="#">Atlas</a>
+    <a href="#">Journal</a>
+    <a class="cta" href="#" onclick="openAuth(event)">Sign in</a>
+  </nav>
+</header>
+
+<!-- ── Enter CTA ─────────────────────────────────────────────── -->
+<div class="stage">
+  <div class="door-stack">
+    <button class="enter" onclick="openAuth()" aria-label="Enter the yurt">
+      <span>Enter</span>
+      <span class="chev" aria-hidden="true">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M5 12h14"/><path d="M13 6l6 6-6 6"/>
+        </svg>
+      </span>
+    </button>
+    <div class="helper">
+      <span class="dot"></span>
+      <span>Open · press <span style="font-weight:600">↵</span> to step inside</span>
+    </div>
+  </div>
+</div>
+
+<!-- ── Side rails ─────────────────────────────────────────────── -->
+<div class="rail left"><span>N</span><span class="tick"></span><span class="v">43° 14′ Almaty</span><span class="tick"></span><span>S</span></div>
+<div class="rail right"><span class="v">elev. 720 m</span></div>
+
+<!-- ── Footer ────────────────────────────────────────────────── -->
+<footer class="meta">
+  <div class="left">
+    <span class="pill">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 3a14 14 0 010 18M3 12h18"/></svg>
+      <b>Қазақстан</b> · Aıyrtau steppe
+    </span>
+    <span class="copy">© Tört Qatar, MMXXVI</span>
+  </div>
+  <div class="right">
+    <span class="weather">
+      <span class="l">Today</span>
+      <span class="t">18°</span>
+      <span class="l">· clear · light NW wind</span>
+    </span>
+  </div>
+</footer>
+
+<!-- ══════════════════════════════════════════════════════════════
+     AUTH SCREEN
+════════════════════════════════════════════════════════════════ -->
+<div class="auth-screen" id="authScreen" onclick="handleBgClick(event)">
+  <button class="auth-close" onclick="closeAuth()" aria-label="Close">✕</button>
+
+  <div class="auth-frame" id="authFrame">
+    <!-- Yurt with open doors -->
+    <img class="auth-bg" src="auth form.png" alt="Yurt entrance" />
+
+    <!-- Form floats inside the white door opening -->
+    <div class="auth-overlay" role="dialog" aria-modal="true" aria-label="Sign in">
+
+      <h2 class="af-title">Step inside</h2>
+
+      <!-- Google -->
+      <button class="af-google" onclick="handleAuth('google')">
+        <svg width="15" height="15" viewBox="0 0 18 18">
+          <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615z" fill="#4285F4"/>
+          <path d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 009 18z" fill="#34A853"/>
+          <path d="M3.964 10.706A5.41 5.41 0 013.682 9c0-.593.102-1.17.282-1.706V4.962H.957A8.996 8.996 0 000 9c0 1.452.348 2.827.957 4.038l3.007-2.332z" fill="#FBBC05"/>
+          <path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 00.957 4.962L3.964 6.294C4.672 4.169 6.656 3.58 9 3.58z" fill="#EA4335"/>
+        </svg>
+        Continue with Google
+      </button>
+
+      <div class="af-sep">or</div>
+
+      <!-- Email -->
+      <input class="af-input" type="email" placeholder="Email" autocomplete="email" />
+      <!-- Password -->
+      <input class="af-input" type="password" placeholder="Password" autocomplete="current-password" />
+
+      <!-- Forgot -->
+      <a class="af-forgot" href="#">Forgot password?</a>
+
+      <!-- Sign in -->
+      <button class="af-primary" onclick="handleAuth('email')">Sign in</button>
+
+      <div class="af-sep">or</div>
+
+      <!-- Guest -->
+      <button class="af-guest" onclick="handleAuth('guest')">Play as Guest</button>
+
+    </div><!-- /auth-overlay -->
+  </div><!-- /auth-frame -->
+</div><!-- /auth-screen -->
+
+<script>
+  /* ── Parallax ───────────────────────────────────────── */
+  const img = document.getElementById('sceneImg');
+  let raf=0,tx=0,ty=0,cx=0,cy=0;
+  img.classList.add('parallax');
+  window.addEventListener('pointermove',(e)=>{
+    tx=((e.clientX/window.innerWidth)-.5)*-22;
+    ty=((e.clientY/window.innerHeight)-.5)*-14;
+    if(!raf) raf=requestAnimationFrame(tick);
+  });
+  function tick(){
+    cx+=(tx-cx)*.08; cy+=(ty-cy)*.08;
+    img.style.setProperty('--px',cx.toFixed(2)+'px');
+    img.style.setProperty('--py',cy.toFixed(2)+'px');
+    raf=(Math.abs(tx-cx)>.05||Math.abs(ty-cy)>.05)?requestAnimationFrame(tick):0;
+  }
+
+  /* ── Auth ───────────────────────────────────────────── */
+  const screen = document.getElementById('authScreen');
+
+  function openAuth(e){ if(e) e.preventDefault(); screen.classList.add('open'); }
+  function closeAuth(){ screen.classList.remove('open'); }
+
+  function handleBgClick(e){
+    // close only if clicking the dark backdrop, not the frame
+    if(!document.getElementById('authFrame').contains(e.target)
+       && !e.target.classList.contains('auth-close')) closeAuth();
+  }
+
+  function handleAuth(method){
+    // TODO: wire Supabase auth
+    console.log('auth:', method);
+    if(method==='guest') closeAuth();
+  }
+
+  /* ── Keyboard ───────────────────────────────────────── */
+  document.addEventListener('keydown',(e)=>{
+    if(e.key==='Escape'){ closeAuth(); return; }
+    if(e.key==='Enter' && !screen.classList.contains('open')){
+      const btn=document.querySelector('.enter');
+      btn.style.transform='translateY(-2px) scale(1.02)';
+      setTimeout(()=>{ btn.style.transform=''; openAuth(); },180);
+    }
+  });
+</script>
+</body>
+</html>

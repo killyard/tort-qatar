@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Tört Qatar — Leaderboard</title>
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+:root{
+  --ink:#1d2a23;--serif:"Fraunces","Cormorant Garamond",Georgia,serif;
+  --sans:"Inter",ui-sans-serif,system-ui,-apple-system,sans-serif;
+  --p1:#e8a020;--p2:#c0392b;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{min-height:100%;background:#8dbfdb;font-family:var(--sans);color:var(--ink);-webkit-font-smoothing:antialiased}
+
+/* BG */
+.scene{position:fixed;inset:0;z-index:0;overflow:hidden}
+.scene img{position:absolute;left:50%;top:50%;min-width:100%;min-height:100%;transform:translate(-50%,-50%);filter:brightness(.55) saturate(.85);pointer-events:none;user-select:none}
+.scene-overlay{position:absolute;inset:0;background:linear-gradient(to bottom,rgba(8,20,14,.7),rgba(8,20,14,.5) 60%,rgba(8,20,14,.75))}
+
+/* Layout */
+.page{position:relative;z-index:1;max-width:760px;margin:0 auto;padding:28px 18px 60px}
+
+/* Back link */
+.back-link{
+  display:inline-flex;align-items:center;gap:7px;
+  color:rgba(255,255,255,.65);font-size:13px;text-decoration:none;
+  margin-bottom:24px;transition:color .15s;
+}
+.back-link:hover{color:#fff}
+
+/* Header */
+.page-title{font-family:var(--serif);font-size:38px;font-weight:400;color:#fff;line-height:1}
+.page-sub{font-size:13px;color:rgba(255,255,255,.5);margin-top:5px;margin-bottom:24px}
+
+/* City filter pills */
+.city-filters{
+  display:flex;flex-wrap:wrap;gap:7px;margin-bottom:22px;
+}
+.city-pill{
+  padding:6px 14px;border-radius:999px;font-size:12px;cursor:pointer;
+  background:rgba(255,255,255,.12);border:.5px solid rgba(255,255,255,.2);color:rgba(255,255,255,.75);
+  transition:background .15s,color .15s;font-family:var(--sans);
+}
+.city-pill:hover{background:rgba(255,255,255,.22);color:#fff}
+.city-pill.active{background:var(--ink);color:#f3efe6;border-color:var(--ink)}
+
+/* Board glass card */
+.glass-card{
+  background:rgba(255,255,255,.13);
+  backdrop-filter:blur(20px) saturate(160%);-webkit-backdrop-filter:blur(20px) saturate(160%);
+  border:.5px solid rgba(255,255,255,.22);
+  border-radius:18px;
+  box-shadow:0 1px 0 rgba(255,255,255,.3) inset,0 20px 50px rgba(8,20,14,.45);
+  overflow:hidden;
+}
+
+/* Table */
+table{width:100%;border-collapse:collapse}
+thead th{
+  padding:12px 16px;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;
+  color:rgba(255,255,255,.45);text-align:left;border-bottom:.5px solid rgba(255,255,255,.12);
+  font-weight:500;
+}
+thead th.right{text-align:right}
+tbody tr{border-bottom:.5px solid rgba(255,255,255,.07);transition:background .15s}
+tbody tr:last-child{border:none}
+tbody tr:hover{background:rgba(255,255,255,.07)}
+td{padding:13px 16px;font-size:14px;color:rgba(255,255,255,.85)}
+td.right{text-align:right}
+
+/* Rank badge */
+.rank-badge{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:26px;height:26px;border-radius:999px;
+  font-size:12px;font-weight:600;
+}
+.rank-1{background:linear-gradient(135deg,#f5c842,#c8810a);color:#fff;box-shadow:0 3px 10px rgba(200,128,10,.5)}
+.rank-2{background:linear-gradient(135deg,#d0d0d0,#909090);color:#fff}
+.rank-3{background:linear-gradient(135deg,#cd7f32,#8b4513);color:#fff}
+.rank-other{background:rgba(255,255,255,.12);color:rgba(255,255,255,.6)}
+
+/* Name cell */
+.name-cell{display:flex;align-items:center;gap:10px}
+.flag-icon{font-size:16px}
+
+/* Win bar */
+.win-bar-wrap{width:80px;background:rgba(255,255,255,.1);border-radius:999px;height:5px;overflow:hidden}
+.win-bar{height:100%;border-radius:999px;background:linear-gradient(to right,#a9eb88,#4caf50);transition:width .5s ease}
+
+/* Empty state */
+.empty{text-align:center;padding:40px;color:rgba(255,255,255,.4);font-size:14px}
+
+/* Loading spinner */
+.spinner{width:24px;height:24px;border:2px solid rgba(255,255,255,.2);border-top-color:rgba(255,255,255,.7);border-radius:999px;animation:spin 1s linear infinite;margin:30px auto}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<div class="scene">
+  <img src="/assets/hero-steppe.png" alt="" />
+  <div class="scene-overlay"></div>
+</div>
+
+<div class="page">
+  <a class="back-link" href="/">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
+    Tört Qatar
+  </a>
+
+  <div class="page-title">Leaderboard</div>
+  <div class="page-sub">Top warriors of the steppe · ranked by victories</div>
+
+  <div class="city-filters" id="cityFilters">
+    <button class="city-pill active" data-city="">🌍 All Cities</button>
+  </div>
+
+  <div class="glass-card">
+    <div id="tableWrap">
+      <div class="spinner"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+let allData = [];
+let activeCity = '';
+
+async function load() {
+  try {
+    const [lbRes, citiesRes] = await Promise.all([
+      fetch('/api/leaderboard?limit=50'),
+      fetch('/api/leaderboard/cities'),
+    ]);
+    allData = await lbRes.json();
+    const cities = await citiesRes.json();
+    renderCityFilters(cities);
+    renderTable(allData);
+  } catch(e) {
+    document.getElementById('tableWrap').innerHTML = '<div class="empty">Could not load leaderboard. Is the server running?</div>';
+  }
+}
+
+function renderCityFilters(cities) {
+  const container = document.getElementById('cityFilters');
+  cities.forEach(city => {
+    const btn = document.createElement('button');
+    btn.className = 'city-pill';
+    btn.dataset.city = city;
+    btn.textContent = city;
+    btn.addEventListener('click', () => filterByCity(city));
+    container.appendChild(btn);
+  });
+  container.querySelectorAll('.city-pill').forEach(pill => {
+    pill.addEventListener('click', function() {
+      container.querySelectorAll('.city-pill').forEach(p => p.classList.remove('active'));
+      this.classList.add('active');
+      filterByCity(this.dataset.city);
+    });
+  });
+}
+
+function filterByCity(city) {
+  activeCity = city;
+  const filtered = city ? allData.filter(e => e.city === city) : allData;
+  renderTable(filtered);
+}
+
+function renderTable(data) {
+  if (!data.length) {
+    document.getElementById('tableWrap').innerHTML = '<div class="empty">No players found for this filter.</div>';
+    return;
+  }
+
+  const rows = data.map((e, i) => {
+    const rankClass = i === 0 ? 'rank-1' : i === 1 ? 'rank-2' : i === 2 ? 'rank-3' : 'rank-other';
+    const rank = i + 1;
+    return `
+      <tr>
+        <td><span class="rank-badge ${rankClass}">${rank}</span></td>
+        <td>
+          <div class="name-cell">
+            <span class="flag-icon">🏕</span>
+            <span>${esc(e.name)}</span>
+          </div>
+        </td>
+        <td>${esc(e.city)}</td>
+        <td>${e.wins}</td>
+        <td>${e.gamesPlayed}</td>
+        <td class="right">
+          <div style="display:flex;align-items:center;gap:8px;justify-content:flex-end">
+            <div class="win-bar-wrap"><div class="win-bar" style="width:${e.winRate}%"></div></div>
+            <span>${e.winRate}%</span>
+          </div>
+        </td>
+      </tr>`;
+  }).join('');
+
+  document.getElementById('tableWrap').innerHTML = `
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Player</th>
+          <th>City</th>
+          <th>Wins</th>
+          <th>Games</th>
+          <th class="right">Win rate</th>
+        </tr>
+      </thead>
+      <tbody>${rows}</tbody>
+    </table>`;
+}
+
+function esc(s) { return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+load();
+</script>
+</body>
+</html>

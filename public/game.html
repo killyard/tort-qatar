@@ -1,0 +1,898 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Tört Qatar — Play</title>
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+<script src="/socket.io/socket.io.js"></script>
+<style>
+/* ── Variables ─────────────────────────────────────────── */
+:root{
+  --ink:#1d2a23;--ink-soft:rgba(29,42,35,.72);--ink-mute:rgba(29,42,35,.48);
+  --ink-line:rgba(29,42,35,.13);
+  --serif:"Fraunces","Cormorant Garamond",Georgia,serif;
+  --sans:"Inter",ui-sans-serif,system-ui,-apple-system,sans-serif;
+  --p1:#e8a020;   /* gold — Player 1 */
+  --p2:#c0392b;   /* crimson — Player 2 */
+  --board-bg:#1a3a2a;
+  --cell-bg:#0f2218;
+  --glass:rgba(255,255,255,.62);
+  --glass-border:rgba(255,255,255,.7);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:#8dbfdb;font-family:var(--sans);color:var(--ink);-webkit-font-smoothing:antialiased;overflow:hidden}
+
+/* ── BG scene ──────────────────────────────────────────── */
+.scene{position:fixed;inset:0;z-index:0;overflow:hidden}
+.scene img{position:absolute;left:50%;top:50%;min-width:100%;min-height:100%;transform:translate(-50%,-50%);filter:brightness(.62) saturate(.9);pointer-events:none;user-select:none}
+.scene-overlay{position:absolute;inset:0;background:linear-gradient(to bottom,rgba(10,25,20,.55) 0%,rgba(10,25,20,.35) 60%,rgba(10,25,20,.65) 100%)}
+
+/* ── Layout ────────────────────────────────────────────── */
+.ui{position:relative;z-index:1;display:grid;grid-template-columns:260px 1fr 260px;height:100vh;padding:14px;gap:12px;align-items:center}
+
+/* ── Glass panel ───────────────────────────────────────── */
+.glass{
+  background:rgba(255,255,255,.18);
+  backdrop-filter:blur(18px) saturate(160%);-webkit-backdrop-filter:blur(18px) saturate(160%);
+  border:.5px solid rgba(255,255,255,.32);
+  border-radius:18px;
+  box-shadow:0 1px 0 rgba(255,255,255,.4) inset,0 16px 40px rgba(10,30,20,.28);
+}
+
+/* ── Player panels ─────────────────────────────────────── */
+.player-panel{
+  display:flex;flex-direction:column;gap:10px;
+  padding:20px 18px;align-self:stretch;max-height:calc(100vh - 28px);overflow:hidden;
+}
+.player-panel .panel-head{display:flex;align-items:center;gap:10px}
+.avatar{
+  width:42px;height:42px;border-radius:999px;
+  display:grid;place-items:center;font-size:18px;
+  border:2px solid rgba(255,255,255,.35);
+  flex-shrink:0;
+}
+.avatar.p1{background:radial-gradient(circle,#f5c842,#c8810a)}
+.avatar.p2{background:radial-gradient(circle,#e05c4a,#8b1a0f)}
+.player-name-wrap{flex:1;min-width:0}
+.player-name{font-family:var(--serif);font-weight:400;font-size:17px;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.player-city{font-size:11px;color:rgba(255,255,255,.62);letter-spacing:.04em}
+.turn-dot{width:9px;height:9px;border-radius:999px;background:transparent;border:1.5px solid rgba(255,255,255,.38);transition:background .3s,border-color .3s;flex-shrink:0}
+.turn-dot.active{background:#a9eb88;border-color:#a9eb88;box-shadow:0 0 0 4px rgba(169,235,136,.25)}
+
+.stat-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:.5px solid rgba(255,255,255,.1);font-size:12px}
+.stat-row:last-child{border:none}
+.stat-label{color:rgba(255,255,255,.55);letter-spacing:.02em}
+.stat-value{color:#fff;font-weight:500}
+
+.timer{
+  font-family:var(--serif);font-size:32px;font-weight:300;color:#fff;letter-spacing:.04em;
+  text-align:center;padding:8px 0;
+  text-shadow:0 2px 12px rgba(0,0,0,.4);
+}
+.timer.urgent{color:#f5a623;animation:pulse .6s ease-in-out infinite alternate}
+@keyframes pulse{from{opacity:1}to{opacity:.55}}
+
+.moves-list{
+  flex:1;overflow-y:auto;overflow-x:hidden;scrollbar-width:thin;
+  scrollbar-color:rgba(255,255,255,.2) transparent;
+  font-size:11.5px;color:rgba(255,255,255,.72);
+  display:flex;flex-direction:column;gap:3px;
+}
+.move-item{padding:3px 0;display:flex;gap:6px}
+.move-num{color:rgba(255,255,255,.38);width:22px;text-align:right;flex-shrink:0}
+.move-badge{width:10px;height:10px;border-radius:999px;margin-top:2px;flex-shrink:0}
+.move-badge.p1{background:var(--p1)}
+.move-badge.p2{background:var(--p2)}
+
+/* ── Chat ──────────────────────────────────────────────── */
+.chat-area{flex:1;overflow-y:auto;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.2) transparent;display:flex;flex-direction:column;gap:5px;font-size:12px}
+.chat-msg{padding:5px 8px;border-radius:8px;background:rgba(255,255,255,.1);color:rgba(255,255,255,.82)}
+.chat-msg.system{font-style:italic;color:rgba(255,255,255,.5);background:none;padding-left:0}
+.chat-msg .msg-name{font-weight:600;margin-right:4px}
+.chat-msg .msg-name.p1{color:var(--p1)}
+.chat-msg .msg-name.p2{color:var(--p2)}
+.chat-input-row{display:flex;gap:6px}
+.chat-input{
+  flex:1;background:rgba(255,255,255,.14);border:.5px solid rgba(255,255,255,.25);
+  border-radius:8px;padding:7px 10px;color:#fff;font-size:12px;font-family:var(--sans);outline:none;
+}
+.chat-input::placeholder{color:rgba(255,255,255,.38)}
+.chat-input:focus{border-color:rgba(255,255,255,.45);background:rgba(255,255,255,.2)}
+.chat-send{
+  width:30px;height:30px;border-radius:8px;background:rgba(255,255,255,.22);border:.5px solid rgba(255,255,255,.32);
+  color:#fff;cursor:pointer;display:grid;place-items:center;font-size:13px;transition:background .15s;
+}
+.chat-send:hover{background:rgba(255,255,255,.35)}
+
+/* ── Pro CTA ───────────────────────────────────────────── */
+.pro-btn{
+  width:100%;padding:9px 12px;border-radius:10px;border:none;
+  background:linear-gradient(135deg,#c8810a,#e8a020);
+  color:#fff;font-size:12px;font-weight:600;font-family:var(--sans);cursor:pointer;
+  letter-spacing:.04em;transition:transform .15s,box-shadow .15s;
+  box-shadow:0 4px 14px rgba(200,129,10,.45);
+  display:flex;align-items:center;justify-content:center;gap:6px;
+}
+.pro-btn:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(200,129,10,.6)}
+
+/* ── Center column ─────────────────────────────────────── */
+.game-center{
+  display:flex;flex-direction:column;align-items:center;gap:10px;
+  justify-content:center;align-self:stretch;padding:10px 0;
+}
+
+.room-bar{
+  display:flex;align-items:center;gap:8px;
+  background:rgba(255,255,255,.18);border:.5px solid rgba(255,255,255,.28);
+  padding:7px 14px;border-radius:999px;font-size:12px;color:rgba(255,255,255,.9);
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+}
+.room-bar .room-id{font-weight:600;font-family:var(--serif);letter-spacing:.06em}
+.copy-btn{
+  background:rgba(255,255,255,.18);border:.5px solid rgba(255,255,255,.3);
+  color:#fff;border-radius:6px;padding:3px 8px;font-size:11px;cursor:pointer;
+  transition:background .15s;font-family:var(--sans);
+}
+.copy-btn:hover{background:rgba(255,255,255,.32)}
+
+/* ── Status bar ────────────────────────────────────────── */
+.status-bar{
+  font-family:var(--serif);font-size:16px;font-weight:400;color:#fff;
+  letter-spacing:.03em;text-align:center;min-height:22px;
+  text-shadow:0 2px 8px rgba(0,0,0,.5);
+}
+
+/* ── Board ─────────────────────────────────────────────── */
+.board-wrap{position:relative}
+.board{
+  display:grid;grid-template-columns:repeat(7,1fr);
+  gap:7px;padding:14px;
+  background:var(--board-bg);
+  border-radius:18px;
+  border:2px solid rgba(255,255,255,.12);
+  box-shadow:0 24px 64px rgba(0,0,0,.55),inset 0 2px 0 rgba(255,255,255,.08);
+  /* Kazakh ornamental border effect */
+  outline:4px solid rgba(200,150,80,.25);outline-offset:2px;
+}
+
+/* Column hover indicator */
+.col-indicator{
+  position:absolute;top:-26px;left:0;right:0;
+  display:grid;grid-template-columns:repeat(7,1fr);gap:7px;
+  padding:0 14px;
+  pointer-events:none;
+}
+.col-arrow{height:20px;display:flex;align-items:flex-end;justify-content:center;transition:opacity .15s}
+.col-arrow svg{opacity:0;transition:opacity .15s}
+
+.cell{
+  width:58px;height:58px;border-radius:999px;
+  background:var(--cell-bg);
+  cursor:pointer;
+  border:none;outline:none;
+  position:relative;
+  transition:transform .1s;
+  box-shadow:inset 0 3px 8px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.04);
+}
+.cell:hover:not(.filled){transform:scale(1.05)}
+.cell.p1{background:radial-gradient(circle at 38% 35%,#f5c842,#c8810a);box-shadow:0 4px 16px rgba(200,129,10,.55),inset 0 2px 4px rgba(255,255,255,.3)}
+.cell.p2{background:radial-gradient(circle at 38% 35%,#e05c4a,#8b1a0f);box-shadow:0 4px 16px rgba(192,57,43,.55),inset 0 2px 4px rgba(255,255,255,.25)}
+.cell.winner-cell{
+  animation:winner-glow 1s ease-in-out infinite alternate;
+  z-index:2;
+}
+@keyframes winner-glow{
+  from{box-shadow:0 0 16px 4px rgba(255,220,80,.55),inset 0 2px 4px rgba(255,255,255,.3)}
+  to{box-shadow:0 0 32px 12px rgba(255,200,50,.9),inset 0 2px 4px rgba(255,255,255,.5)}
+}
+.cell.drop-anim{animation:drop .22s cubic-bezier(.4,0,.2,1)}
+@keyframes drop{from{transform:translateY(-60px) scale(.9);opacity:.6}to{transform:translateY(0) scale(1);opacity:1}}
+
+/* ── Game controls ─────────────────────────────────────── */
+.game-controls{display:flex;gap:8px}
+.ctrl-btn{
+  padding:8px 16px;border-radius:999px;
+  font-size:12px;font-weight:500;font-family:var(--sans);cursor:pointer;
+  border:.5px solid rgba(255,255,255,.3);
+  background:rgba(255,255,255,.15);color:#fff;
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  transition:background .15s,transform .15s;
+}
+.ctrl-btn:hover{background:rgba(255,255,255,.28);transform:translateY(-1px)}
+.ctrl-btn.danger{border-color:rgba(192,57,43,.5);color:#e8877c}
+.ctrl-btn.danger:hover{background:rgba(192,57,43,.2)}
+
+/* ── Waiting overlay ───────────────────────────────────── */
+.waiting-overlay{
+  position:absolute;inset:0;z-index:10;
+  background:rgba(8,20,14,.75);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:14px;border-radius:18px;
+  transition:opacity .3s;
+}
+.waiting-overlay.hidden{opacity:0;pointer-events:none}
+.wait-title{font-family:var(--serif);font-size:22px;font-weight:400;color:#fff}
+.wait-sub{font-size:13px;color:rgba(255,255,255,.62);text-align:center;max-width:220px;line-height:1.5}
+.wait-link{
+  display:flex;align-items:center;gap:6px;
+  background:rgba(255,255,255,.14);border:.5px solid rgba(255,255,255,.3);
+  padding:8px 14px;border-radius:999px;font-size:12px;color:#fff;cursor:pointer;
+  transition:background .15s;
+}
+.wait-link:hover{background:rgba(255,255,255,.24)}
+.spinner{
+  width:28px;height:28px;border:2.5px solid rgba(255,255,255,.2);
+  border-top-color:rgba(255,255,255,.8);border-radius:999px;
+  animation:spin 1s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── AI Coach modal ────────────────────────────────────── */
+.coach-modal{
+  position:fixed;inset:0;z-index:200;
+  background:rgba(8,18,12,.8);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  display:flex;align-items:center;justify-content:center;
+  opacity:0;pointer-events:none;transition:opacity .3s;
+}
+.coach-modal.open{opacity:1;pointer-events:auto}
+.coach-card{
+  background:rgba(20,45,30,.92);
+  border:.5px solid rgba(255,255,255,.22);
+  border-radius:22px;padding:30px;
+  max-width:540px;width:92vw;
+  box-shadow:0 32px 80px rgba(0,0,0,.7);
+  position:relative;
+  transform:scale(.96);transition:transform .4s cubic-bezier(.34,1.56,.64,1);
+}
+.coach-modal.open .coach-card{transform:scale(1)}
+.coach-close{
+  position:absolute;top:14px;right:16px;
+  width:30px;height:30px;border-radius:999px;
+  background:rgba(255,255,255,.12);border:.5px solid rgba(255,255,255,.2);
+  color:rgba(255,255,255,.72);cursor:pointer;font-size:14px;display:grid;place-items:center;
+  transition:background .15s;
+}
+.coach-close:hover{background:rgba(255,255,255,.22)}
+.coach-title{
+  font-family:var(--serif);font-size:20px;font-weight:400;color:#fff;
+  margin-bottom:4px;display:flex;align-items:center;gap:8px;
+}
+.coach-subtitle{font-size:12px;color:rgba(255,255,255,.5);margin-bottom:18px}
+.coach-summary{
+  font-size:14px;color:rgba(255,255,255,.85);line-height:1.55;
+  padding:10px 14px;border-radius:10px;background:rgba(255,255,255,.07);
+  margin-bottom:14px;
+}
+.coach-section-title{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.45);margin-bottom:6px}
+.coach-insights{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
+.coach-insight{
+  display:flex;gap:8px;align-items:flex-start;
+  font-size:13px;color:rgba(255,255,255,.78);line-height:1.5;
+}
+.insight-dot{width:6px;height:6px;border-radius:999px;background:#a9eb88;margin-top:6px;flex-shrink:0}
+.key-moment{
+  padding:10px 14px;border-radius:10px;border:.5px solid rgba(255,220,80,.25);
+  background:rgba(255,220,80,.06);margin-bottom:14px;
+}
+.key-moment-move{font-size:10px;letter-spacing:.06em;color:#f5c842;margin-bottom:3px}
+.key-moment-desc{font-size:13px;color:rgba(255,255,255,.8);line-height:1.5}
+.coach-tip{
+  padding:10px 14px;border-radius:10px;border:.5px solid rgba(169,235,136,.25);
+  background:rgba(169,235,136,.06);
+  font-size:13px;color:rgba(255,255,255,.8);line-height:1.5;
+}
+.coach-loading{display:flex;flex-direction:column;align-items:center;gap:12px;padding:30px 0}
+.coach-actions{display:flex;gap:8px;margin-top:18px}
+.coach-action{
+  flex:1;padding:10px;border-radius:10px;border:.5px solid rgba(255,255,255,.2);
+  background:rgba(255,255,255,.1);color:#fff;font-size:13px;font-weight:500;
+  font-family:var(--sans);cursor:pointer;transition:background .15s;
+}
+.coach-action:hover{background:rgba(255,255,255,.2)}
+.coach-action.primary{background:var(--ink);border-color:var(--ink)}
+.coach-action.primary:hover{background:#0f1a14}
+
+/* ── Lobby overlay (initial) ───────────────────────────── */
+.lobby{
+  position:fixed;inset:0;z-index:100;
+  background:rgba(8,18,12,.88);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  display:flex;align-items:center;justify-content:center;
+  transition:opacity .4s;
+}
+.lobby.hidden{opacity:0;pointer-events:none}
+.lobby-card{
+  background:rgba(20,45,30,.95);border:.5px solid rgba(255,255,255,.2);
+  border-radius:24px;padding:36px;max-width:400px;width:92vw;
+  box-shadow:0 32px 80px rgba(0,0,0,.7);
+}
+.lobby-title{font-family:var(--serif);font-size:26px;font-weight:400;color:#fff;margin-bottom:4px}
+.lobby-sub{font-size:13px;color:rgba(255,255,255,.5);margin-bottom:24px}
+.lobby-input{
+  width:100%;padding:10px 14px;border-radius:10px;
+  border:.5px solid rgba(255,255,255,.22);
+  background:rgba(255,255,255,.1);color:#fff;font-size:14px;
+  font-family:var(--sans);outline:none;margin-bottom:10px;
+}
+.lobby-input::placeholder{color:rgba(255,255,255,.35)}
+.lobby-input:focus{border-color:rgba(255,255,255,.45);background:rgba(255,255,255,.16)}
+.lobby-divider{text-align:center;color:rgba(255,255,255,.3);font-size:12px;margin:8px 0}
+.lobby-btn{
+  width:100%;padding:11px;border-radius:10px;border:none;
+  font-size:14px;font-weight:600;font-family:var(--sans);cursor:pointer;
+  margin-bottom:8px;transition:transform .15s,box-shadow .15s;
+}
+.lobby-btn.primary{background:var(--ink);color:#f3efe6}
+.lobby-btn.primary:hover{background:#0f1a14;transform:translateY(-1px)}
+.lobby-btn.outline{background:rgba(255,255,255,.1);color:#fff;border:.5px solid rgba(255,255,255,.25)}
+.lobby-btn.outline:hover{background:rgba(255,255,255,.18)}
+.join-row{display:flex;gap:8px}
+.join-code{
+  flex:1;padding:10px 12px;border-radius:10px;
+  border:.5px solid rgba(255,255,255,.22);
+  background:rgba(255,255,255,.1);color:#fff;font-size:14px;
+  font-family:var(--sans);outline:none;letter-spacing:.06em;text-transform:uppercase;
+}
+.join-code::placeholder{color:rgba(255,255,255,.35);text-transform:none;letter-spacing:0}
+.join-code:focus{border-color:rgba(255,255,255,.45)}
+.join-btn{
+  padding:10px 16px;border-radius:10px;border:.5px solid rgba(255,255,255,.25);
+  background:rgba(255,255,255,.14);color:#fff;font-size:14px;font-weight:500;
+  font-family:var(--sans);cursor:pointer;white-space:nowrap;transition:background .15s;
+}
+.join-btn:hover{background:rgba(255,255,255,.24)}
+
+/* ── Responsive ────────────────────────────────────────── */
+@media(max-width:900px){
+  .ui{grid-template-columns:1fr;grid-template-rows:auto 1fr auto;padding:8px;gap:8px;overflow-y:auto;height:auto;min-height:100vh}
+  .player-panel{flex-direction:row;align-items:center;flex-wrap:wrap;gap:8px;max-height:none;padding:12px}
+  .timer,.moves-list,.chat-area{display:none}
+  .game-center{padding:4px 0}
+  .cell{width:44px;height:44px}
+  .board{gap:5px;padding:10px}
+}
+</style>
+</head>
+<body>
+
+<!-- BG -->
+<div class="scene">
+  <img src="/assets/hero-steppe.png" alt="" />
+  <div class="scene-overlay"></div>
+</div>
+
+<!-- ════ LOBBY ════ -->
+<div class="lobby" id="lobby">
+  <div class="lobby-card">
+    <div class="lobby-title">Tört Qatar</div>
+    <div class="lobby-sub">Connect Four · steppe duels</div>
+
+    <input class="lobby-input" id="lobbyName" placeholder="Your name" maxlength="24" />
+    <input class="lobby-input" id="lobbyCity" placeholder="Your city (e.g. Almaty)" maxlength="32" />
+
+    <button class="lobby-btn primary" id="btnCreate">⚔ Create new game</button>
+    <div class="lobby-divider">— or join with a code —</div>
+    <div class="join-row">
+      <input class="join-code" id="joinCode" placeholder="Room code" maxlength="8" />
+      <button class="join-btn" id="btnJoin">Join</button>
+    </div>
+    <br/>
+    <button class="lobby-btn outline" onclick="window.location='/'">← Back to landing</button>
+  </div>
+</div>
+
+<!-- ════ MAIN GAME UI ════ -->
+<div class="ui" id="mainUI">
+
+  <!-- ── Left panel: Player 1 ── -->
+  <div class="glass player-panel" id="leftPanel">
+    <div class="panel-head">
+      <div class="avatar p1" id="av1">☀</div>
+      <div class="player-name-wrap">
+        <div class="player-name" id="name1">Waiting…</div>
+        <div class="player-city" id="city1">—</div>
+      </div>
+      <div class="turn-dot" id="dot1"></div>
+    </div>
+
+    <div class="timer" id="timer1">—:——</div>
+
+    <div class="stat-row"><span class="stat-label">Wins</span><span class="stat-value" id="wins1">0</span></div>
+    <div class="stat-row"><span class="stat-label">Moves made</span><span class="stat-value" id="moves1">0</span></div>
+
+    <div style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.4);margin-top:4px">Move history</div>
+    <div class="moves-list" id="movesList"></div>
+  </div>
+
+  <!-- ── Center ── -->
+  <div class="game-center">
+
+    <div class="room-bar">
+      <span>Room</span>
+      <span class="room-id" id="roomIdLabel">——</span>
+      <button class="copy-btn" id="copyBtn">Copy link</button>
+    </div>
+
+    <div class="status-bar" id="statusBar">Waiting for opponent…</div>
+
+    <div class="board-wrap" id="boardWrap">
+      <!-- Waiting overlay -->
+      <div class="waiting-overlay" id="waitOverlay">
+        <div class="spinner"></div>
+        <div class="wait-title">Waiting for challenger…</div>
+        <div class="wait-sub">Share the link or room code for a friend to join</div>
+        <button class="wait-link" id="waitCopyBtn">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+          Copy invite link
+        </button>
+      </div>
+
+      <!-- Column drop indicator -->
+      <div class="col-indicator" id="colIndicator">
+        <!-- 7 arrows injected by JS -->
+      </div>
+
+      <!-- Board grid (6×7 = 42 cells injected by JS) -->
+      <div class="board" id="board"></div>
+    </div>
+
+    <div class="game-controls">
+      <button class="ctrl-btn" id="btnRematch" style="display:none" onclick="sendRematch()">↺ Rematch</button>
+      <button class="ctrl-btn" id="btnCoach" style="display:none" onclick="openCoach()">🧠 AI Coach</button>
+      <button class="ctrl-btn danger" id="btnResign" onclick="sendResign()">Resign</button>
+      <button class="ctrl-btn" onclick="window.location.reload()">New game</button>
+    </div>
+  </div>
+
+  <!-- ── Right panel: Player 2 + Chat ── -->
+  <div class="glass player-panel" id="rightPanel">
+    <div class="panel-head">
+      <div class="avatar p2" id="av2">🌙</div>
+      <div class="player-name-wrap">
+        <div class="player-name" id="name2">Waiting…</div>
+        <div class="player-city" id="city2">—</div>
+      </div>
+      <div class="turn-dot" id="dot2"></div>
+    </div>
+
+    <div class="timer" id="timer2">—:——</div>
+
+    <div class="stat-row"><span class="stat-label">Wins</span><span class="stat-value" id="wins2">0</span></div>
+    <div class="stat-row"><span class="stat-label">Moves made</span><span class="stat-value" id="moves2">0</span></div>
+
+    <div style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.4);margin-top:4px">Chat</div>
+    <div class="chat-area" id="chatArea"></div>
+    <div class="chat-input-row">
+      <input class="chat-input" id="chatInput" placeholder="Say something…" maxlength="200" />
+      <button class="chat-send" id="chatSend">↑</button>
+    </div>
+
+    <button class="pro-btn" onclick="openStripe()">✦ Upgrade to Pro</button>
+  </div>
+
+</div>
+
+<!-- ════ AI COACH MODAL ════ -->
+<div class="coach-modal" id="coachModal">
+  <div class="coach-card">
+    <button class="coach-close" onclick="closeCoach()">✕</button>
+    <div class="coach-title">🧠 AI Coach</div>
+    <div class="coach-subtitle">Post-game analysis powered by Claude</div>
+    <div id="coachContent">
+      <div class="coach-loading">
+        <div class="spinner"></div>
+        <div style="font-size:13px;color:rgba(255,255,255,.5)">Analyzing your game…</div>
+      </div>
+    </div>
+    <div class="coach-actions" id="coachActions" style="display:none">
+      <button class="coach-action" onclick="closeCoach()">Close</button>
+      <button class="coach-action primary" onclick="sendRematch();closeCoach()">↺ Rematch</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── State ──────────────────────────────────────────────────────────────────
+const socket = io();
+let myPlayerNumber = null;
+let roomId = null;
+let gameState = null;
+let myName = '', myCity = '';
+let sessionWins = [0, 0];      // [p1wins, p2wins]
+let moveCountByPlayer = [0,0]; // [p1moves, p2moves]
+let timerIntervals = [null, null];
+let timerSeconds = [0, 0];
+let lastCoachData = null;
+let gameFinished = false;
+let coachRequested = false;
+
+// ── Build board DOM ────────────────────────────────────────────────────────
+const boardEl = document.getElementById('board');
+const colIndicator = document.getElementById('colIndicator');
+const cells = [];
+
+for (let r = 0; r < 6; r++) {
+  cells[r] = [];
+  for (let c = 0; c < 7; c++) {
+    const cell = document.createElement('button');
+    cell.className = 'cell';
+    cell.dataset.col = c;
+    cell.addEventListener('click', () => handleCellClick(c));
+    cell.addEventListener('mouseenter', () => highlightCol(c, true));
+    cell.addEventListener('mouseleave', () => highlightCol(c, false));
+    boardEl.appendChild(cell);
+    cells[r][c] = cell;
+  }
+}
+
+// Column drop arrows
+for (let c = 0; c < 7; c++) {
+  const arrow = document.createElement('div');
+  arrow.className = 'col-arrow';
+  arrow.id = `arrow-${c}`;
+  arrow.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="rgba(255,255,255,.7)" style="display:block"><path d="M12 4v12M6 14l6 6 6-6"/></svg>`;
+  colIndicator.appendChild(arrow);
+}
+
+function highlightCol(col, on) {
+  const arrow = document.getElementById(`arrow-${col}`);
+  if (arrow) arrow.querySelector('svg').style.opacity = on && isMyTurn() ? '1' : '0';
+}
+
+// ── Lobby ──────────────────────────────────────────────────────────────────
+const lobby = document.getElementById('lobby');
+const waitOverlay = document.getElementById('waitOverlay');
+
+// Check URL for room code
+const urlParams = new URLSearchParams(window.location.search);
+const urlRoom = urlParams.get('room');
+if (urlRoom) {
+  document.getElementById('joinCode').value = urlRoom.toUpperCase();
+}
+
+document.getElementById('btnCreate').addEventListener('click', () => {
+  const name = document.getElementById('lobbyName').value.trim() || 'Nomad';
+  const city = document.getElementById('lobbyCity').value.trim() || 'Almaty';
+  myName = name; myCity = city;
+  myPlayerNumber = 1;
+  socket.emit('room:create', { name, city });
+});
+
+document.getElementById('btnJoin').addEventListener('click', joinRoom);
+document.getElementById('joinCode').addEventListener('keydown', e => { if (e.key === 'Enter') joinRoom(); });
+
+function joinRoom() {
+  const code = document.getElementById('joinCode').value.trim().toUpperCase();
+  if (!code) return;
+  const name = document.getElementById('lobbyName').value.trim() || 'Nomad';
+  const city = document.getElementById('lobbyCity').value.trim() || 'Almaty';
+  myName = name; myCity = city;
+  myPlayerNumber = 2;
+  socket.emit('room:join', { roomId: code, name, city });
+}
+
+function enterGame(rId) {
+  roomId = rId;
+  lobby.classList.add('hidden');
+  document.getElementById('roomIdLabel').textContent = rId;
+  updateCopyBtn();
+}
+
+// ── Socket events ──────────────────────────────────────────────────────────
+socket.on('room:created', ({ roomId: rId }) => { enterGame(rId); });
+
+socket.on('room:error', ({ message }) => {
+  alert(message);
+});
+
+socket.on('room:state', (state) => {
+  gameState = state;
+  renderState(state);
+});
+
+socket.on('room:chat', (msg) => {
+  appendChat(msg);
+});
+
+// ── State rendering ────────────────────────────────────────────────────────
+function renderState(state) {
+  // Players
+  if (state.players[0]) {
+    document.getElementById('name1').textContent = state.players[0].name;
+    document.getElementById('city1').textContent = state.players[0].city;
+  }
+  if (state.players[1]) {
+    document.getElementById('name2').textContent = state.players[1].name;
+    document.getElementById('city2').textContent = state.players[1].city;
+  }
+
+  // Board
+  renderBoard(state.board, state.winCells);
+
+  // Move history
+  renderMoveHistory(state.history);
+
+  // Timers & turn indicator
+  updateTurnIndicators(state.currentTurn, state.status);
+
+  // Status bar
+  updateStatusBar(state);
+
+  // Waiting overlay
+  if (state.players.length >= 2) {
+    waitOverlay.classList.add('hidden');
+  }
+
+  // Finished
+  if (state.status === 'finished') {
+    gameFinished = true;
+    stopAllTimers();
+    document.getElementById('btnResign').style.display = 'none';
+    document.getElementById('btnRematch').style.display = '';
+    document.getElementById('btnCoach').style.display = '';
+
+    // Auto post score
+    const myPlayer = state.players.find(p => p.playerNumber === myPlayerNumber);
+    if (myPlayer && !coachRequested) {
+      postScore(myPlayer.name, myPlayer.city, state.winner === myPlayerNumber);
+    }
+  }
+}
+
+function renderBoard(board, winCells) {
+  const winSet = new Set((winCells || []).map(([r, c]) => `${r},${c}`));
+  for (let r = 0; r < 6; r++) {
+    for (let c = 0; c < 7; c++) {
+      const cell = cells[r][c];
+      const prev = cell.className;
+      cell.className = 'cell';
+      const v = board[r][c];
+      if (v === 1) cell.classList.add('p1', 'filled');
+      if (v === 2) cell.classList.add('p2', 'filled');
+      if (winSet.has(`${r},${c}`)) cell.classList.add('winner-cell');
+      // Drop animation for newly filled cells
+      if (v !== 0 && !prev.includes('filled')) cell.classList.add('drop-anim');
+    }
+  }
+}
+
+function renderMoveHistory(history) {
+  const list = document.getElementById('movesList');
+  list.innerHTML = '';
+  moveCountByPlayer = [0, 0];
+  history.forEach((m, i) => {
+    moveCountByPlayer[m.player - 1]++;
+    const item = document.createElement('div');
+    item.className = 'move-item';
+    item.innerHTML = `<span class="move-num">${i + 1}</span><span class="move-badge p${m.player}"></span><span>Col ${m.col + 1}</span>`;
+    list.appendChild(item);
+  });
+  list.scrollTop = list.scrollHeight;
+  document.getElementById('moves1').textContent = moveCountByPlayer[0];
+  document.getElementById('moves2').textContent = moveCountByPlayer[1];
+}
+
+function updateTurnIndicators(currentTurn, status) {
+  const dot1 = document.getElementById('dot1');
+  const dot2 = document.getElementById('dot2');
+  if (status !== 'playing') {
+    dot1.classList.remove('active');
+    dot2.classList.remove('active');
+    return;
+  }
+  dot1.classList.toggle('active', currentTurn === 1);
+  dot2.classList.toggle('active', currentTurn === 2);
+  // Start/switch timer
+  if (currentTurn === 1) { stopTimer(1); startTimer(0); }
+  else { stopTimer(0); startTimer(1); }
+}
+
+function updateStatusBar(state) {
+  const bar = document.getElementById('statusBar');
+  if (state.status === 'waiting') {
+    bar.textContent = 'Waiting for opponent…';
+  } else if (state.status === 'playing') {
+    const p = state.players.find(p => p.playerNumber === state.currentTurn);
+    const isMine = state.currentTurn === myPlayerNumber;
+    bar.textContent = isMine ? '⚔ Your turn — choose a column' : `${p?.name ?? 'Opponent'}'s turn…`;
+    bar.style.color = isMine ? '#a9eb88' : 'rgba(255,255,255,.8)';
+  } else if (state.status === 'finished') {
+    if (state.winner === 0) {
+      bar.textContent = 'Draw — the steppe remains undecided.';
+      bar.style.color = '#f5c842';
+    } else {
+      const winner = state.players.find(p => p.playerNumber === state.winner);
+      const isMine = state.winner === myPlayerNumber;
+      bar.textContent = isMine ? '🏆 You win! Well played.' : `${winner?.name ?? 'Opponent'} wins!`;
+      bar.style.color = isMine ? '#a9eb88' : '#e8877c';
+    }
+  }
+}
+
+// ── Move handling ──────────────────────────────────────────────────────────
+function isMyTurn() {
+  return gameState && gameState.status === 'playing' && gameState.currentTurn === myPlayerNumber;
+}
+
+function handleCellClick(col) {
+  if (!isMyTurn()) return;
+  socket.emit('game:move', { roomId, col });
+}
+
+// ── Timer ──────────────────────────────────────────────────────────────────
+function startTimer(playerIdx) {
+  const id = setInterval(() => {
+    timerSeconds[playerIdx]++;
+    updateTimerDisplay(playerIdx);
+  }, 1000);
+  timerIntervals[playerIdx] = id;
+}
+function stopTimer(playerIdx) {
+  clearInterval(timerIntervals[playerIdx]);
+  timerIntervals[playerIdx] = null;
+}
+function stopAllTimers() { stopTimer(0); stopTimer(1); }
+function updateTimerDisplay(playerIdx) {
+  const s = timerSeconds[playerIdx];
+  const mm = String(Math.floor(s / 60)).padStart(2, '0');
+  const ss = String(s % 60).padStart(2, '0');
+  const el = document.getElementById(`timer${playerIdx + 1}`);
+  if (el) {
+    el.textContent = `${mm}:${ss}`;
+    el.classList.toggle('urgent', s > 60 && gameState?.currentTurn === playerIdx + 1);
+  }
+}
+
+// ── Chat ───────────────────────────────────────────────────────────────────
+document.getElementById('chatSend').addEventListener('click', sendChat);
+document.getElementById('chatInput').addEventListener('keydown', e => { if (e.key === 'Enter') sendChat(); });
+
+function sendChat() {
+  const input = document.getElementById('chatInput');
+  const text = input.value.trim();
+  if (!text || !roomId) return;
+  socket.emit('room:chat', { roomId, text });
+  input.value = '';
+}
+
+function appendChat(msg) {
+  const area = document.getElementById('chatArea');
+  const div = document.createElement('div');
+  div.className = 'chat-msg' + (msg.system ? ' system' : '');
+  if (msg.system) {
+    div.textContent = msg.text;
+  } else {
+    div.innerHTML = `<span class="msg-name p${msg.playerNumber}">${esc(msg.name)}</span>${esc(msg.text)}`;
+  }
+  area.appendChild(div);
+  area.scrollTop = area.scrollHeight;
+}
+
+function esc(s) { return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+// ── Rematch / Resign ───────────────────────────────────────────────────────
+function sendRematch() {
+  if (!roomId) return;
+  socket.emit('game:rematch', { roomId });
+  gameFinished = false;
+  coachRequested = false;
+  timerSeconds = [0, 0];
+  document.getElementById('timer1').textContent = '00:00';
+  document.getElementById('timer2').textContent = '00:00';
+  document.getElementById('btnRematch').style.display = 'none';
+  document.getElementById('btnCoach').style.display = 'none';
+  document.getElementById('btnResign').style.display = '';
+  document.getElementById('statusBar').style.color = 'rgba(255,255,255,.9)';
+}
+
+function sendResign() {
+  if (!roomId || gameFinished) return;
+  if (!confirm('Resign this game?')) return;
+  socket.emit('game:resign', { roomId });
+}
+
+// ── Share / Copy ───────────────────────────────────────────────────────────
+function updateCopyBtn() {
+  const url = `${window.location.origin}/game.html?room=${roomId}`;
+  document.getElementById('copyBtn').addEventListener('click', () => copyText(url));
+  document.getElementById('waitCopyBtn').addEventListener('click', () => copyText(url));
+}
+
+function copyText(text) {
+  navigator.clipboard.writeText(text).catch(() => {});
+  const btn = document.getElementById('copyBtn');
+  btn.textContent = 'Copied!';
+  setTimeout(() => btn.textContent = 'Copy link', 1800);
+}
+
+// ── Leaderboard / Score post ───────────────────────────────────────────────
+async function postScore(name, city, won) {
+  try {
+    await fetch('/api/leaderboard/score', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, city, won }),
+    });
+  } catch(e) { /* offline */ }
+}
+
+// ── AI Coach ───────────────────────────────────────────────────────────────
+async function openCoach() {
+  if (!gameState) return;
+  document.getElementById('coachModal').classList.add('open');
+  document.getElementById('coachContent').innerHTML = `
+    <div class="coach-loading">
+      <div class="spinner"></div>
+      <div style="font-size:13px;color:rgba(255,255,255,.5)">Analyzing your game on the steppe…</div>
+    </div>`;
+  document.getElementById('coachActions').style.display = 'none';
+
+  if (lastCoachData) { renderCoach(lastCoachData); return; }
+
+  coachRequested = true;
+  try {
+    const myPlayer = gameState.players.find(p => p.playerNumber === myPlayerNumber);
+    const res = await fetch('/api/coach/analyze', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        winner: gameState.winner,
+        history: gameState.history,
+        board: gameState.board,
+        playerName: myPlayer?.name ?? myName,
+        coachFor: myPlayerNumber,
+      }),
+    });
+    const data = await res.json();
+    lastCoachData = data;
+    renderCoach(data);
+  } catch(e) {
+    document.getElementById('coachContent').innerHTML = `<div style="color:rgba(255,255,255,.5);font-size:13px;text-align:center;padding:20px">Could not reach AI Coach. Check ANTHROPIC_API_KEY in .env</div>`;
+  }
+}
+
+function renderCoach(d) {
+  document.getElementById('coachContent').innerHTML = `
+    <div class="coach-summary">${esc(d.summary)}</div>
+    <div class="coach-section-title">Key observations</div>
+    <div class="coach-insights">
+      ${d.insights.map(i => `<div class="coach-insight"><span class="insight-dot"></span><span>${esc(i)}</span></div>`).join('')}
+    </div>
+    <div class="coach-section-title">Pivotal moment</div>
+    <div class="key-moment">
+      <div class="key-moment-move">Move #${d.keyMoment?.moveNumber ?? '?'}</div>
+      <div class="key-moment-desc">${esc(d.keyMoment?.description ?? '')}</div>
+    </div>
+    <div class="coach-section-title">Tip for next game</div>
+    <div class="coach-tip">💡 ${esc(d.tip)}</div>
+  `;
+  document.getElementById('coachActions').style.display = 'flex';
+}
+
+function closeCoach() { document.getElementById('coachModal').classList.remove('open'); }
+
+// ── Stripe stub ────────────────────────────────────────────────────────────
+async function openStripe() {
+  try {
+    const res = await fetch('/api/stripe/checkout', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ plan: 'pro_monthly' }),
+    });
+    const { url, note } = await res.json();
+    alert(`Pro checkout: ${url}\n\n${note}`);
+  } catch(e) { alert('Stripe not configured. Add STRIPE_SECRET_KEY to .env'); }
+}
+
+// ── Keyboard ───────────────────────────────────────────────────────────────
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeCoach();
+  // 1-7 to drop in column
+  const col = parseInt(e.key) - 1;
+  if (col >= 0 && col < 7 && isMyTurn()) handleCellClick(col);
+});
+</script>
+</body>
+</html>

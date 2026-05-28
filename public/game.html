@@ -241,12 +241,18 @@ html,body{height:100%;background:#8dbfdb;font-family:var(--sans);color:var(--ink
 .board{
   display:grid;grid-template-columns:repeat(7,1fr);
   gap:7px;padding:14px;
-  background:var(--board-bg);
+  background: linear-gradient(-45deg, rgba(255,255,255,.16) 0%, rgba(255,255,255,.05) 55%, rgba(255,255,255,.10) 100%);
+  backdrop-filter: blur(40px) saturate(150%);
+  -webkit-backdrop-filter: blur(40px) saturate(150%);
   border-radius:18px;
-  border:2px solid rgba(255,255,255,.12);
-  box-shadow:0 24px 64px rgba(0,0,0,.55),inset 0 2px 0 rgba(255,255,255,.08);
-  /* Kazakh ornamental border effect */
-  outline:4px solid rgba(200,150,80,.25);outline-offset:2px;
+  border: none;
+  box-shadow:
+    0 3px 4px rgba(0,0,0,.15),
+    0 24px 64px rgba(0,0,0,.55),
+    inset 0 1.5px 0 rgba(255,255,255,.55),
+    inset 1.5px 0 0 rgba(255,255,255,.30),
+    inset 0 -1px 0 rgba(255,255,255,.08);
+  outline: none;
 }
 
 /* Column hover indicator */
@@ -549,22 +555,22 @@ html,body{height:100%;background:#8dbfdb;font-family:var(--sans);color:var(--ink
 .auth-card,
 .ngm-card,
 .profile-modal-card {
-  /* Low-opacity tint so background bleeds through */
+  /* True liquid glass — -45° light, no border, depth shadow */
   background: linear-gradient(
-    160deg,
-    rgba(255,255,255,.28) 0%,
-    rgba(255,255,255,.14) 50%,
-    rgba(255,255,255,.20) 100%
+    -45deg,
+    rgba(255,255,255,.22) 0%,
+    rgba(255,255,255,.07) 55%,
+    rgba(255,255,255,.13) 100%
   ) !important;
-  backdrop-filter: blur(52px) saturate(220%) brightness(1.08) !important;
-  -webkit-backdrop-filter: blur(52px) saturate(220%) brightness(1.08) !important;
-  border: 1px solid rgba(255,255,255,.55) !important;
+  backdrop-filter: blur(40px) saturate(160%) brightness(1.05) !important;
+  -webkit-backdrop-filter: blur(40px) saturate(160%) brightness(1.05) !important;
+  border: none !important;
   box-shadow:
-    0 1.5px 0 rgba(255,255,255,.80) inset,   /* top shine */
-    0 -1px  0 rgba(255,255,255,.18) inset,   /* bottom edge */
-    1px  0  0 rgba(255,255,255,.42) inset,   /* left edge */
-    0 24px 64px rgba(0,0,0,.45),
-    0  4px 16px rgba(0,0,0,.22) !important;
+    0 3px 4px rgba(0,0,0,.15),            /* drop shadow */
+    0 20px 60px rgba(0,0,0,.42),           /* depth */
+    inset 0 1.5px 0 rgba(255,255,255,.70), /* top-left light edge */
+    inset 1.5px 0 0 rgba(255,255,255,.38), /* left light edge */
+    inset 0 -1px 0 rgba(255,255,255,.10) !important; /* bottom subtle */
 }
 /* Glass needs lighter text since bg is dark/blurred */
 .lobby-card *,
@@ -667,7 +673,7 @@ html,body{height:100%;background:#8dbfdb;font-family:var(--sans);color:var(--ink
   overflow: hidden;
 }
 .chat-widget.active { display: flex; }
-.chat-widget.collapsed { height: 50px; }
+.chat-widget.collapsed { height: 50px !important; min-height: 0 !important; }
 .chat-widget-header {
   display: flex; align-items: center; justify-content: space-between;
   padding: 0 14px; height: 50px; flex-shrink: 0; cursor: pointer; user-select: none;
@@ -1083,7 +1089,7 @@ html,body{height:100%;background:#8dbfdb;font-family:var(--sans);color:var(--ink
       Chat
       <span class="chat-unread-dot" id="chatUnreadDot"></span>
     </div>
-    <span class="chat-widget-chevron">▲</span>
+    <span class="chat-widget-chevron">▼</span>
   </div>
   <div class="chat-widget-body">
     <div class="chat-widget-messages" id="chatArea"></div>

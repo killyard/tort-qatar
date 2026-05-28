@@ -326,9 +326,9 @@ html,body{height:100%;background:#8dbfdb;font-family:var(--sans);color:var(--ink
   transition:opacity .4s;
 }
 .lobby-bg{
-  position:absolute;inset:0;width:100%;height:100%;
-  object-fit:contain;object-position:center;z-index:0;
-  pointer-events:none;user-select:none;
+  position:absolute;top:0;left:50%;transform:translateX(-50%);
+  height:100%;width:auto; /* scale by height, center horizontally */
+  z-index:0;pointer-events:none;user-select:none;
 }
 .lobby.hidden{opacity:0;pointer-events:none}
 .lobby-card{
@@ -649,15 +649,9 @@ const DOOR_MARGIN = 0.07; // 7% inner margin from door frame edges
 
 function positionLobbyCard() {
   const vw = window.innerWidth, vh = window.innerHeight;
-  const vpAspect = vw / vh;
-  let rW, rH, oX, oY;
-  if (vpAspect > IMG_ASPECT) {
-    // viewport wider → bars on left/right, image fills full height
-    rH = vh; rW = vh * IMG_ASPECT; oX = (vw - rW) / 2; oY = 0;
-  } else {
-    // viewport taller → bars on top/bottom, image fills full width
-    rW = vw; rH = vw / IMG_ASPECT; oX = 0; oY = (vh - rH) / 2;
-  }
+  // Always scale by height — image fills full vh, centered horizontally
+  const rH = vh, rW = vh * IMG_ASPECT;
+  const oX = (vw - rW) / 2, oY = 0;
   const dL = oX + DOOR.left  * rW, dR = oX + DOOR.right  * rW;
   const dT = oY + DOOR.top   * rH, dB = oY + DOOR.bottom * rH;
   const dW = dR - dL, dH = dB - dT;

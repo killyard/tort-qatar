@@ -651,38 +651,3 @@ start().catch(err => {
   console.error('[Fatal] startup error:', err);
   process.exit(1);
 });
-chat', { system: true, text: `${player.name} disconnected. The wind carries them away.` });
-    }
-    // Clean up stale rooms after 1 hour
-    setTimeout(() => {
-      if (Date.now() - room.createdAt > 3_600_000) rooms.delete(room.id);
-    }, 3_600_000);
-  });
-});
-
-// ── Start ──────────────────────────────────────────────────────────────────
-async function start() {
-  // Run DB migrations (no-op if DATABASE_URL not set)
-  await runMigrations();
-
-  // Seed Redis from PostgreSQL on every cold start
-  if (isDbEnabled() && isCacheEnabled()) {
-    try {
-      const rows = await getLeaderboardFromDB({ limit: 500 });
-      await lbSeedFromDB(rows);
-    } catch (err) {
-      console.warn('[Startup] Redis seed failed (non-fatal):', err.message);
-    }
-  }
-
-  httpServer.listen(PORT, () => {
-    console.log(`\n🏕️  Tört Qatar server running → http://localhost:${PORT}`);
-    console.log(`   DB:    ${isDbEnabled()  ? '✅ PostgreSQL' : '⚠️  JSON file (set DATABASE_URL to enable)'}`);
-    console.log(`   Cache: ${isCacheEnabled() ? '✅ Redis'      : '⚠️  disabled (set REDIS_URL to enable)'}\n`);
-  });
-}
-
-start().catch(err => {
-  console.error('[Fatal] startup error:', err);
-  process.exit(1);
-});

@@ -364,8 +364,12 @@ html,body{height:100%;background:#8dbfdb;font-family:var(--sans);color:var(--ink
 }
 .auth-guest:hover{background:rgba(255,255,255,.5);color:var(--ink)}
 .auth-err{font-size:12px;color:#c0392b;text-align:center;min-height:16px;margin-bottom:4px}
-/* toggle email form visibility */
-#authEmailForm{display:none}
+.auth-forgot{
+  font-size:12px;color:var(--ink-mute);text-align:right;
+  display:block;margin-top:-4px;margin-bottom:10px;
+  cursor:pointer;text-decoration:underline;text-underline-offset:2px;
+}
+.auth-forgot:hover{color:var(--ink)}
 
 /* ── Lobby overlay (initial) ───────────────────────────── */
 .lobby{
@@ -503,19 +507,12 @@ html,body{height:100%;background:#8dbfdb;font-family:var(--sans);color:var(--ink
       Continue with Google
     </button>
 
-    <!-- Email/Password toggle -->
-    <button class="auth-social-btn" onclick="toggleEmailForm()" id="btnShowEmail">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m2 7 10 7 10-7"/></svg>
-      Continue with Email
-    </button>
-
-    <!-- Email form (hidden by default) -->
-    <div id="authEmailForm">
-      <input class="auth-field" id="authEmail" type="email" placeholder="Email" />
-      <input class="auth-field" id="authPassword" type="password" placeholder="Password" />
-      <div class="auth-err" id="authErr"></div>
-      <button class="auth-submit" onclick="authEmail()">Sign in</button>
-    </div>
+    <!-- Email / Password (always visible) -->
+    <input class="auth-field" id="authEmail" type="email" placeholder="Email" />
+    <input class="auth-field" id="authPassword" type="password" placeholder="Password" />
+    <a class="auth-forgot" onclick="authForgot()">Forgot password?</a>
+    <div class="auth-err" id="authErr"></div>
+    <button class="auth-submit" onclick="authEmail()">Sign in</button>
 
     <div class="auth-sep"><span>or</span></div>
 
@@ -733,12 +730,9 @@ function authGoogle() {
   enterAsGuest();
 }
 
-function toggleEmailForm() {
-  const form = document.getElementById('authEmailForm');
-  const btn  = document.getElementById('btnShowEmail');
-  const visible = form.style.display === 'flex' || form.style.display === 'block';
-  form.style.display = visible ? 'none' : 'block';
-  btn.style.background = visible ? '' : 'rgba(255,255,255,.92)';
+function authForgot() {
+  // TODO: implement password reset
+  alert('Password reset coming soon.');
 }
 
 function authEmail() {

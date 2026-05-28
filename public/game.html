@@ -351,11 +351,11 @@ html,body{height:100%;background:#8dbfdb;font-family:var(--sans);color:var(--ink
 /* ── 3D Liquid Glass Chips ──────────────────────────────── */
 .cell.p1{
   background:rgba(200,130,10,.14)!important;
-  box-shadow:0 5px 22px rgba(200,129,10,.5),inset 0 1px 0 rgba(255,255,255,.08)!important;
+  box-shadow:inset 0 2px 6px rgba(0,0,0,.35)!important;
 }
 .cell.p2{
   background:rgba(160,38,22,.14)!important;
-  box-shadow:0 5px 22px rgba(192,57,43,.5),inset 0 1px 0 rgba(255,255,255,.06)!important;
+  box-shadow:inset 0 2px 6px rgba(0,0,0,.35)!important;
 }
 .chip-face{
   position:absolute;inset:2px;border-radius:50%;
@@ -397,26 +397,50 @@ html,body{height:100%;background:#8dbfdb;font-family:var(--sans);color:var(--ink
   50% {transform:perspective(260px) rotateY(30deg)}
   100%{transform:perspective(260px) rotateY(-30deg)}
 }
-.cell.winner-cell .chip-face{
-  animation:chip-rock 3.6s ease-in-out infinite,winner-face-glow 1s ease-in-out infinite alternate;
+/* winner-cell: base outer ring for z-index only */
+.cell.winner-cell{z-index:2}
+
+/* ── Game-over board state ───────────────────────────────── */
+/* Non-winner chips: freeze + neutral grey glass */
+.board.game-over .cell.filled:not(.winner-cell){
+  box-shadow:inset 0 2px 6px rgba(0,0,0,.35)!important;
 }
-@keyframes winner-face-glow{
-  from{filter:brightness(1.1) drop-shadow(0 0 7px rgba(255,220,80,.72))}
-  to  {filter:brightness(1.4) drop-shadow(0 0 18px rgba(255,200,50,.96))}
+.board.game-over .cell.filled:not(.winner-cell) .chip-face{
+  animation:none;
+  transform:perspective(260px) rotateY(0deg);
+  background:
+    radial-gradient(ellipse 60% 45% at 27% 22%,rgba(255,255,255,.28) 0%,rgba(255,255,255,0) 55%),
+    radial-gradient(circle at 42% 38%,rgba(110,110,130,.72) 0%,rgba(55,55,75,.88) 60%,rgba(28,28,48,.95) 100%);
+  box-shadow:
+    inset 0 2px 7px rgba(180,180,200,.22),
+    inset 0 -3px 7px rgba(0,0,20,.45),
+    inset 0 0 0 1.5px rgba(160,160,180,.12);
+  backdrop-filter:blur(4px) saturate(1.1);
+  -webkit-backdrop-filter:blur(4px) saturate(1.1);
 }
-.cell.winner-cell{
-  animation:winner-glow 1s ease-in-out infinite alternate;
-  z-index:2;
+/* Winner chips: purple liquid glass, frozen */
+.board.game-over .cell.winner-cell{
+  box-shadow:inset 0 2px 6px rgba(0,0,0,.35)!important;
 }
-@keyframes winner-glow{
-  from{box-shadow:0 0 16px 4px rgba(255,220,80,.55),inset 0 2px 4px rgba(255,255,255,.3)}
-  to{box-shadow:0 0 32px 12px rgba(255,200,50,.9),inset 0 2px 4px rgba(255,255,255,.5)}
+.board.game-over .cell.winner-cell .chip-face{
+  animation:none;
+  transform:perspective(260px) rotateY(0deg);
+  background:
+    radial-gradient(ellipse 60% 45% at 27% 22%,rgba(255,255,255,.48) 0%,rgba(255,255,255,0) 56%),
+    radial-gradient(ellipse 40% 28% at 68% 74%,rgba(200,120,255,.20) 0%,transparent 56%),
+    radial-gradient(circle at 42% 38%,rgba(178,88,255,.88) 0%,rgba(110,22,210,.93) 60%,rgba(72,0,165,.97) 100%);
+  box-shadow:
+    inset 0 3px 9px rgba(220,170,255,.48),
+    inset 0 -4px 9px rgba(40,0,90,.58),
+    inset 0 0 0 1.5px rgba(190,110,255,.28);
+  backdrop-filter:blur(4px) saturate(1.6);
+  -webkit-backdrop-filter:blur(4px) saturate(1.6);
 }
 .cell.drop-anim{animation:drop .22s cubic-bezier(.4,0,.2,1)}
 @keyframes drop{from{transform:translateY(-60px) scale(.9);opacity:.6}to{transform:translateY(0) scale(1);opacity:1}}
 
 /* ── Game controls ─────────────────────────────────────── */
-.game-controls{display:flex;gap:8px}
+.game-controls{display:flex;gap:8px;align-items:center}
 .ctrl-btn{
   padding:8px 16px;border-radius:999px;
   font-size:12px;font-weight:500;font-family:var(--sans);cursor:pointer;
@@ -428,6 +452,14 @@ html,body{height:100%;background:#8dbfdb;font-family:var(--sans);color:var(--ink
 .ctrl-btn:hover{background:rgba(255,255,255,.28);transform:translateY(-1px)}
 .ctrl-btn.danger{border-color:rgba(192,57,43,.5);color:#e8877c}
 .ctrl-btn.danger:hover{background:rgba(192,57,43,.2)}
+.ctrl-btn.coach-btn{
+  background:rgba(110,30,200,.82);
+  border-color:rgba(180,100,255,.55);
+  color:#fff;
+  font-size:15px;
+  padding:10px 20px;
+}
+.ctrl-btn.coach-btn:hover{background:rgba(130,50,220,.95);transform:translateY(-1px)}
 
 /* ── Waiting overlay ───────────────────────────────────── */
 .waiting-overlay{
@@ -1197,8 +1229,8 @@ html,body{height:100%;background:#8dbfdb;font-family:var(--sans);color:var(--ink
     </button>
 
     <div class="game-controls">
-      <button class="ctrl-btn" id="btnRematch" style="display:none" onclick="sendRematch()" style="display:inline-flex;align-items:center;gap:5px"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:-1px;display:inline-block"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg> Rematch</button>
-      <button class="ctrl-btn" id="btnCoach" style="display:none" onclick="openCoach()" style="display:inline-flex;align-items:center;gap:5px"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:-1px;display:inline-block"><path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96-.46 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 1.44-4.14z"/><path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96-.46 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-1.44-4.14z"/></svg> AI Coach</button>
+      <button class="ctrl-btn" id="btnRematch" style="display:none" onclick="sendRematch()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:-1px;display:inline-block"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg> Rematch</button>
+      <button class="ctrl-btn coach-btn" id="btnCoach" style="display:none" onclick="openCoach()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:-1px;display:inline-block"><path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96-.46 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 1.44-4.14z"/><path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96-.46 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-1.44-4.14z"/></svg> AI Coach</button>
       <button class="ctrl-btn danger" id="btnResign" onclick="sendResign()">Resign</button>
       <button class="ctrl-btn" onclick="openNewGame()">New game</button>
     </div>
@@ -1989,6 +2021,7 @@ function renderSoloState() {
     document.getElementById('btnResign').style.display = 'none';
     document.getElementById('btnRematch').style.display = '';
     document.getElementById('btnCoach').style.display = '';
+    document.getElementById('board').classList.add('game-over');
     postScore(myName, myCity, soloWinner === 1);
     // Steppe Bot end-game message
     const endTrigger = soloWinner === 0 ? 'game_end_draw' : soloWinner === 1 ? 'game_end_win' : 'game_end_loss';
@@ -2074,6 +2107,7 @@ function renderState(state) {
     document.getElementById('btnResign').style.display = 'none';
     document.getElementById('btnRematch').style.display = '';
     document.getElementById('btnCoach').style.display = '';
+    document.getElementById('board').classList.add('game-over');
     const myPlayer = state.players.find(p => p.playerNumber === myPlayerNumber);
     if (myPlayer && !coachRequested)
       postScore(myPlayer.name, myPlayer.city, state.winner === myPlayerNumber);
@@ -2322,6 +2356,7 @@ window.sendRematch = function() {
   document.getElementById('timer2').textContent = '00:00';
   document.getElementById('btnRematch').style.display = 'none';
   document.getElementById('btnCoach').style.display = 'none';
+  document.getElementById('board').classList.remove('game-over');
   // btnCoachPanel removed with old right panel
   document.getElementById('btnResign').style.display = '';
   document.getElementById('statusBar').style.color = 'rgba(255,255,255,.9)';

@@ -327,45 +327,56 @@ html,body{height:100%;background:#8dbfdb;font-family:var(--sans);color:var(--ink
 }
 .lobby.hidden{opacity:0;pointer-events:none}
 .lobby-card{
-  background:rgba(20,45,30,.95);border:.5px solid rgba(255,255,255,.2);
-  border-radius:24px;padding:36px;max-width:400px;width:92vw;
-  box-shadow:0 32px 80px rgba(0,0,0,.7);
+  background:rgba(14,32,20,.97);border:.5px solid rgba(255,255,255,.13);
+  border-radius:20px;padding:32px 28px;max-width:380px;width:92vw;
+  box-shadow:0 40px 100px rgba(0,0,0,.8);
 }
-.lobby-title{font-family:var(--serif);font-size:26px;font-weight:400;color:#fff;margin-bottom:4px}
-.lobby-sub{font-size:13px;color:rgba(255,255,255,.5);margin-bottom:24px}
+.lobby-title{font-family:var(--serif);font-size:28px;font-weight:400;color:#fff;margin-bottom:2px}
+.lobby-sub{font-size:12px;color:rgba(255,255,255,.4);margin-bottom:22px;letter-spacing:.04em}
 .lobby-input{
-  width:100%;padding:10px 14px;border-radius:10px;
-  border:.5px solid rgba(255,255,255,.22);
-  background:rgba(255,255,255,.1);color:#fff;font-size:14px;
-  font-family:var(--sans);outline:none;margin-bottom:10px;
+  width:100%;padding:10px 13px;border-radius:9px;box-sizing:border-box;
+  border:.5px solid rgba(255,255,255,.15);
+  background:rgba(255,255,255,.07);color:#fff;font-size:13.5px;
+  font-family:var(--sans);outline:none;margin-bottom:9px;transition:border-color .15s,background .15s;
 }
-.lobby-input::placeholder{color:rgba(255,255,255,.35)}
-.lobby-input:focus{border-color:rgba(255,255,255,.45);background:rgba(255,255,255,.16)}
-.lobby-divider{text-align:center;color:rgba(255,255,255,.3);font-size:12px;margin:8px 0}
+.lobby-input::placeholder{color:rgba(255,255,255,.28)}
+.lobby-input:focus{border-color:rgba(255,255,255,.38);background:rgba(255,255,255,.11)}
+.lobby-label{font-size:10px;color:rgba(255,255,255,.35);letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;margin-top:4px}
+/* Unified tab-group style for Language / Mode / Difficulty */
+.lobby-tab-group{display:flex;gap:2px;background:rgba(0,0,0,.3);border-radius:9px;padding:3px;margin-bottom:14px}
+.lobby-tab{
+  flex:1;padding:7px 4px;border:none;background:transparent;
+  color:rgba(255,255,255,.45);font-size:12.5px;font-family:var(--sans);
+  cursor:pointer;border-radius:7px;transition:background .15s,color .15s;white-space:nowrap;
+}
+.lobby-tab:hover:not(.active){color:rgba(255,255,255,.75)}
+.lobby-tab.active{background:rgba(255,255,255,.14);color:#fff;font-weight:500}
+/* CTA button */
 .lobby-btn{
-  width:100%;padding:11px;border-radius:10px;border:none;
+  width:100%;padding:11px;border-radius:10px;border:none;box-sizing:border-box;
   font-size:14px;font-weight:600;font-family:var(--sans);cursor:pointer;
-  margin-bottom:8px;transition:transform .15s,box-shadow .15s;
+  margin-bottom:8px;transition:transform .15s,background .15s;
 }
 .lobby-btn.primary{background:var(--ink);color:#f3efe6}
 .lobby-btn.primary:hover{background:#0f1a14;transform:translateY(-1px)}
-.lobby-btn.outline{background:rgba(255,255,255,.1);color:#fff;border:.5px solid rgba(255,255,255,.25)}
-.lobby-btn.outline:hover{background:rgba(255,255,255,.18)}
+.lobby-btn.outline{background:rgba(255,255,255,.08);color:rgba(255,255,255,.7);border:.5px solid rgba(255,255,255,.18)}
+.lobby-btn.outline:hover{background:rgba(255,255,255,.14);color:#fff}
+.lobby-divider{text-align:center;color:rgba(255,255,255,.25);font-size:11px;margin:8px 0}
 .join-row{display:flex;gap:8px}
 .join-code{
-  flex:1;padding:10px 12px;border-radius:10px;
-  border:.5px solid rgba(255,255,255,.22);
-  background:rgba(255,255,255,.1);color:#fff;font-size:14px;
-  font-family:var(--sans);outline:none;letter-spacing:.06em;text-transform:uppercase;
+  flex:1;padding:10px 12px;border-radius:9px;box-sizing:border-box;
+  border:.5px solid rgba(255,255,255,.15);
+  background:rgba(255,255,255,.07);color:#fff;font-size:13.5px;
+  font-family:var(--sans);outline:none;letter-spacing:.08em;text-transform:uppercase;transition:border-color .15s;
 }
-.join-code::placeholder{color:rgba(255,255,255,.35);text-transform:none;letter-spacing:0}
-.join-code:focus{border-color:rgba(255,255,255,.45)}
+.join-code::placeholder{color:rgba(255,255,255,.28);text-transform:none;letter-spacing:0}
+.join-code:focus{border-color:rgba(255,255,255,.38)}
 .join-btn{
-  padding:10px 16px;border-radius:10px;border:.5px solid rgba(255,255,255,.25);
-  background:rgba(255,255,255,.14);color:#fff;font-size:14px;font-weight:500;
+  padding:10px 16px;border-radius:9px;border:.5px solid rgba(255,255,255,.18);
+  background:rgba(255,255,255,.1);color:#fff;font-size:13.5px;font-weight:500;
   font-family:var(--sans);cursor:pointer;white-space:nowrap;transition:background .15s;
 }
-.join-btn:hover{background:rgba(255,255,255,.24)}
+.join-btn:hover{background:rgba(255,255,255,.2)}
 
 /* ── Difficulty pills (reuse from leaderboard) ─────────── */
 .city-pill{
@@ -413,36 +424,35 @@ html,body{height:100%;background:#8dbfdb;font-family:var(--sans);color:var(--ink
     <input class="lobby-input" id="lobbyName" placeholder="Your name" maxlength="24" />
     <input class="lobby-input" id="lobbyCity" placeholder="Your city (e.g. Almaty)" maxlength="32" />
 
-    <!-- Language picker -->
-    <div style="margin-bottom:14px">
-      <div style="font-size:11px;color:rgba(255,255,255,.45);letter-spacing:.06em;margin-bottom:6px">LANGUAGE</div>
-      <div style="display:flex;gap:6px">
-        <button class="city-pill active" id="langEn" onclick="setLang('en')">🇬🇧 English</button>
-        <button class="city-pill"        id="langRu" onclick="setLang('ru')">🇷🇺 Русский</button>
-        <button class="city-pill"        id="langKk" onclick="setLang('kk')">🇰🇿 Қазақша</button>
-      </div>
+    <!-- Language -->
+    <div class="lobby-label">Language</div>
+    <div class="lobby-tab-group">
+      <button class="lobby-tab active" id="langEn" onclick="setLang('en')">🇬🇧 English</button>
+      <button class="lobby-tab"        id="langRu" onclick="setLang('ru')">🇷🇺 Русский</button>
+      <button class="lobby-tab"        id="langKk" onclick="setLang('kk')">🇰🇿 Қазақша</button>
     </div>
 
-    <!-- Mode tabs -->
-    <div style="display:flex;gap:6px;margin-bottom:12px">
-      <button class="lobby-btn primary" id="tabVsAI" style="flex:1;font-size:13px" onclick="setTab('ai')">🤖 vs Computer</button>
-      <button class="lobby-btn outline" id="tabVsFriend" style="flex:1;font-size:13px" onclick="setTab('friend')">👥 vs Friend</button>
+    <!-- Mode -->
+    <div class="lobby-label">Mode</div>
+    <div class="lobby-tab-group">
+      <button class="lobby-tab active" id="tabVsAI"     onclick="setTab('ai')"    >🤖 vs Computer</button>
+      <button class="lobby-tab"        id="tabVsFriend" onclick="setTab('friend')">👥 vs Friend</button>
     </div>
 
     <!-- AI options -->
     <div id="aiOptions">
-      <div style="font-size:11px;color:rgba(255,255,255,.45);letter-spacing:.06em;margin-bottom:6px">DIFFICULTY</div>
-      <div style="display:flex;gap:6px;margin-bottom:14px">
-        <button class="city-pill active" id="diffEasy"   onclick="setDiff('easy')"  >🌱 Easy</button>
-        <button class="city-pill"        id="diffMedium" onclick="setDiff('medium')">⚔ Medium</button>
-        <button class="city-pill"        id="diffHard"   onclick="setDiff('hard')"  >🔥 Hard</button>
+      <div class="lobby-label">Difficulty</div>
+      <div class="lobby-tab-group">
+        <button class="lobby-tab active" id="diffEasy"   onclick="setDiff('easy')"  >🌱 Easy</button>
+        <button class="lobby-tab"        id="diffMedium" onclick="setDiff('medium')">⚔ Medium</button>
+        <button class="lobby-tab"        id="diffHard"   onclick="setDiff('hard')"  >🔥 Hard</button>
       </div>
-      <button class="lobby-btn primary" id="btnVsAI">🤖 Play vs Computer</button>
+      <button class="lobby-btn primary" id="btnVsAI">Play vs Computer</button>
     </div>
 
     <!-- Friend options -->
     <div id="friendOptions" style="display:none">
-      <button class="lobby-btn primary" id="btnCreate">⚔ Create new room</button>
+      <button class="lobby-btn primary" id="btnCreate">Create new room</button>
       <div class="lobby-divider">— or join with a code —</div>
       <div class="join-row">
         <input class="join-code" id="joinCode" placeholder="Room code" maxlength="8" />
@@ -450,8 +460,9 @@ html,body{height:100%;background:#8dbfdb;font-family:var(--sans);color:var(--ink
       </div>
     </div>
 
-    <br/>
-    <button class="lobby-btn outline" onclick="window.location='/'">← Back</button>
+    <div style="margin-top:10px">
+      <button class="lobby-btn outline" onclick="window.location='/'">← Back</button>
+    </div>
   </div>
 </div>
 
@@ -631,8 +642,8 @@ window.setTab = (tab) => {
   activeTab = tab;
   document.getElementById('aiOptions').style.display = tab === 'ai' ? '' : 'none';
   document.getElementById('friendOptions').style.display = tab === 'friend' ? '' : 'none';
-  document.getElementById('tabVsAI').className = 'lobby-btn ' + (tab === 'ai' ? 'primary' : 'outline');
-  document.getElementById('tabVsFriend').className = 'lobby-btn ' + (tab === 'friend' ? 'primary' : 'outline');
+  document.getElementById('tabVsAI').classList.toggle('active', tab === 'ai');
+  document.getElementById('tabVsFriend').classList.toggle('active', tab === 'friend');
 };
 
 window.setDiff = (d) => {

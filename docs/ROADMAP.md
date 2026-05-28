@@ -16,6 +16,7 @@
 - `49e253e` feat: Chat/Analysis tabs, Steppe Bot AI persona, proactive chat on key moments, Pro gate stub
 - `d50903e` docs: update ROADMAP with 49e253e
 - language picker in lobby (EN/RU/KK), passed to Steppe Bot; switch to Groq llama-3.1-8b-instant for chat
+- lobby UI refresh: unified tab-group style for Language/Mode/Difficulty
 
 ## Next
 

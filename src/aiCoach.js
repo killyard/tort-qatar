@@ -1,7 +1,8 @@
-// ── AI Coach — powered by Claude ─────────────────────────────────────────────
-import Anthropic from '@anthropic-ai/sdk';
+// ── AI Coach — powered by Google Gemini 2.5 Pro ──────────────────────────────
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
-const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+const model = genAI.getGenerativeModel({ model: 'gemini-2.5-pro' });
 
 /**
  * Analyze a completed game and return coaching feedback.
@@ -52,28 +53,24 @@ Respond in JSON with exactly this shape — be specific, reference actual column
 }`;
 
   try {
-    const message = await client.messages.create({
-      model: 'claude-haiku-4-5-20251001',
-      max_tokens: 512,
-      messages: [{ role: 'user', content: prompt }],
-    });
-
-    const raw = message.content[0].text.trim();
-    // Extract JSON even if wrapped in markdown code fence
+    const result = await model.generateContent(prompt);
+    const raw = result.response.text().trim();
     const jsonMatch = raw.match(/\{[\s\S]*\}/);
     if (!jsonMatch) throw new Error('No JSON in response');
     return JSON.parse(jsonMatch[0]);
   } catch (err) {
-    // Graceful fallback so the game never breaks
     console.error('[AI Coach]', err.message);
     return {
       summary: outcome === 'Draw' ? 'A hard-fought draw on the steppe.' : `${outcome} — well played.`,
       insights: [
         'Both players fought hard until the end.',
-        'Look for diagonal threats early.',
+        'Look for diagonal threats early — they are easy to miss.',
         'Center column control is key in Connect Four.',
       ],
-      keyMoment: { moveNumber: Math.floor(history.length / 2), description: 'The midgame was the turning point.' },
+      keyMoment: {
+        moveNumber: Math.floor(history.length / 2),
+        description: 'The midgame was the turning point of this match.',
+      },
       tip: 'Always check if your opponent can win in one move before placing your piece.',
     };
   }

@@ -2590,17 +2590,24 @@ function renderState(state) {
   }
   // AI Coach is disabled in multiplayer (PvP) — would be unfair against a human opponent
   document.getElementById('btnCoach').style.display = 'none';
-  if (state.players[0]) {
-    document.getElementById('name1').textContent = state.players[0].name;
-    document.getElementById('city1').textContent = state.players[0].city;
+  // Left panel always shows the LOCAL player ("me"); p2-bar at top shows the opponent.
+  // This way both players see THEIR OWN name/city/points above the token settings,
+  // not whoever happens to be room player #1 (the host).
+  const meIdx  = (myPlayerNumber || 1) - 1;
+  const oppIdx = 1 - meIdx;
+  const meP    = state.players[meIdx];
+  const oppP   = state.players[oppIdx];
+  if (meP) {
+    document.getElementById('name1').textContent = meP.name;
+    document.getElementById('city1').textContent = meP.city;
   }
-  if (state.players[1]) {
-    document.getElementById('name2').textContent = state.players[1].name;
-    document.getElementById('city2').textContent = state.players[1].city;
-    document.getElementById('p2BarName').textContent = state.players[1].name;
-    document.getElementById('p2BarCity').textContent = state.players[1].city;
-    syncTimerLabels(state.players[0]?.name || myName, state.players[1].name);
+  if (oppP) {
+    document.getElementById('name2').textContent = oppP.name;
+    document.getElementById('city2').textContent = oppP.city;
+    document.getElementById('p2BarName').textContent = oppP.name;
+    document.getElementById('p2BarCity').textContent = oppP.city;
   }
+  syncTimerLabels(meP?.name || myName, oppP?.name || 'Opponent');
   renderBoard(state.board, state.winCells);
   const mpNames = { 1: state.players[0]?.name ?? 'P1', 2: state.players[1]?.name ?? 'P2' };
   renderMoveHistory(state.history, mpNames);
@@ -2702,16 +2709,21 @@ function renderMoveHistory(history, names) {
     list.appendChild(item);
   });
   list.scrollTop = list.scrollHeight;
-  document.getElementById('moves1').textContent = moveCountByPlayer[0];
-  document.getElementById('moves2').textContent = moveCountByPlayer[1];
+  // Slot 1 (left panel) is always "me"; slot 2 is opponent. Match counts accordingly.
+  const meIdx  = (myPlayerNumber || 1) - 1;
+  const oppIdx = 1 - meIdx;
+  document.getElementById('moves1').textContent = moveCountByPlayer[meIdx];
+  document.getElementById('moves2').textContent = moveCountByPlayer[oppIdx];
 }
 
 function updateTurnIndicators(currentTurn, status) {
   const dot1 = document.getElementById('dot1');
   const dot2 = document.getElementById('dot2');
   if (status !== 'playing') { dot1.classList.remove('active'); dot2.classList.remove('active'); return; }
-  dot1.classList.toggle('active', currentTurn === 1);
-  dot2.classList.toggle('active', currentTurn === 2);
+  // Slot 1 (left) is "me"; slot 2 is opponent. Light up dot1 on my turn either way.
+  const mine = currentTurn === (myPlayerNumber || 1);
+  dot1.classList.toggle('active', mine);
+  dot2.classList.toggle('active', !mine);
   if (!gameStarted) return;
   if (currentTurn === 1) { stopTimer(1); startTimer(0); }
   else { stopTimer(0); startTimer(1); }
@@ -2789,12 +2801,17 @@ function updateTimerDisplay(playerIdx) {
   const s = timerSeconds[playerIdx];
   const mm = String(Math.floor(s / 60)).padStart(2, '0');
   const ss = String(s % 60).padStart(2, '0');
-  const el = document.getElementById(`timer${playerIdx + 1}`);
+  // Slot 1 (left panel) is always "me"; slot 2 is opponent. Map this player's
+  // timer to the matching slot so the friend sees THEIR clock in the left half.
+  const meIdx  = (myPlayerNumber || 1) - 1;
+  const slot   = playerIdx === meIdx ? 1 : 2;
+  const el     = document.getElementById(`timer${slot}`);
   if (el) {
     el.textContent = `${mm}:${ss}`;
     el.classList.toggle('urgent', s > 60 && gameState?.currentTurn === playerIdx + 1);
   }
-  if (playerIdx === 1) { const tb = document.getElementById('p2BarTimer'); if(tb) tb.textContent = `${mm}:${ss}`; }
+  // Top "p2-bar" mirrors the opponent's timer regardless of which room slot they are.
+  if (slot === 2) { const tb = document.getElementById('p2BarTimer'); if(tb) tb.textContent = `${mm}:${ss}`; }
 }
 
 // ── Tab switcher ───────────────────────────────────────────────────────────
@@ -3334,6 +3351,25 @@ window.setBoardSize = function(el, cols, rows) {
 };
 
 // Load leaderboard on init
+document.addEventListener('DOMContentLoaded', () => {
+  setTimeout(loadMiniLeaderboard, 1500);
+  initTokenGrid();
+  // Restore saved token
+  const u = loadUser();
+  if (u && u.token && ORNAMENTS[u.token]) {
+    p1Token = u.token;
+    const btn = document.querySelector(`.token-opt[data-token="${u.token}"]`);
+    if (btn) {
+      document.querySelectorAll('.token-opt').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+    }
+  }
+});
+
+</script>
+</body>
+</html>
+init
 document.addEventListener('DOMContentLoaded', () => {
   setTimeout(loadMiniLeaderboard, 1500);
   initTokenGrid();

@@ -2150,6 +2150,13 @@ initUser();
 const savedUser = loadUser(); // keep for legacy refs below
 
 const urlParams = new URLSearchParams(window.location.search);
+
+// Came from index.html "Play as Guest" — jump straight to the lobby form
+if (urlParams.get('guest') === '1') {
+  window.showLobbyForm();
+  window.history.replaceState({}, '', '/game.html');
+}
+
 const urlRoom = urlParams.get('room');
 if (urlRoom) {
   document.getElementById('joinCode').value = urlRoom.toUpperCase();

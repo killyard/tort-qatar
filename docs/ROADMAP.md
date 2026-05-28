@@ -58,13 +58,16 @@
 - `c49e6e2` fix: clear stale board frame overlay on size change so old hole pattern doesn't stretch over new grid
 - `9447436` fix: multiplayer P2 can move — mirror server status into gameStarted in renderState (gate isMyTurn correctly for both clients)
 - `eda904f` feat: mobile responsive overhaul — page scrolls, sticky bottom action footer with Start/controls, full-width chat collapsed by default, aspect-ratio cells, breakpoints 900/600/420
+- `f744991` docs: add missing hashes d69e13d, c49e6e2, replace pending with 9447436, eda904f
+- `295ce23` feat: realtime leaderboard update (Socket.io emit) + game.html lb/ref tabs + index.html mini leaderboard
+- `pending` fix: wire index.html handleAuth (Google → /auth/google, Guest → /game.html?guest=1), restore truncated index.html tail + game.html tail (last ~200 lines), add ?guest=1 → showLobbyForm() handler in game.html
 
 ## Next
 
 - Email/password auth (or skip — Google + guest covers 90% of users)
 - Profile: save city after Google login (prompt on first entry)
 - Multiplayer room invite links
-- Leaderboard: real persistent DB (currently in-memory, resets on deploy)
+- Leaderboard: DATABASE_URL set on Render — PostgreSQL persistence active
 
 ## Todo
 

@@ -317,8 +317,8 @@ html,body{height:100%;background:#8dbfdb;font-family:var(--sans);color:var(--ink
   border:1.5px solid rgba(255,255,255,.20);
   pointer-events:none;
 }
-.tl-mark.p1{background:rgba(253,198,46,.90);}
-.tl-mark.p2{background:rgba(230,90,70,.90);}
+.tl-mark.p1{background:#f5c842;box-shadow:0 0 4px rgba(245,200,66,.5);}
+.tl-mark.p2{background:#e05c4a;box-shadow:0 0 4px rgba(224,92,74,.5);}
 .tl-mark.active{
   transform:translateX(-50%) scale(1.6);
   box-shadow:0 0 0 3px rgba(255,255,255,.22);
@@ -417,6 +417,15 @@ html,body{height:100%;background:#8dbfdb;font-family:var(--sans);color:var(--ink
 }
 .board>*{position:relative;z-index:1;}
 
+/* Board frame overlay — coloured panel with SVG-punched holes */
+#boardFrameOverlay{
+  position:absolute;inset:0;border-radius:18px;
+  pointer-events:none;z-index:8;
+  background:rgb(28,18,66);
+  mask-size:100% 100%;-webkit-mask-size:100% 100%;
+  mask-repeat:no-repeat;-webkit-mask-repeat:no-repeat;
+}
+
 /* Column hover indicator */
 .col-indicator{
   position:absolute;top:-26px;left:0;right:0;
@@ -434,10 +443,8 @@ html,body{height:100%;background:#8dbfdb;font-family:var(--sans);color:var(--ink
   border:none;outline:none;
   position:relative;
   transition:transform .1s;
-  /* Outward shadow = board frame; inset ring = visible hole border */
+  /* Depth inside hole — frame colour comes from #boardFrameOverlay */
   box-shadow:
-    0 0 0 500px rgb(28,18,66),
-    inset 0 0 0 1.5px rgba(255,255,255,.38),
     inset 0 4px 12px rgba(0,0,0,.80),
     inset 0 -1px 4px rgba(255,255,255,.06);
 }
@@ -1326,6 +1333,8 @@ html,body{height:100%;background:#8dbfdb;font-family:var(--sans);color:var(--ink
 
       <!-- Board grid (6×7 = 42 cells injected by JS) -->
       <div class="board" id="board"></div>
+      <!-- Frame overlay: solid board colour with SVG-masked holes (pointer-events:none) -->
+      <div id="boardFrameOverlay" aria-hidden="true"></div>
     </div>
     </div><!-- /board-col -->
 
@@ -2025,6 +2034,30 @@ function enterGame(rId) {
   updateCopyBtn();
 }
 
+// ── Board frame overlay mask ──────────────────────────────────────────────
+function rebuildBoardMask() {
+  const overlay = document.getElementById('boardFrameOverlay');
+  if (!overlay) return;
+  const pad = 14, cell = 58, gap = 7;
+  const cols = boardCols, rows = boardRows;
+  const W = pad * 2 + cols * cell + (cols - 1) * gap;
+  const H = pad * 2 + rows * cell + (rows - 1) * gap;
+  const r = 27; // hole radius (slightly inside cell edge → visible rim)
+
+  let circles = '';
+  for (let ro = 0; ro < rows; ro++) {
+    for (let co = 0; co < cols; co++) {
+      const cx = pad + co * (cell + gap) + cell / 2;
+      const cy = pad + ro * (cell + gap) + cell / 2;
+      circles += `<circle cx="${cx}" cy="${cy}" r="${r}" fill="black"/>`;
+    }
+  }
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}"><defs><mask id="bm"><rect width="${W}" height="${H}" fill="white"/>${circles}</mask></defs><rect width="${W}" height="${H}" fill="white" mask="url(%23bm)"/></svg>`;
+  const url = `url("data:image/svg+xml,${encodeURIComponent(svg)}")`;
+  overlay.style.maskImage = url;
+  overlay.style.webkitMaskImage = url;
+}
+
 // ── Solo (vs AI) game engine ───────────────────────────────────────────────
 // Use dynamic board dimensions (boardRows/boardCols updated by setBoardSize)
 function freshBoard() { return Array.from({length: boardRows}, () => Array(boardCols).fill(0)); }
@@ -2105,6 +2138,7 @@ function startSoloGame() {
   document.getElementById('p2BarCity').textContent = 'Steppe Bot';
 
   renderSoloState();
+  rebuildBoardMask();
   // Lock board until Start button is pressed
   document.getElementById('boardWrap').classList.add('board-locked');
   document.getElementById('btnStartGame').classList.add('visible');
@@ -2894,6 +2928,7 @@ window.setBoardSize = function(el, cols, rows) {
   soloBoard = Array.from({length:rows}, () => Array(cols).fill(0));
   soloHistory = []; soloWinCells = null; soloCurrentTurn = 1; soloStatus = 'playing';
   renderBoard(soloBoard, null);
+  rebuildBoardMask();
 };
 
 async function loadMiniLeaderboard() {

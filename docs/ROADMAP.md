@@ -15,8 +15,9 @@
 - `c3aaced` feat: wider panels, richer move history (col/row/name), manual-only AI Coach
 - `49e253e` feat: Chat/Analysis tabs, Steppe Bot AI persona, proactive chat on key moments, Pro gate stub
 - `d50903e` docs: update ROADMAP with 49e253e
-- language picker in lobby (EN/RU/KK), passed to Steppe Bot; switch to Groq llama-3.1-8b-instant for chat
-- lobby UI refresh: unified tab-group style for Language/Mode/Difficulty
+- `0876333` feat: switch Steppe Bot chat to Groq llama-3.1-8b-instant
+- `0eb2065` feat: language picker in lobby (EN/RU/KK), Steppe Bot respects selected language
+- `7eaeffa` feat: lobby UI refresh — unified tab-group style for Language/Mode/Difficulty
 
 ## Next
 

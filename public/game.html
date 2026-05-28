@@ -2057,37 +2057,46 @@ function enterGame(rId) {
 }
 
 // ── Board frame overlay mask ──────────────────────────────────────────────
+// Reads actual cell positions from DOM after layout — works for any board size/zoom
 function rebuildBoardMask() {
-  const overlay = document.getElementById('boardFrameOverlay');
-  if (!overlay) return;
-  const pad = 14, cell = 58, gap = 7;
-  const cols = boardCols, rows = boardRows;
-  const W = pad * 2 + cols * cell + (cols - 1) * gap;
-  const H = pad * 2 + rows * cell + (rows - 1) * gap;
-  const r = 27; // hole radius
+  requestAnimationFrame(() => {
+    const overlay = document.getElementById('boardFrameOverlay');
+    const boardEl = document.getElementById('board');
+    if (!overlay || !boardEl) return;
 
-  let circles = '';
-  for (let ro = 0; ro < rows; ro++) {
-    for (let co = 0; co < cols; co++) {
-      const cx = pad + co * (cell + gap) + cell / 2;
-      const cy = pad + ro * (cell + gap) + cell / 2;
-      circles += `<circle cx="${cx}" cy="${cy}" r="${r}"/>`;
+    const boardRect = boardEl.getBoundingClientRect();
+    const W = boardRect.width;
+    const H = boardRect.height;
+    if (!W || !H) return;
+
+    const cols = boardCols, rows = boardRows;
+    let circles = '';
+    for (let ro = 0; ro < rows; ro++) {
+      if (!cells[ro]) continue;
+      for (let co = 0; co < cols; co++) {
+        const cell = cells[ro]?.[co];
+        if (!cell) continue;
+        const cr = cell.getBoundingClientRect();
+        const cx = (cr.left - boardRect.left + cr.width  / 2).toFixed(1);
+        const cy = (cr.top  - boardRect.top  + cr.height / 2).toFixed(1);
+        const r  = (Math.min(cr.width, cr.height) / 2 - 1).toFixed(1);
+        circles += `<circle cx="${cx}" cy="${cy}" r="${r}"/>`;
+      }
     }
-  }
 
-  // Inline SVG — fragment IDs resolve reliably without data-URL encoding issues
-  overlay.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg"
-    style="position:absolute;inset:0;width:100%;height:100%;display:block"
-    viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">
-    <defs>
-      <mask id="boardHoleMask${cols}x${rows}">
-        <rect width="${W}" height="${H}" fill="white"/>
-        ${circles}
-      </mask>
-    </defs>
-    <rect width="${W}" height="${H}" fill="rgb(28,18,66)"
-      mask="url(#boardHoleMask${cols}x${rows})"/>
-  </svg>`;
+    const W2 = W.toFixed(1), H2 = H.toFixed(1);
+    overlay.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg"
+      style="position:absolute;inset:0;width:100%;height:100%;display:block"
+      viewBox="0 0 ${W2} ${H2}" preserveAspectRatio="none">
+      <defs>
+        <mask id="bhm${cols}x${rows}">
+          <rect width="${W2}" height="${H2}" fill="white"/>
+          ${circles}
+        </mask>
+      </defs>
+      <rect width="${W2}" height="${H2}" fill="rgb(28,18,66)" mask="url(#bhm${cols}x${rows})"/>
+    </svg>`;
+  });
 }
 
 // ── Solo (vs AI) game engine ───────────────────────────────────────────────

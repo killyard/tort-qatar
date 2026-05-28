@@ -17,7 +17,7 @@ const PORT = process.env.PORT || 3000;
 const app = express();
 app.use(cors());
 app.use(express.json());
-app.use(express.static(join(__dirname, 'public')));
+app.use(express.static(join(__dirname, '../public')));
 
 // ── In-memory stores ───────────────────────────────────────────────────────
 /** @type {Map<string, GameRoom>} roomId → room */
@@ -104,7 +104,7 @@ app.post('/api/stripe/checkout', (req, res) => {
 
 // SPA fallback — any unknown GET returns index.html
 app.get('*', (_req, res) => {
-  res.sendFile(join(__dirname, 'public', 'index.html'));
+  res.sendFile(join(__dirname, '../public', 'index.html'));
 });
 
 // ── HTTP + Socket.io ───────────────────────────────────────────────────────

@@ -344,6 +344,24 @@ html,body{height:100%;background:#8dbfdb;font-family:var(--sans);color:var(--ink
 }
 .join-btn:hover{background:rgba(255,255,255,.24)}
 
+/* ── Difficulty pills (reuse from leaderboard) ─────────── */
+.city-pill{
+  padding:7px 14px;border-radius:999px;font-size:12px;cursor:pointer;
+  background:rgba(255,255,255,.12);border:.5px solid rgba(255,255,255,.2);color:rgba(255,255,255,.75);
+  transition:background .15s,color .15s;font-family:var(--sans);
+}
+.city-pill:hover{background:rgba(255,255,255,.22);color:#fff}
+.city-pill.active{background:var(--ink);color:#f3efe6;border-color:var(--ink)}
+
+/* AI thinking indicator */
+.ai-thinking{
+  display:none;position:absolute;top:-32px;left:50%;transform:translateX(-50%);
+  background:rgba(10,30,20,.85);border:.5px solid rgba(255,255,255,.2);
+  padding:5px 14px;border-radius:999px;font-size:12px;color:rgba(255,255,255,.75);
+  white-space:nowrap;backdrop-filter:blur(8px);
+}
+.ai-thinking.visible{display:block}
+
 /* ── Responsive ────────────────────────────────────────── */
 @media(max-width:900px){
   .ui{grid-template-columns:1fr;grid-template-rows:auto 1fr auto;padding:8px;gap:8px;overflow-y:auto;height:auto;min-height:100vh}
@@ -372,14 +390,35 @@ html,body{height:100%;background:#8dbfdb;font-family:var(--sans);color:var(--ink
     <input class="lobby-input" id="lobbyName" placeholder="Your name" maxlength="24" />
     <input class="lobby-input" id="lobbyCity" placeholder="Your city (e.g. Almaty)" maxlength="32" />
 
-    <button class="lobby-btn primary" id="btnCreate">⚔ Create new game</button>
-    <div class="lobby-divider">— or join with a code —</div>
-    <div class="join-row">
-      <input class="join-code" id="joinCode" placeholder="Room code" maxlength="8" />
-      <button class="join-btn" id="btnJoin">Join</button>
+    <!-- Mode tabs -->
+    <div style="display:flex;gap:6px;margin-bottom:12px">
+      <button class="lobby-btn primary" id="tabVsAI" style="flex:1;font-size:13px" onclick="setTab('ai')">🤖 vs Computer</button>
+      <button class="lobby-btn outline" id="tabVsFriend" style="flex:1;font-size:13px" onclick="setTab('friend')">👥 vs Friend</button>
     </div>
+
+    <!-- AI options -->
+    <div id="aiOptions">
+      <div style="font-size:11px;color:rgba(255,255,255,.45);letter-spacing:.06em;margin-bottom:6px">DIFFICULTY</div>
+      <div style="display:flex;gap:6px;margin-bottom:14px">
+        <button class="city-pill active" id="diffEasy"   onclick="setDiff('easy')"  >🌱 Easy</button>
+        <button class="city-pill"        id="diffMedium" onclick="setDiff('medium')">⚔ Medium</button>
+        <button class="city-pill"        id="diffHard"   onclick="setDiff('hard')"  >🔥 Hard</button>
+      </div>
+      <button class="lobby-btn primary" id="btnVsAI">🤖 Play vs Computer</button>
+    </div>
+
+    <!-- Friend options -->
+    <div id="friendOptions" style="display:none">
+      <button class="lobby-btn primary" id="btnCreate">⚔ Create new room</button>
+      <div class="lobby-divider">— or join with a code —</div>
+      <div class="join-row">
+        <input class="join-code" id="joinCode" placeholder="Room code" maxlength="8" />
+        <button class="join-btn" id="btnJoin">Join</button>
+      </div>
+    </div>
+
     <br/>
-    <button class="lobby-btn outline" onclick="window.location='/'">← Back to landing</button>
+    <button class="lobby-btn outline" onclick="window.location='/'">← Back</button>
   </div>
 </div>
 
@@ -428,6 +467,9 @@ html,body{height:100%;background:#8dbfdb;font-family:var(--sans);color:var(--ink
           Copy invite link
         </button>
       </div>
+
+      <!-- AI thinking -->
+      <div class="ai-thinking" id="aiThinking">🤖 Thinking…</div>
 
       <!-- Column drop indicator -->
       <div class="col-indicator" id="colIndicator">
@@ -493,20 +535,49 @@ html,body{height:100%;background:#8dbfdb;font-family:var(--sans);color:var(--ink
   </div>
 </div>
 
-<script>
+<script type="module">
+import { getBestMove } from '/js/aiPlayer.js';
+
 // ── State ──────────────────────────────────────────────────────────────────
 const socket = io();
-let myPlayerNumber = null;
+let myPlayerNumber = 1;
 let roomId = null;
 let gameState = null;
-let myName = '', myCity = '';
-let sessionWins = [0, 0];      // [p1wins, p2wins]
-let moveCountByPlayer = [0,0]; // [p1moves, p2moves]
+let myName = 'You', myCity = 'Almaty';
+let moveCountByPlayer = [0,0];
 let timerIntervals = [null, null];
 let timerSeconds = [0, 0];
 let lastCoachData = null;
 let gameFinished = false;
 let coachRequested = false;
+
+// Solo (vs AI) mode
+let soloMode = false;
+let aiDifficulty = 'medium';
+let soloBoard = null;       // 6×7 array
+let soloHistory = [];
+let soloWinner = null;
+let soloWinCells = null;
+let aiMovePending = false;
+
+// ── Lobby tab / difficulty state ────────────────────────────────────────────
+let activeTab = 'ai';
+
+window.setTab = (tab) => {
+  activeTab = tab;
+  document.getElementById('aiOptions').style.display = tab === 'ai' ? '' : 'none';
+  document.getElementById('friendOptions').style.display = tab === 'friend' ? '' : 'none';
+  document.getElementById('tabVsAI').className = 'lobby-btn ' + (tab === 'ai' ? 'primary' : 'outline');
+  document.getElementById('tabVsFriend').className = 'lobby-btn ' + (tab === 'friend' ? 'primary' : 'outline');
+};
+
+window.setDiff = (d) => {
+  aiDifficulty = d;
+  ['easy','medium','hard'].forEach(x => {
+    document.getElementById('diff' + x.charAt(0).toUpperCase() + x.slice(1))
+      .classList.toggle('active', x === d);
+  });
+};
 
 // ── Build board DOM ────────────────────────────────────────────────────────
 const boardEl = document.getElementById('board');
@@ -527,7 +598,6 @@ for (let r = 0; r < 6; r++) {
   }
 }
 
-// Column drop arrows
 for (let c = 0; c < 7; c++) {
   const arrow = document.createElement('div');
   arrow.className = 'col-arrow';
@@ -545,32 +615,39 @@ function highlightCol(col, on) {
 const lobby = document.getElementById('lobby');
 const waitOverlay = document.getElementById('waitOverlay');
 
-// Check URL for room code
 const urlParams = new URLSearchParams(window.location.search);
 const urlRoom = urlParams.get('room');
 if (urlRoom) {
   document.getElementById('joinCode').value = urlRoom.toUpperCase();
+  setTab('friend');
 }
 
-document.getElementById('btnCreate').addEventListener('click', () => {
-  const name = document.getElementById('lobbyName').value.trim() || 'Nomad';
-  const city = document.getElementById('lobbyCity').value.trim() || 'Almaty';
-  myName = name; myCity = city;
-  myPlayerNumber = 1;
-  socket.emit('room:create', { name, city });
+// vs AI
+document.getElementById('btnVsAI').addEventListener('click', () => {
+  myName = document.getElementById('lobbyName').value.trim() || 'You';
+  myCity = document.getElementById('lobbyCity').value.trim() || 'Almaty';
+  startSoloGame();
 });
 
+// vs Friend — create
+document.getElementById('btnCreate').addEventListener('click', () => {
+  myName = document.getElementById('lobbyName').value.trim() || 'Nomad';
+  myCity = document.getElementById('lobbyCity').value.trim() || 'Almaty';
+  myPlayerNumber = 1;
+  socket.emit('room:create', { name: myName, city: myCity });
+});
+
+// vs Friend — join
 document.getElementById('btnJoin').addEventListener('click', joinRoom);
 document.getElementById('joinCode').addEventListener('keydown', e => { if (e.key === 'Enter') joinRoom(); });
 
 function joinRoom() {
   const code = document.getElementById('joinCode').value.trim().toUpperCase();
   if (!code) return;
-  const name = document.getElementById('lobbyName').value.trim() || 'Nomad';
-  const city = document.getElementById('lobbyCity').value.trim() || 'Almaty';
-  myName = name; myCity = city;
+  myName = document.getElementById('lobbyName').value.trim() || 'Nomad';
+  myCity = document.getElementById('lobbyCity').value.trim() || 'Almaty';
   myPlayerNumber = 2;
-  socket.emit('room:join', { roomId: code, name, city });
+  socket.emit('room:join', { roomId: code, name: myName, city: myCity });
 }
 
 function enterGame(rId) {
@@ -580,25 +657,144 @@ function enterGame(rId) {
   updateCopyBtn();
 }
 
+// ── Solo (vs AI) game engine ───────────────────────────────────────────────
+const ROWS = 6, COLS = 7;
+
+function freshBoard() { return Array.from({length: ROWS}, () => Array(COLS).fill(0)); }
+
+function soloDrop(board, col, player) {
+  for (let r = ROWS - 1; r >= 0; r--) {
+    if (board[r][col] === 0) {
+      const next = board.map(row => [...row]);
+      next[r][col] = player;
+      return { board: next, row: r };
+    }
+  }
+  return { board, row: -1 };
+}
+
+function soloCheckWinner(board, row, col) {
+  const player = board[row][col];
+  const dirs = [[0,1],[1,0],[1,1],[1,-1]];
+  for (const [dr, dc] of dirs) {
+    const cells_w = [[row, col]];
+    for (let i = 1; i < 4; i++) {
+      const r = row+dr*i, c = col+dc*i;
+      if (r<0||r>=ROWS||c<0||c>=COLS||board[r][c]!==player) break;
+      cells_w.push([r,c]);
+    }
+    for (let i = 1; i < 4; i++) {
+      const r = row-dr*i, c = col-dc*i;
+      if (r<0||r>=ROWS||c<0||c>=COLS||board[r][c]!==player) break;
+      cells_w.push([r,c]);
+    }
+    if (cells_w.length >= 4) return { winner: player, cells: cells_w };
+  }
+  return null;
+}
+
+function soloIsDraw(board) { return board[0].every(c => c !== 0); }
+
+function startSoloGame() {
+  soloMode = true;
+  myPlayerNumber = 1;
+  soloBoard = freshBoard();
+  soloHistory = [];
+  soloWinner = null;
+  soloWinCells = null;
+  gameFinished = false;
+  coachRequested = false;
+  lastCoachData = null;
+  aiMovePending = false;
+  timerSeconds = [0, 0];
+
+  lobby.classList.add('hidden');
+  waitOverlay.classList.add('hidden');
+  document.getElementById('roomIdLabel').textContent = 'vs 🤖';
+  document.getElementById('copyBtn').style.display = 'none';
+
+  // Player info
+  document.getElementById('name1').textContent = myName;
+  document.getElementById('city1').textContent = myCity;
+  document.getElementById('name2').textContent = `AI (${aiDifficulty})`;
+  document.getElementById('city2').textContent = 'Steppe Bot';
+
+  renderSoloState();
+}
+
+function renderSoloState() {
+  const status = soloWinner !== null || soloIsDraw(soloBoard)
+    ? 'finished' : 'playing';
+  const currentTurn = soloHistory.length % 2 === 0 ? 1 : 2;
+
+  // Sync into gameState shape for shared rendering
+  gameState = {
+    board: soloBoard,
+    players: [
+      { name: myName, city: myCity, playerNumber: 1 },
+      { name: `AI (${aiDifficulty})`, city: 'Steppe Bot', playerNumber: 2 },
+    ],
+    currentTurn,
+    history: soloHistory,
+    status,
+    winner: soloWinner ?? (soloIsDraw(soloBoard) ? 0 : null),
+    winCells: soloWinCells,
+  };
+
+  renderBoard(soloBoard, soloWinCells);
+  renderMoveHistory(soloHistory);
+  updateTurnIndicators(currentTurn, status);
+  updateStatusBar(gameState);
+
+  if (status === 'finished') {
+    gameFinished = true;
+    stopAllTimers();
+    document.getElementById('btnResign').style.display = 'none';
+    document.getElementById('btnRematch').style.display = '';
+    document.getElementById('btnCoach').style.display = '';
+    postScore(myName, myCity, soloWinner === 1);
+  } else if (currentTurn === 2 && !aiMovePending) {
+    scheduleAIMove();
+  }
+}
+
+function scheduleAIMove() {
+  aiMovePending = true;
+  document.getElementById('aiThinking').classList.add('visible');
+  const delay = aiDifficulty === 'easy' ? 400 : aiDifficulty === 'medium' ? 700 : 1100;
+  setTimeout(() => {
+    const col = getBestMove(soloBoard, 2, aiDifficulty);
+    document.getElementById('aiThinking').classList.remove('visible');
+    aiMovePending = false;
+    if (col === -1) return;
+    applyMove(col, 2);
+  }, delay);
+}
+
+function applyMove(col, player) {
+  if (soloBoard[0][col] !== 0) return; // column full guard
+  const { board: next, row } = soloDrop(soloBoard, col, player);
+  soloBoard = next;
+  soloHistory.push({ player, col, row });
+
+  const result = soloCheckWinner(soloBoard, row, col);
+  if (result) {
+    soloWinner = result.winner;
+    soloWinCells = result.cells;
+  } else if (soloIsDraw(soloBoard)) {
+    soloWinner = 0;
+  }
+  renderSoloState();
+}
+
 // ── Socket events ──────────────────────────────────────────────────────────
 socket.on('room:created', ({ roomId: rId }) => { enterGame(rId); });
+socket.on('room:error', ({ message }) => { alert(message); });
+socket.on('room:state', (state) => { gameState = state; renderState(state); });
+socket.on('room:chat', (msg) => { appendChat(msg); });
 
-socket.on('room:error', ({ message }) => {
-  alert(message);
-});
-
-socket.on('room:state', (state) => {
-  gameState = state;
-  renderState(state);
-});
-
-socket.on('room:chat', (msg) => {
-  appendChat(msg);
-});
-
-// ── State rendering ────────────────────────────────────────────────────────
+// ── State rendering (multiplayer) ──────────────────────────────────────────
 function renderState(state) {
-  // Players
   if (state.players[0]) {
     document.getElementById('name1').textContent = state.players[0].name;
     document.getElementById('city1').textContent = state.players[0].city;
@@ -607,37 +803,20 @@ function renderState(state) {
     document.getElementById('name2').textContent = state.players[1].name;
     document.getElementById('city2').textContent = state.players[1].city;
   }
-
-  // Board
   renderBoard(state.board, state.winCells);
-
-  // Move history
   renderMoveHistory(state.history);
-
-  // Timers & turn indicator
   updateTurnIndicators(state.currentTurn, state.status);
-
-  // Status bar
   updateStatusBar(state);
-
-  // Waiting overlay
-  if (state.players.length >= 2) {
-    waitOverlay.classList.add('hidden');
-  }
-
-  // Finished
+  if (state.players.length >= 2) waitOverlay.classList.add('hidden');
   if (state.status === 'finished') {
     gameFinished = true;
     stopAllTimers();
     document.getElementById('btnResign').style.display = 'none';
     document.getElementById('btnRematch').style.display = '';
     document.getElementById('btnCoach').style.display = '';
-
-    // Auto post score
     const myPlayer = state.players.find(p => p.playerNumber === myPlayerNumber);
-    if (myPlayer && !coachRequested) {
+    if (myPlayer && !coachRequested)
       postScore(myPlayer.name, myPlayer.city, state.winner === myPlayerNumber);
-    }
   }
 }
 
@@ -652,7 +831,6 @@ function renderBoard(board, winCells) {
       if (v === 1) cell.classList.add('p1', 'filled');
       if (v === 2) cell.classList.add('p2', 'filled');
       if (winSet.has(`${r},${c}`)) cell.classList.add('winner-cell');
-      // Drop animation for newly filled cells
       if (v !== 0 && !prev.includes('filled')) cell.classList.add('drop-anim');
     }
   }
@@ -677,14 +855,9 @@ function renderMoveHistory(history) {
 function updateTurnIndicators(currentTurn, status) {
   const dot1 = document.getElementById('dot1');
   const dot2 = document.getElementById('dot2');
-  if (status !== 'playing') {
-    dot1.classList.remove('active');
-    dot2.classList.remove('active');
-    return;
-  }
+  if (status !== 'playing') { dot1.classList.remove('active'); dot2.classList.remove('active'); return; }
   dot1.classList.toggle('active', currentTurn === 1);
   dot2.classList.toggle('active', currentTurn === 2);
-  // Start/switch timer
   if (currentTurn === 1) { stopTimer(1); startTimer(0); }
   else { stopTimer(0); startTimer(1); }
 }
@@ -692,20 +865,17 @@ function updateTurnIndicators(currentTurn, status) {
 function updateStatusBar(state) {
   const bar = document.getElementById('statusBar');
   if (state.status === 'waiting') {
-    bar.textContent = 'Waiting for opponent…';
+    bar.textContent = 'Waiting for opponent…'; bar.style.color = '';
   } else if (state.status === 'playing') {
-    const p = state.players.find(p => p.playerNumber === state.currentTurn);
     const isMine = state.currentTurn === myPlayerNumber;
-    bar.textContent = isMine ? '⚔ Your turn — choose a column' : `${p?.name ?? 'Opponent'}'s turn…`;
+    bar.textContent = isMine ? '⚔ Your turn — choose a column' : (soloMode ? '🤖 AI is thinking…' : `Opponent's turn…`);
     bar.style.color = isMine ? '#a9eb88' : 'rgba(255,255,255,.8)';
   } else if (state.status === 'finished') {
     if (state.winner === 0) {
-      bar.textContent = 'Draw — the steppe remains undecided.';
-      bar.style.color = '#f5c842';
+      bar.textContent = 'Draw — the steppe remains undecided.'; bar.style.color = '#f5c842';
     } else {
-      const winner = state.players.find(p => p.playerNumber === state.winner);
       const isMine = state.winner === myPlayerNumber;
-      bar.textContent = isMine ? '🏆 You win! Well played.' : `${winner?.name ?? 'Opponent'} wins!`;
+      bar.textContent = isMine ? '🏆 You win! Well played.' : (soloMode ? '🤖 AI wins this round.' : 'Opponent wins!');
       bar.style.color = isMine ? '#a9eb88' : '#e8877c';
     }
   }
@@ -713,12 +883,20 @@ function updateStatusBar(state) {
 
 // ── Move handling ──────────────────────────────────────────────────────────
 function isMyTurn() {
+  if (soloMode) {
+    return !gameFinished && !aiMovePending &&
+      soloHistory.length % 2 === 0; // player 1 always goes first
+  }
   return gameState && gameState.status === 'playing' && gameState.currentTurn === myPlayerNumber;
 }
 
 function handleCellClick(col) {
   if (!isMyTurn()) return;
-  socket.emit('game:move', { roomId, col });
+  if (soloMode) {
+    applyMove(col, 1);
+  } else {
+    socket.emit('game:move', { roomId, col });
+  }
 }
 
 // ── Timer ──────────────────────────────────────────────────────────────────
@@ -773,7 +951,11 @@ function appendChat(msg) {
 function esc(s) { return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
 // ── Rematch / Resign ───────────────────────────────────────────────────────
-function sendRematch() {
+window.sendRematch = function() {
+  if (soloMode) {
+    startSoloGame();
+    return;
+  }
   if (!roomId) return;
   socket.emit('game:rematch', { roomId });
   gameFinished = false;
@@ -785,13 +967,19 @@ function sendRematch() {
   document.getElementById('btnCoach').style.display = 'none';
   document.getElementById('btnResign').style.display = '';
   document.getElementById('statusBar').style.color = 'rgba(255,255,255,.9)';
-}
+};
 
-function sendResign() {
+window.sendResign = function() {
+  if (soloMode) {
+    if (!confirm('Resign this game?')) return;
+    soloWinner = 2;
+    renderSoloState();
+    return;
+  }
   if (!roomId || gameFinished) return;
   if (!confirm('Resign this game?')) return;
   socket.emit('game:resign', { roomId });
-}
+};
 
 // ── Share / Copy ───────────────────────────────────────────────────────────
 function updateCopyBtn() {
@@ -819,7 +1007,7 @@ async function postScore(name, city, won) {
 }
 
 // ── AI Coach ───────────────────────────────────────────────────────────────
-async function openCoach() {
+window.openCoach = async function openCoach() {
   if (!gameState) return;
   document.getElementById('coachModal').classList.add('open');
   document.getElementById('coachContent').innerHTML = `
@@ -871,10 +1059,10 @@ function renderCoach(d) {
   document.getElementById('coachActions').style.display = 'flex';
 }
 
-function closeCoach() { document.getElementById('coachModal').classList.remove('open'); }
+window.closeCoach = function() { document.getElementById('coachModal').classList.remove('open'); };
 
 // ── Stripe stub ────────────────────────────────────────────────────────────
-async function openStripe() {
+window.openStripe = async function openStripe() {
   try {
     const res = await fetch('/api/stripe/checkout', {
       method: 'POST',

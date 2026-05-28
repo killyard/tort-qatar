@@ -3,10 +3,10 @@
   "version": "1.0.0",
   "description": "Tört Qatar — Strategic Connect Four duels on the steppe",
   "type": "module",
-  "main": "server.js",
+  "main": "src/server.js",
   "scripts": {
-    "start": "node server.js",
-    "dev": "node --watch server.js"
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.24.0",

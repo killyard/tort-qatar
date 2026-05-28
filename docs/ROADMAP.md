@@ -44,6 +44,9 @@
 - `85067c1` fix: board frame color distinct from page bg, visible hole rim
 - `5362645` feat: timeline drag+touch scrub, styled thumb, gradient fill bar
 - `760eb6b` fix: status-row aligned to board width via board-col wrapper, stronger hole rim
+- `9e79dff` fix: SVG mask overlay for transparent holes, timeline mark colors match chips
+- `c2a53d9` feat: points & streak scoring system + leaderboard guide block
+- `dc4ab36` fix: inline SVG board holes + remove timeline mark dots
 
 ## Next
 

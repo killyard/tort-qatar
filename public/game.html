@@ -321,7 +321,7 @@ html,body{height:100%;background:#8dbfdb;font-family:var(--sans);color:var(--ink
 /* ── Lobby overlay (initial) ───────────────────────────── */
 .lobby{
   position:fixed;inset:0;z-index:100;
-  background:#87ceeb; /* sky-blue fills bars when image is contained */
+  background:linear-gradient(to bottom,#9fd8f5 0%,#87ceeb 45%,#6abf5e 100%); /* sky→grass for bars */
   overflow:hidden;
   transition:opacity .4s;
 }
@@ -642,9 +642,9 @@ let isPro = localStorage.getItem('isPro') === 'true';
 let selectedLang = localStorage.getItem('lang') || 'en';
 
 // ── Lobby card positioning (within yurt door frame) ────────────────────────
-// Image dimensions: 1672×941. Door inner rect measured from the image:
-const IMG_W = 1672, IMG_H = 941, IMG_ASPECT = IMG_W / IMG_H;
-const DOOR = { left: 0.347, right: 0.652, top: 0.122, bottom: 0.893 };
+// Image dimensions: 1916×821. Door inner rect measured from the image:
+const IMG_W = 1916, IMG_H = 821, IMG_ASPECT = IMG_W / IMG_H;
+const DOOR = { left: 0.433, right: 0.566, top: 0.262, bottom: 0.877 };
 const DOOR_MARGIN = 0.07; // 7% inner margin from door frame edges
 
 function positionLobbyCard() {

@@ -22,6 +22,7 @@
 - `4be4312` feat: lobby tabs — liquid glass pill style matching nav button
 - `364205e` docs: update ROADMAP with 4be4312
 - `a8bd688` feat: switch Steppe Bot chat to Gemini 3.5 Flash, fix critical_mistake perspective
+- `d823b96` docs: update ROADMAP with a8bd688
 
 ## Next
 

@@ -572,8 +572,9 @@ html,body{height:100%;background:#8dbfdb;font-family:var(--sans);color:var(--ink
 
     <!-- AI Analysis tab -->
     <div class="tab-pane" id="paneAnalysis">
+      <button id="btnCoachPanel" onclick="openCoach()" style="display:none;width:100%;padding:9px;border-radius:10px;border:none;background:linear-gradient(135deg,#2a6a4a,#3d9e6e);color:#fff;font-size:12px;font-weight:600;font-family:var(--sans);cursor:pointer;letter-spacing:.04em;margin-bottom:8px;flex-shrink:0;">🧠 Analyze game</button>
       <div id="inlineCoachContent" class="inline-coach-content">
-        <div class="inline-coach-placeholder">Press "AI Coach" after the game to analyze.</div>
+        <div class="inline-coach-placeholder">Finish a game, then tap "Analyze game" above.</div>
       </div>
     </div>
 
@@ -841,6 +842,7 @@ function renderSoloState() {
     document.getElementById('btnResign').style.display = 'none';
     document.getElementById('btnRematch').style.display = '';
     document.getElementById('btnCoach').style.display = '';
+    document.getElementById('btnCoachPanel').style.display = '';
     postScore(myName, myCity, soloWinner === 1);
     // Steppe Bot end-game message
     const endTrigger = soloWinner === 0 ? 'game_end_draw' : soloWinner === 1 ? 'game_end_win' : 'game_end_loss';
@@ -914,6 +916,7 @@ function renderState(state) {
     document.getElementById('btnResign').style.display = 'none';
     document.getElementById('btnRematch').style.display = '';
     document.getElementById('btnCoach').style.display = '';
+    document.getElementById('btnCoachPanel').style.display = '';
     const myPlayer = state.players.find(p => p.playerNumber === myPlayerNumber);
     if (myPlayer && !coachRequested)
       postScore(myPlayer.name, myPlayer.city, state.winner === myPlayerNumber);
@@ -1127,6 +1130,7 @@ window.sendRematch = function() {
   document.getElementById('timer2').textContent = '00:00';
   document.getElementById('btnRematch').style.display = 'none';
   document.getElementById('btnCoach').style.display = 'none';
+  document.getElementById('btnCoachPanel').style.display = 'none';
   document.getElementById('btnResign').style.display = '';
   document.getElementById('statusBar').style.color = 'rgba(255,255,255,.9)';
 };

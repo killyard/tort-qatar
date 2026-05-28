@@ -26,12 +26,13 @@ app.use(express.json());
 app.use(express.static(join(__dirname, '../public')));
 
 // ── Session + Passport ──────────────────────────────────────────────────────
+app.set('trust proxy', 1); // Render sits behind a proxy
 app.use(session({
   secret: process.env.SESSION_SECRET || 'tort-qatar-dev-secret',
   resave: false,
   saveUninitialized: false,
   cookie: {
-    secure: process.env.NODE_ENV === 'production',
+    secure: !!process.env.BASE_URL, // true on Render (BASE_URL set), false locally
     httpOnly: true,
     maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
   },

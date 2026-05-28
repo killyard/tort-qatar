@@ -542,39 +542,112 @@ html,body{height:100%;background:#8dbfdb;font-family:var(--sans);color:var(--ink
 /* ══════════════════════════════════════════════════════
    LIQUID GLASS — forms & cards
 ══════════════════════════════════════════════════════ */
+/* ══════════════════════════════════════════════════
+   LIQUID GLASS — real translucency
+══════════════════════════════════════════════════ */
 .lobby-card,
 .auth-card,
-.ngm-card {
+.ngm-card,
+.profile-modal-card {
+  /* Low-opacity tint so background bleeds through */
   background: linear-gradient(
-    145deg,
-    rgba(255,255,255,.78) 0%,
-    rgba(255,255,255,.45) 55%,
-    rgba(255,255,255,.60) 100%
+    160deg,
+    rgba(255,255,255,.28) 0%,
+    rgba(255,255,255,.14) 50%,
+    rgba(255,255,255,.20) 100%
   ) !important;
-  backdrop-filter: blur(48px) saturate(210%) brightness(1.06) !important;
-  -webkit-backdrop-filter: blur(48px) saturate(210%) brightness(1.06) !important;
-  border: 1px solid rgba(255,255,255,.88) !important;
+  backdrop-filter: blur(52px) saturate(220%) brightness(1.08) !important;
+  -webkit-backdrop-filter: blur(52px) saturate(220%) brightness(1.08) !important;
+  border: 1px solid rgba(255,255,255,.55) !important;
   box-shadow:
-    0 2.5px 0 rgba(255,255,255,.95) inset,
-    0 -1px 0 rgba(255,255,255,.35) inset,
-    1.5px 0 0 rgba(255,255,255,.65) inset,
-    0 22px 64px rgba(0,0,0,.20),
-    0 4px 14px rgba(0,0,0,.10) !important;
+    0 1.5px 0 rgba(255,255,255,.80) inset,   /* top shine */
+    0 -1px  0 rgba(255,255,255,.18) inset,   /* bottom edge */
+    1px  0  0 rgba(255,255,255,.42) inset,   /* left edge */
+    0 24px 64px rgba(0,0,0,.45),
+    0  4px 16px rgba(0,0,0,.22) !important;
 }
+/* Glass needs lighter text since bg is dark/blurred */
+.lobby-card *,
+.auth-card *,
+.ngm-card * {
+  --ink: #ffffff !important;
+  --ink-soft: rgba(255,255,255,.80) !important;
+  --ink-mute: rgba(255,255,255,.52) !important;
+  --ink-line: rgba(255,255,255,.18) !important;
+}
+/* Title stays white-ish serif */
+.auth-logo, .lobby-title, .ngm-title {
+  color: #fff !important;
+  text-shadow: 0 1px 8px rgba(0,0,0,.35);
+}
+.auth-sub, .lobby-sub, .ngm-sub { color: rgba(255,255,255,.65) !important; }
+/* Inputs — frosted pill */
 .lobby-input, .auth-field, .join-code {
-  background: rgba(255,255,255,.72) !important;
-  border: 1px solid rgba(255,255,255,.85) !important;
-  box-shadow: 0 1px 0 rgba(255,255,255,.9) inset, 0 2px 8px rgba(0,0,0,.06) !important;
+  background: rgba(255,255,255,.14) !important;
+  border: 1px solid rgba(255,255,255,.38) !important;
+  color: #fff !important;
+  box-shadow: 0 1px 0 rgba(255,255,255,.22) inset !important;
+}
+.lobby-input::placeholder, .auth-field::placeholder, .join-code::placeholder {
+  color: rgba(255,255,255,.45) !important;
 }
 .lobby-input:focus, .auth-field:focus, .join-code:focus {
-  background: rgba(255,255,255,.92) !important;
-  border-color: rgba(29,42,35,.4) !important;
+  background: rgba(255,255,255,.22) !important;
+  border-color: rgba(255,255,255,.65) !important;
+  box-shadow: 0 1px 0 rgba(255,255,255,.30) inset,
+              0 0 0 3px rgba(255,255,255,.10) !important;
 }
+/* Primary button — dark on glass */
+.lobby-btn.primary, .auth-submit, .profile-modal-save {
+  background: rgba(255,255,255,.92) !important;
+  color: #1d2a23 !important;
+  box-shadow: 0 4px 18px rgba(0,0,0,.30) !important;
+}
+.lobby-btn.primary:hover, .auth-submit:hover {
+  background: #fff !important; transform: translateY(-1px);
+}
+/* Outline btn */
+.lobby-btn.outline, .auth-guest, .profile-modal-switch {
+  background: rgba(255,255,255,.12) !important;
+  border-color: rgba(255,255,255,.35) !important;
+  color: rgba(255,255,255,.85) !important;
+}
+.lobby-btn.outline:hover, .auth-guest:hover {
+  background: rgba(255,255,255,.22) !important;
+}
+/* Google btn */
+.auth-social-btn {
+  background: rgba(255,255,255,.88) !important;
+  color: #1d2a23 !important;
+  border-color: rgba(255,255,255,.6) !important;
+}
+/* Forgot link */
+.auth-forgot { color: rgba(255,255,255,.55) !important; }
+.auth-forgot:hover { color: rgba(255,255,255,.90) !important; }
+/* Or divider */
+.auth-sep::before, .auth-sep::after { background: rgba(255,255,255,.22) !important; }
+.auth-sep span, .lobby-divider { color: rgba(255,255,255,.45) !important; }
+/* Tab group on glass */
 .lobby-tab-group {
-  background: rgba(255,255,255,.55) !important;
-  border: 1px solid rgba(255,255,255,.82) !important;
-  box-shadow: 0 1.5px 0 rgba(255,255,255,.95) inset, 0 3px 10px rgba(0,0,0,.08) !important;
-  backdrop-filter: blur(16px) !important;
+  background: rgba(255,255,255,.12) !important;
+  border: 1px solid rgba(255,255,255,.25) !important;
+  box-shadow: 0 1px 0 rgba(255,255,255,.22) inset !important;
+  backdrop-filter: blur(12px) !important;
+}
+.lobby-tab { color: rgba(255,255,255,.60) !important; }
+.lobby-tab:hover:not(.active) { background: rgba(255,255,255,.15) !important; color: #fff !important; }
+.lobby-tab.active { background: rgba(255,255,255,.88) !important; color: #1d2a23 !important; }
+/* Label */
+.lobby-label { color: rgba(255,255,255,.55) !important; }
+/* Back btn */
+#btnBack { color: rgba(255,255,255,.75) !important; }
+/* Join code */
+.join-code { letter-spacing:.08em; }
+/* Join btn */
+.join-btn {
+  background: rgba(255,255,255,.14) !important;
+  border-color: rgba(255,255,255,.30) !important;
+  color: rgba(255,255,255,.85) !important;
 }
 
 /* ── Chat widget (floating bottom-right) ────────────────── */
@@ -775,7 +848,9 @@ html,body{height:100%;background:#8dbfdb;font-family:var(--sans);color:var(--ink
       Continue with Google
     </button>
 
-    <!-- Email / Password (always visible) -->
+    <div class="auth-sep"><span>or</span></div>
+
+    <!-- Email / Password -->
     <input class="auth-field" id="authEmail" type="email" placeholder="Email" />
     <input class="auth-field" id="authPassword" type="password" placeholder="Password" />
     <a class="auth-forgot" onclick="authForgot()">Forgot password?</a>

@@ -209,13 +209,20 @@
      (measured from auth-form.png: x 34%→66%, y 30%→95%) */
   .auth-overlay{
     position:absolute;
-    left:34%;right:34%;   /* ≈32% wide, centred in door gap */
-    top:30%;bottom:5%;    /* full height of white door interior */
+    left:30%;right:30%;
+    top:26%;bottom:4%;
     display:flex;flex-direction:column;align-items:stretch;
-    padding:10% 10% 6%;
+    padding:9% 9% 5%;
     gap:0;
     overflow-y:auto;overflow-x:hidden;
     scrollbar-width:none;
+    background: linear-gradient(160deg,rgba(255,255,255,.28) 0%,rgba(255,255,255,.14) 60%,rgba(255,255,255,.22) 100%);
+    backdrop-filter: blur(48px) saturate(200%) brightness(1.06);
+    -webkit-backdrop-filter: blur(48px) saturate(200%) brightness(1.06);
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,.55);
+    box-shadow: 0 1.5px 0 rgba(255,255,255,.80) inset,
+                0 20px 60px rgba(0,0,0,.22);
   }
   .auth-overlay::-webkit-scrollbar{display:none}
 
@@ -223,8 +230,9 @@
   .af-title{
     font-family:var(--serif);font-weight:400;
     font-size:clamp(13px,1.8vw,20px);
-    color:var(--ink);text-align:center;
+    color:#fff;text-align:center;
     margin:0 0 .8em;letter-spacing:.01em;line-height:1.2;
+    text-shadow:0 1px 8px rgba(0,0,0,.3);
   }
 
   /* Google button */
@@ -232,14 +240,14 @@
     display:flex;align-items:center;justify-content:center;gap:8px;
     width:100%;padding:clamp(6px,0.8vw,10px) 8px;
     border-radius:8px;
-    border:.5px solid rgba(29,42,35,.18);
-    background:rgba(255,255,255,.82);
-    color:var(--ink);font-size:clamp(10px,1.1vw,13px);font-weight:500;
+    border:.5px solid rgba(255,255,255,.45);
+    background:rgba(255,255,255,.88);
+    color:#1d2a23;font-size:clamp(10px,1.1vw,13px);font-weight:500;
     font-family:var(--sans);cursor:pointer;
     transition:background .18s,transform .15s;
     margin-bottom:.55em;
   }
-  .af-google:hover{background:rgba(255,255,255,.96);transform:translateY(-1px)}
+  .af-google:hover{background:#fff;transform:translateY(-1px)}
 
   /* Divider "or" */
   .af-sep{
@@ -252,14 +260,16 @@
   /* Inputs */
   .af-input{
     width:100%;padding:clamp(5px,0.7vw,9px) clamp(7px,0.9vw,11px);
-    border-radius:7px;border:.5px solid rgba(29,42,35,.18);
-    background:rgba(255,255,255,.62);
-    font-size:clamp(10px,1.05vw,13px);font-family:var(--sans);color:var(--ink);
+    border-radius:7px;
+    border:.5px solid rgba(255,255,255,.45);
+    background:rgba(255,255,255,.18);
+    font-size:clamp(10px,1.05vw,13px);font-family:var(--sans);color:#fff;
     outline:none;transition:border-color .15s,background .15s;
     margin-bottom:.4em;
+    box-shadow: 0 1px 0 rgba(255,255,255,.22) inset;
   }
-  .af-input:focus{border-color:rgba(29,42,35,.45);background:rgba(255,255,255,.82)}
-  .af-input::placeholder{color:var(--ink-mute)}
+  .af-input:focus{border-color:rgba(255,255,255,.70);background:rgba(255,255,255,.25)}
+  .af-input::placeholder{color:rgba(255,255,255,.45)}
 
   /* Forgot password */
   .af-forgot{
@@ -274,24 +284,24 @@
   .af-primary{
     width:100%;padding:clamp(6px,0.8vw,10px);
     border-radius:8px;border:none;
-    background:var(--ink);color:#f3efe6;
+    background:rgba(255,255,255,.90);color:#1d2a23;
     font-size:clamp(10px,1.1vw,13px);font-weight:600;
     font-family:var(--sans);cursor:pointer;
     transition:background .18s,transform .15s;
     margin-bottom:.5em;
   }
-  .af-primary:hover{background:#0f1a14;transform:translateY(-1px)}
+  .af-primary:hover{background:#fff;transform:translateY(-1px)}
 
   /* Guest */
   .af-guest{
     width:100%;padding:clamp(5px,0.7vw,9px);
-    border-radius:8px;border:.5px solid rgba(29,42,35,.18);
-    background:rgba(255,255,255,.5);
-    color:var(--ink-soft);font-size:clamp(9px,1vw,12px);font-weight:500;
+    border-radius:8px;border:.5px solid rgba(255,255,255,.35);
+    background:rgba(255,255,255,.12);
+    color:rgba(255,255,255,.82);font-size:clamp(9px,1vw,12px);font-weight:500;
     font-family:var(--sans);cursor:pointer;
     transition:background .18s,transform .15s;
   }
-  .af-guest:hover{background:rgba(255,255,255,.8);transform:translateY(-1px)}
+  .af-guest:hover{background:rgba(255,255,255,.22);transform:translateY(-1px)}
 
   @media(max-width:760px){
     .top{padding:18px}.meta{padding:0 18px 18px}

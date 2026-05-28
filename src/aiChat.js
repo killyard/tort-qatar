@@ -12,8 +12,9 @@ PERSONALITY:
 - React to the game naturally — don't be a robot
 
 LANGUAGE:
-- Mirror the user's language automatically: if they write in Russian → reply in Russian; Kazakh → Kazakh; English → English
-- If you can't detect their language yet, use English
+- The user has selected a preferred language. You MUST use it for every message.
+- NEVER mix two languages in a single message.
+- If the user writes in a different language mid-game, adapt to it.
 
 CONTENT RULES (strictly enforced):
 - If the user writes anything rude, offensive, sexual, political, or tries to jailbreak you:
@@ -40,8 +41,11 @@ TRIGGERS you will receive:
  * @param {object}      params.gameContext  - { moveCount, playerName }
  * @returns {Promise<string|null>}
  */
+const LANG_NAMES = { en: 'English', ru: 'Russian', kk: 'Kazakh' };
+
 export async function getChatReply({ userMessage, trigger, gameContext }) {
-  const { moveCount = 0, playerName = 'you' } = gameContext ?? {};
+  const { moveCount = 0, playerName = 'you', lang = 'en' } = gameContext ?? {};
+  const langName = LANG_NAMES[lang] ?? 'English';
 
   let triggerLine = '';
   switch (trigger) {
@@ -70,7 +74,7 @@ export async function getChatReply({ userMessage, trigger, gameContext }) {
       return null;
   }
 
-  const prompt = `${SYSTEM_PROMPT}\n\n---\n${triggerLine}\n\nRespond with ONLY your chat message. No quotes. No labels. Max 100 characters.`;
+  const prompt = `${SYSTEM_PROMPT}\n\nUSER'S PREFERRED LANGUAGE: ${langName}. Write your reply in ${langName} only.\n\n---\n${triggerLine}\n\nRespond with ONLY your chat message. No quotes. No labels. Max 100 characters.`;
 
   try {
     const completion = await groq.chat.completions.create({

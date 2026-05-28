@@ -413,6 +413,16 @@ html,body{height:100%;background:#8dbfdb;font-family:var(--sans);color:var(--ink
     <input class="lobby-input" id="lobbyName" placeholder="Your name" maxlength="24" />
     <input class="lobby-input" id="lobbyCity" placeholder="Your city (e.g. Almaty)" maxlength="32" />
 
+    <!-- Language picker -->
+    <div style="margin-bottom:14px">
+      <div style="font-size:11px;color:rgba(255,255,255,.45);letter-spacing:.06em;margin-bottom:6px">LANGUAGE</div>
+      <div style="display:flex;gap:6px">
+        <button class="city-pill active" id="langEn" onclick="setLang('en')">🇬🇧 English</button>
+        <button class="city-pill"        id="langRu" onclick="setLang('ru')">🇷🇺 Русский</button>
+        <button class="city-pill"        id="langKk" onclick="setLang('kk')">🇰🇿 Қазақша</button>
+      </div>
+    </div>
+
     <!-- Mode tabs -->
     <div style="display:flex;gap:6px;margin-bottom:12px">
       <button class="lobby-btn primary" id="tabVsAI" style="flex:1;font-size:13px" onclick="setTab('ai')">🤖 vs Computer</button>
@@ -591,6 +601,19 @@ let coachRequested = false;
 
 // Pro subscription flag (set after Stripe checkout)
 let isPro = localStorage.getItem('isPro') === 'true';
+
+// Selected UI language (set in lobby, used for AI chat)
+let selectedLang = localStorage.getItem('lang') || 'en';
+
+window.setLang = function(lang) {
+  selectedLang = lang;
+  localStorage.setItem('lang', lang);
+  document.getElementById('langEn').classList.toggle('active', lang === 'en');
+  document.getElementById('langRu').classList.toggle('active', lang === 'ru');
+  document.getElementById('langKk').classList.toggle('active', lang === 'kk');
+};
+// Apply saved language on load
+setLang(selectedLang);
 
 // Solo (vs AI) mode
 let soloMode = false;
@@ -1002,7 +1025,7 @@ function soloSendTrigger(trigger) {
     body: JSON.stringify({
       trigger,
       isPro,
-      gameContext: { history: soloHistory, coachFor: 1, moveCount: soloHistory.length, playerName: myName }
+      gameContext: { history: soloHistory, coachFor: 1, moveCount: soloHistory.length, playerName: myName, lang: selectedLang }
     })
   })
     .then(r => r.json())
@@ -1042,12 +1065,12 @@ function sendChat() {
         trigger: 'user_message',
         userMessage: text,
         isPro,
-        gameContext: { history: soloHistory, coachFor: 1, moveCount: soloHistory.length, playerName: myName }
+        gameContext: { history: soloHistory, coachFor: 1, moveCount: soloHistory.length, playerName: myName, lang: selectedLang }
       })
     })
       .then(r => r.json())
       .then(d => { if (d.reply) appendSoloChat(d.reply, false); })
-      .catch(() => {});
+      .catch(e => console.error('[Steppe Bot]', e));
     return;
   }
 

@@ -52,6 +52,7 @@
 - `2441d96` feat: persist player points — localStorage + server restore on page load
 - `fb28cba` fix: full game-state reset on board-size change — clears chips, game-over class, timeline, locks board
 - `18f2574` feat: mid-game AI Coach (Flash), post-game analysis (Pro), dual timer layout
+- `8ec530d` fix: remove X close buttons from New Game + Profile modals, match profile modal style
 
 ## Next
 

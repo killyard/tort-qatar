@@ -721,45 +721,39 @@ let isPro = localStorage.getItem('isPro') === 'true';
 let selectedLang = localStorage.getItem('lang') || 'en';
 
 
-// ── Auth screen ───────────────────────────────────────────
-function authGoogle() {
-  // TODO: implement real Google OAuth
-  // For now treat as guest with a note
-  document.getElementById('authErr') && (document.getElementById('authErr').textContent = '');
+// ── Auth screen (window.* so onclick= in HTML can reach them inside type="module") ──
+window.authGoogle = function() {
+  document.getElementById('authErr').textContent = '';
   alert('Google sign-in coming soon. Entering as guest.');
-  enterAsGuest();
-}
+  window.enterAsGuest();
+};
 
-function authForgot() {
-  // TODO: implement password reset
+window.authForgot = function() {
   alert('Password reset coming soon.');
-}
+};
 
-function authEmail() {
+window.authEmail = function() {
   const email = document.getElementById('authEmail').value.trim();
   const pass  = document.getElementById('authPassword').value;
   const err   = document.getElementById('authErr');
   if (!email || !pass) { err.textContent = 'Please fill in both fields.'; return; }
-  // TODO: real auth — for now treat as guest using email prefix as name
-  const name = email.split('@')[0];
-  document.getElementById('lobbyName').value = name;
-  showLobbyForm();
-}
+  document.getElementById('lobbyName').value = email.split('@')[0];
+  window.showLobbyForm();
+};
 
-function enterAsGuest() {
-  showLobbyForm();
-}
+window.enterAsGuest = function() {
+  window.showLobbyForm();
+};
 
-function showLobbyForm() {
+window.showLobbyForm = function() {
   document.getElementById('authCard').style.display = 'none';
-  const lc = document.getElementById('lobbyCard');
-  lc.style.display = 'block';
-}
+  document.getElementById('lobbyCard').style.display = 'block';
+};
 
-function backToAuth() {
+window.backToAuth = function() {
   document.getElementById('lobbyCard').style.display = 'none';
   document.getElementById('authCard').style.display = 'block';
-}
+};
 
 const LOBBY_T = {
   en: {

@@ -38,6 +38,8 @@
 - `6f2893b` docs: update ROADMAP with 39cac44
 - `f050cd5` docs: update ROADMAP with 6f2893b
 - `3c64b1a` feat: auth screen — Google / email / guest flow before lobby
+- `a8aee56` docs: update ROADMAP with 3c64b1a
+- `a25fa18` feat: auth form — always-visible email/password, forgot password, new bg image
 
 ## Next
 

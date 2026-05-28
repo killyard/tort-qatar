@@ -60,7 +60,11 @@
 - `eda904f` feat: mobile responsive overhaul — page scrolls, sticky bottom action footer with Start/controls, full-width chat collapsed by default, aspect-ratio cells, breakpoints 900/600/420
 - `f744991` docs: add missing hashes d69e13d, c49e6e2, replace pending with 9447436, eda904f
 - `295ce23` feat: realtime leaderboard update (Socket.io emit) + game.html lb/ref tabs + index.html mini leaderboard
-- `pending` fix: wire index.html handleAuth (Google → /auth/google, Guest → /game.html?guest=1), restore truncated index.html tail + game.html tail (last ~200 lines), add ?guest=1 → showLobbyForm() handler in game.html
+- `a18bb8b` fix: wire index.html handleAuth + restore truncated tails in index.html and game.html
+- `79ceb6a` fix: remove duplicate trailing tail in index.html (post-a18bb8b cleanup)
+- `7c69877` fix: remove duplicate loadMiniLeaderboard + disable AI Coach in multiplayer (fairness)
+- `677136d` feat: leaderboard shows one row per unique player — server-side dedupe by name+city + aggregated SUM query + stable client-side player id
+- `f06541a` feat(pvp): left panel always shows local player — name/city/points/wins/moves/timer/turn-dot all map to ME regardless of host/joiner
 
 ## Next
 

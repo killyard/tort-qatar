@@ -959,31 +959,29 @@ const LOBBY_T = {
     ctx.fillStyle = bg2;
     ctx.fillRect(0, 0, W, H);
 
-    // ── Particle network — each node connects to its 4 nearest (Connect Four) ──
-    const drawn = new Set();
+    // ── Particle network — strictly 3 edges per node (node + 3 = 4, Connect Four) ──
+    // Build all pairs sorted by distance, greedily add edge only if both endpoints < 3 connections
+    const degree = new Int8Array(N);
+    const allEdges = [];
     for (let i = 0; i < N; i++) {
-      // Find 4 nearest neighbours
-      const dists = [];
-      for (let j = 0; j < N; j++) {
-        if (i === j) continue;
+      for (let j = i + 1; j < N; j++) {
         const dx = nodes[i].x - nodes[j].x;
         const dy = nodes[i].y - nodes[j].y;
-        dists.push({ j, d: Math.sqrt(dx*dx + dy*dy) });
+        allEdges.push({ i, j, d: dx*dx + dy*dy }); // squared dist for sorting
       }
-      dists.sort((a, b) => a.d - b.d);
-      for (let k = 0; k < 3; k++) {
-        const { j, d } = dists[k];
-        const key = i < j ? `${i}-${j}` : `${j}-${i}`;
-        if (drawn.has(key)) continue;
-        drawn.add(key);
-        const alpha = Math.max(0, (1 - d / CONN_DIST)) * 0.22;
-        ctx.beginPath();
-        ctx.moveTo(nodes[i].x, nodes[i].y);
-        ctx.lineTo(nodes[j].x, nodes[j].y);
-        ctx.strokeStyle = `rgba(180,170,255,${alpha})`;
-        ctx.lineWidth = 0.6;
-        ctx.stroke();
-      }
+    }
+    allEdges.sort((a, b) => a.d - b.d);
+    for (const e of allEdges) {
+      if (degree[e.i] >= 3 || degree[e.j] >= 3) continue;
+      degree[e.i]++; degree[e.j]++;
+      const d = Math.sqrt(e.d);
+      const alpha = Math.max(0, (1 - d / CONN_DIST)) * 0.24;
+      ctx.beginPath();
+      ctx.moveTo(nodes[e.i].x, nodes[e.i].y);
+      ctx.lineTo(nodes[e.j].x, nodes[e.j].y);
+      ctx.strokeStyle = `rgba(180,170,255,${alpha})`;
+      ctx.lineWidth = 0.6;
+      ctx.stroke();
     }
 
     // Mouse connections

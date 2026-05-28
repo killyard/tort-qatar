@@ -1877,7 +1877,7 @@ function startSoloGame() {
   timerSeconds = [0, 0];
   document.getElementById('timer1').textContent = '0:00';
   document.getElementById('timer2').textContent = '0:00';
-  document.getElementById('inlineCoachContent').innerHTML = '<div class="inline-coach-placeholder">Press "AI Coach" after the game to analyze.</div>';
+  document.getElementById('inlineCoachContent')?.remove(); // element removed with old right panel
   document.getElementById('chatArea').innerHTML = '';
   switchTab('chat');
 
@@ -1937,7 +1937,7 @@ function renderSoloState() {
     const endTrigger = soloWinner === 0 ? 'game_end_draw' : soloWinner === 1 ? 'game_end_win' : 'game_end_loss';
     setTimeout(() => soloSendTrigger(endTrigger), 400);
     // Badge the Analysis tab so player notices it's ready
-    document.getElementById('tabAnalysis').classList.add('badge');
+    document.getElementById('tabAnalysis')?.classList.add('badge'); // right panel removed
   } else if (gameStarted && currentTurn === 2 && !aiMovePending) {
     scheduleAIMove();
   }
@@ -2247,7 +2247,7 @@ window.sendRematch = function() {
   document.getElementById('timer2').textContent = '00:00';
   document.getElementById('btnRematch').style.display = 'none';
   document.getElementById('btnCoach').style.display = 'none';
-  document.getElementById('btnCoachPanel').style.display = 'none';
+  // btnCoachPanel removed with old right panel
   document.getElementById('btnResign').style.display = '';
   document.getElementById('statusBar').style.color = 'rgba(255,255,255,.9)';
 };
@@ -2313,20 +2313,21 @@ async function fetchCoachData() {
 async function fetchInlineCoach() {
   if (lastCoachData) { renderInlineCoach(lastCoachData); return; }
   const el = document.getElementById('inlineCoachContent');
-  el.innerHTML = '<div class="inline-coach-loading"><div class="spinner" style="width:14px;height:14px;border-width:2px"></div><span>Analyzing your game…</span></div>';
+  if (el) el.innerHTML = '<div class="inline-coach-loading"><div class="spinner" style="width:14px;height:14px;border-width:2px"></div><span>Analyzing your game…</span></div>';
   coachRequested = true;
   try {
     const data = await fetchCoachData();
     lastCoachData = data;
     renderInlineCoach(data);
   } catch(e) {
-    el.innerHTML = '<div class="inline-coach-placeholder">Could not reach AI Coach.</div>';
+    if (el) el.innerHTML = '<div class="inline-coach-placeholder">Could not reach AI Coach.</div>';
   }
 }
 
 // Render analysis into the inline panel (solo mode)
 function renderInlineCoach(d) {
   const el = document.getElementById('inlineCoachContent');
+  if (!el) return; // right panel removed — AI coach now in chat widget
   const smartHtml = d.smartMove ? `
     <div class="inline-coach-section">Best play</div>
     <div class="inline-coach-moment good">

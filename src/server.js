@@ -382,6 +382,30 @@ app.post('/api/coach/analyze', async (req, res) => {
   }
 });
 
+// Single player lookup — used by frontend to restore points on page load
+// GET /api/leaderboard/player?name=X&city=Y
+app.get('/api/leaderboard/player', async (req, res) => {
+  const { name, city } = req.query;
+  if (!name) return res.status(400).json({ error: 'name required' });
+  try {
+    if (isDbEnabled()) {
+      const rows = await getLeaderboardFromDB({ limit: 500 });
+      const entry = rows.find(r =>
+        r.name.toLowerCase() === String(name).toLowerCase() &&
+        (!city || r.city.toLowerCase() === String(city).toLowerCase())
+      );
+      return res.json(entry || null);
+    }
+    const entry = leaderboard.find(e =>
+      e.name.toLowerCase() === String(name).toLowerCase() &&
+      (!city || e.city.toLowerCase() === String(city).toLowerCase())
+    );
+    return res.json(entry || null);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // Mid-game move suggestion (Gemini 2.5 Flash — fast)
 // Body: { board, history, coachFor, playerName }
 app.post('/api/coach/suggest', async (req, res) => {

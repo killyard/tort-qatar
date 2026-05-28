@@ -573,6 +573,8 @@ html,body{height:100%;background:#8dbfdb;font-family:var(--sans);color:var(--ink
 .ctrl-btn.danger:hover{background:rgba(192,57,43,.2)}
 /* Suggested column highlight (mid-game coach) */
 .cell.suggested-col{outline:2.5px solid rgba(100,220,130,.85);outline-offset:-2px;background:rgba(100,220,130,.12) !important;transition:outline .15s,background .15s}
+/* Suggested column highlight (mid-game coach) */
+.cell.suggested-col{outline:2.5px solid rgba(100,220,130,.85);outline-offset:-2px;background:rgba(100,220,130,.12) !important;transition:outline .15s,background .15s}
 .ctrl-btn.coach-btn{
   background:rgba(110,30,200,.82);
   border-color:rgba(180,100,255,.55);
@@ -1929,6 +1931,7 @@ window.ngmPlayAI = function() {
   const u = loadUser();
   myName = u?.name || 'You';
   myCity = u?.city || 'Almaty';
+  loadPlayerPoints(myName, myCity);
   startSoloGame();
 };
 window.ngmCreateRoom = function() {
@@ -1936,6 +1939,7 @@ window.ngmCreateRoom = function() {
   const u = loadUser();
   myName = u?.name || 'Nomad';
   myCity = u?.city || 'Almaty';
+  loadPlayerPoints(myName, myCity);
   myPlayerNumber = 1;
   socket.emit('room:create', { name: myName, city: myCity });
   lobby.classList.add('hidden');
@@ -1947,6 +1951,7 @@ window.ngmJoin = function() {
   const u = loadUser();
   myName = u?.name || 'Nomad';
   myCity = u?.city || 'Almaty';
+  loadPlayerPoints(myName, myCity);
   myPlayerNumber = 2;
   roomId = code;           // ← fix: joiner must know their roomId
   soloMode = false;
@@ -2035,6 +2040,7 @@ document.getElementById('btnVsAI').addEventListener('click', () => {
   const n = requireName('lobbyName'); if (!n) return;
   myName = n; myCity = document.getElementById('lobbyCity').value.trim() || 'Steppe';
   saveUser(myName, myCity, selectedLang);
+  loadPlayerPoints(myName, myCity);
   startSoloGame();
 });
 
@@ -2043,6 +2049,7 @@ document.getElementById('btnCreate').addEventListener('click', () => {
   const n = requireName('lobbyName'); if (!n) return;
   myName = n; myCity = document.getElementById('lobbyCity').value.trim() || 'Steppe';
   saveUser(myName, myCity, selectedLang);
+  loadPlayerPoints(myName, myCity);
   myPlayerNumber = 1;
   socket.emit('room:create', { name: myName, city: myCity });
 });
@@ -2057,6 +2064,7 @@ function joinRoom() {
   const n = requireName('lobbyName'); if (!n) return;
   myName = n; myCity = document.getElementById('lobbyCity').value.trim() || 'Steppe';
   saveUser(myName, myCity, selectedLang);
+  loadPlayerPoints(myName, myCity);
   myPlayerNumber = 2;
   roomId = code;           // ← fix: joiner must know their roomId
   soloMode = false;
@@ -2193,6 +2201,8 @@ function startSoloGame() {
   document.getElementById('city2').textContent = 'Steppe Bot';
   document.getElementById('p2BarName').textContent = `AI (${aiDifficulty})`;
   document.getElementById('p2BarCity').textContent = 'Steppe Bot';
+  // Sync dual-timer labels
+  syncTimerLabels(myName, `AI (${aiDifficulty})`);
   // Sync dual-timer labels
   syncTimerLabels(myName, `AI (${aiDifficulty})`);
 
@@ -2788,6 +2798,9 @@ function copyText(text) {
 }
 
 // ── Leaderboard / Score post ───────────────────────────────────────────────
+
+function ptsKey(name, city) { return `pts_${name}_${city}`; }
+
 async function postScore(name, city, won, draw = false) {
   try {
     const gameType = soloMode ? 'ai' : 'pvp';
@@ -2799,9 +2812,29 @@ async function postScore(name, city, won, draw = false) {
     });
     if (res.ok) {
       const data = await res.json();
-      // Update left-panel points display
-      const el = document.getElementById('points1');
-      if (el && data.points != null) el.textContent = data.points.toLocaleString();
+      if (data.points != null) {
+        const el = document.getElementById('points1');
+        if (el) el.textContent = data.points.toLocaleString();
+        localStorage.setItem(ptsKey(name, city), data.points);
+      }
+    }
+  } catch(e) { /* offline */ }
+}
+
+// Restore player points on page load: localStorage first, then verify from server
+async function loadPlayerPoints(name, city) {
+  const cached = localStorage.getItem(ptsKey(name, city));
+  const el = document.getElementById('points1');
+  if (el && cached != null) el.textContent = Number(cached).toLocaleString();
+  try {
+    const params = new URLSearchParams({ name, city });
+    const res = await fetch(`/api/leaderboard/player?${params}`);
+    if (res.ok) {
+      const data = await res.json();
+      if (data && data.points != null) {
+        if (el) el.textContent = data.points.toLocaleString();
+        localStorage.setItem(ptsKey(name, city), data.points);
+      }
     }
   } catch(e) { /* offline */ }
 }

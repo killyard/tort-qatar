@@ -25,44 +25,51 @@ export async function analyzeGame({ winner, history, board, playerName, coachFor
     : winner === coachFor ? `Player ${coachFor} WON`
     : `Player ${coachFor} LOST`;
 
-  const prompt = `You are an expert Connect Four coach. Your job is a full chronological review of every move — not just the endgame.
+  const prompt = `You are a world-class Connect Four coach giving post-game analysis. Follow the steps below in exact order — do not skip ahead.
 
 GAME OUTCOME: ${outcome}
 COACHING FOR: Player ${coachFor} (${playerName})
 TOTAL MOVES: ${history.length}
 
-MOVE SEQUENCE (format: move_number. Player→column):
+MOVE SEQUENCE (move_number. Player→column):
 ${moveLines}
 
 FINAL BOARD (0=empty, 1=P1, 2=P2, row 0=top):
 ${board.map(r => r.join(' ')).join('\n')}
 
-ANALYSIS INSTRUCTIONS — follow these steps in order:
-1. Replay the game from move 1 to move ${history.length} mentally. For each move by Player ${coachFor}, rate it: BLUNDER / MISTAKE / NEUTRAL / GOOD / EXCELLENT.
-2. BLUNDER = missed an immediate win (3-in-a-row with an open 4th slot) OR allowed opponent to win next move without blocking.
-3. GOOD/EXCELLENT = created a fork threat, blocked opponent's winning move, secured center control, or set up a future trap.
-4. Pick the single WORST move (highest-priority blunder or mistake) → keyMoment.
-5. Pick the single BEST move by Player ${coachFor} (if any) → smartMove. If none stands out, pick the most solid defensive play.
-6. From your chronological pass, pick 3 observations: at least one must be a mistake/blunder, at least one must be a strength or smart play (even if the player lost).
+━━ ANALYSIS STEPS (execute in this order) ━━━━━━━━━━━━━━━━━━━━
 
-Respond in JSON with exactly this shape — be specific, always reference actual move numbers and column numbers:
+STEP 1 — TACTICAL SCAN (highest priority):
+Replay every move by Player ${coachFor} from move 1 to ${history.length}.
+At each of their turns ask two questions:
+  (a) Did Player ${coachFor} have an IMMEDIATE WIN available — i.e. already had 3-in-a-row (horizontal, vertical, or diagonal) with the 4th slot open and reachable? Did they take it or miss it?
+  (b) On the previous half-move, did the opponent create an immediate win threat? Did Player ${coachFor} block it or ignore it?
+Log every miss. A missed immediate win or a failed block is a BLUNDER and must be reported, no matter how early in the game it occurred.
+
+STEP 2 — STRATEGIC PATTERNS:
+Look at the full sequence for recurring themes: over-stacking one column, neglecting center (col 4), building threats that got closed off, or inadvertently helping opponent build a fork. Identify 1-2 patterns.
+
+STEP 3 — BEST PLAY (optional):
+Did Player ${coachFor} make any move that was genuinely strong — blocked a fork, created a double-threat, or grabbed a key center cell at the right moment? If yes, note it. If nothing stands out, skip this entirely.
+
+STEP 4 — ASSEMBLE RESPONSE:
+Using everything found above, fill in the JSON below.
+- summary: honest 1-sentence verdict on the overall game (max 20 words).
+- insights: exactly 3 observations, ordered by importance (most critical first). Must include any BLUNDER found in Step 1. May include a positive observation from Step 3 if one exists — but only if genuine, not as filler.
+- smartMove: ONLY include this field if Step 3 found something truly noteworthy. If nothing stood out, OMIT the field entirely.
+- keyMoment: the single worst moment — priority order: missed immediate win > failed to block opponent's win > strategic error. Always a specific move number.
+- tip: one concrete, actionable improvement for the player's next game (max 25 words).
+
+━━ OUTPUT ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Respond with raw JSON only (no markdown fences). Shape:
 {
-  "summary": "One sentence overall assessment (max 20 words)",
-  "insights": [
-    "A specific mistake or blunder with move number and column",
-    "Another mistake or pattern observed with move number",
-    "A strength or smart play noticed (even small ones count)"
-  ],
-  "smartMove": {
-    "moveNumber": <integer — the best or most solid move by Player ${coachFor}>,
-    "description": "Why this was a good play (1-2 sentences)"
-  },
-  "keyMoment": {
-    "moveNumber": <integer — the worst blunder or most decisive mistake>,
-    "description": "What happened and why it hurt (1-2 sentences)"
-  },
-  "tip": "One concrete improvement tip for next game (max 25 words)"
-}`;
+  "summary": "...",
+  "insights": ["...", "...", "..."],
+  "smartMove": { "moveNumber": <int>, "description": "..." },
+  "keyMoment": { "moveNumber": <int>, "description": "..." },
+  "tip": "..."
+}
+If omitting smartMove, just leave it out of the JSON entirely.`;
 
   try {
     const result = await model.generateContent(prompt);

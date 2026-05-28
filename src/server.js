@@ -13,7 +13,8 @@ import { getChatReply } from './aiChat.js';
 import { getGeminiMove } from './geminiPlayer.js';
 import session from 'express-session';
 import passport from 'passport';
-import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
+import passportGoogle from 'passport-google-oauth20';
+const { Strategy: GoogleStrategy } = passportGoogle;
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const PORT = process.env.PORT || 3000;

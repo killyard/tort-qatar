@@ -323,8 +323,8 @@ html,body{height:100%;background:#8dbfdb;font-family:var(--sans);color:var(--ink
   position:fixed;inset:0;z-index:100;
   background:url('/assets/auth-form.png') center/cover no-repeat;
   display:flex;align-items:center;justify-content:center;
-  /* nudge center into the door opening (below arch, above bottom frame) */
-  padding-top:5vh;padding-bottom:2vh;
+  /* center within door opening: arch ~16vh from top, bottom frame ~5vh from bottom */
+  padding-top:16vh;padding-bottom:5vh;
   transition:opacity .4s;
 }
 .lobby.hidden{opacity:0;pointer-events:none}

@@ -40,6 +40,10 @@
 - `8861fcb` fix: SyntaxError on line 1975 — single quotes in SVG innerHTML string broke auth
 - `854809f` fix: dynamic board sizes (8×7/6×5 now play correctly), transparent holes, Thinking badge centered on board, AI Coach shows after first move in solo / only at game end in multiplayer
 - `ad9ee0e` feat: move timeline scrubber after game end (step through moves, highlight chip, history-mode badge); fix modal X buttons; Thinking pill + status bar in same row above board
+- `a700840` fix: restore X button original float:right style, keep z-index fix
+- `85067c1` fix: board frame color distinct from page bg, visible hole rim
+- `5362645` feat: timeline drag+touch scrub, styled thumb, gradient fill bar
+- `760eb6b` fix: status-row aligned to board width via board-col wrapper, stronger hole rim
 
 ## Next
 

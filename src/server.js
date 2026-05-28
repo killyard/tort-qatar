@@ -106,20 +106,47 @@ const rooms = new Map();
 
 /** @type {Array<LeaderboardEntry>} */
 let leaderboard = [
-  { id: uuidv4(), name: 'Aibek', city: 'Almaty', wins: 47, gamesPlayed: 58, winRate: 81, rank: 1 },
-  { id: uuidv4(), name: 'Dinara', city: 'Astana', wins: 41, gamesPlayed: 52, winRate: 79, rank: 2 },
-  { id: uuidv4(), name: 'Yerlan', city: 'Shymkent', wins: 38, gamesPlayed: 50, winRate: 76, rank: 3 },
-  { id: uuidv4(), name: 'Saule', city: 'Almaty', wins: 33, gamesPlayed: 44, winRate: 75, rank: 4 },
-  { id: uuidv4(), name: 'Damir', city: 'Karagandy', wins: 29, gamesPlayed: 40, winRate: 73, rank: 5 },
-  { id: uuidv4(), name: 'Аida', city: 'Aktobe', wins: 25, gamesPlayed: 36, winRate: 69, rank: 6 },
-  { id: uuidv4(), name: 'Nurzhan', city: 'Pavlodar', wins: 22, gamesPlayed: 33, winRate: 67, rank: 7 },
-  { id: uuidv4(), name: 'Меруерт', city: 'Astana', wins: 18, gamesPlayed: 28, winRate: 64, rank: 8 },
-  { id: uuidv4(), name: 'Talgat', city: 'Taraz', wins: 15, gamesPlayed: 25, winRate: 60, rank: 9 },
-  { id: uuidv4(), name: 'Zarina', city: 'Atyrau', wins: 12, gamesPlayed: 22, winRate: 55, rank: 10 },
+  { id: uuidv4(), name: 'Aibek',    city: 'Almaty',    wins: 47, gamesPlayed: 58, winRate: 81, points: 1180, winStreak: 3, rank: 1 },
+  { id: uuidv4(), name: 'Dinara',   city: 'Astana',    wins: 41, gamesPlayed: 52, winRate: 79, points: 1020, winStreak: 2, rank: 2 },
+  { id: uuidv4(), name: 'Yerlan',   city: 'Shymkent',  wins: 38, gamesPlayed: 50, winRate: 76, points:  890, winStreak: 1, rank: 3 },
+  { id: uuidv4(), name: 'Saule',    city: 'Almaty',    wins: 33, gamesPlayed: 44, winRate: 75, points:  760, winStreak: 0, rank: 4 },
+  { id: uuidv4(), name: 'Damir',    city: 'Karagandy', wins: 29, gamesPlayed: 40, winRate: 73, points:  620, winStreak: 0, rank: 5 },
+  { id: uuidv4(), name: 'Аida',     city: 'Aktobe',    wins: 25, gamesPlayed: 36, winRate: 69, points:  510, winStreak: 0, rank: 6 },
+  { id: uuidv4(), name: 'Nurzhan',  city: 'Pavlodar',  wins: 22, gamesPlayed: 33, winRate: 67, points:  430, winStreak: 0, rank: 7 },
+  { id: uuidv4(), name: 'Меруерт', city: 'Astana',    wins: 18, gamesPlayed: 28, winRate: 64, points:  330, winStreak: 0, rank: 8 },
+  { id: uuidv4(), name: 'Talgat',   city: 'Taraz',     wins: 15, gamesPlayed: 25, winRate: 60, points:  260, winStreak: 0, rank: 9 },
+  { id: uuidv4(), name: 'Zarina',   city: 'Atyrau',    wins: 12, gamesPlayed: 22, winRate: 55, points:  190, winStreak: 0, rank: 10 },
 ];
 
+/**
+ * Points awarded for a WIN by game type / difficulty.
+ *   pvp        = vs real human player
+ *   ai/easy    = vs Easy bot
+ *   ai/medium  = vs Medium bot
+ *   ai/hard    = vs Hard bot
+ *   ai/gemini  = vs Gemini AI
+ * Everyone earns 2 pts just for playing (even a loss/draw).
+ * Draws give 5 pts flat (no streak).
+ */
+const WIN_POINTS = {
+  pvp:          20,
+  'ai/easy':    10,
+  'ai/medium':  15,
+  'ai/hard':    25,
+  'ai/gemini':  35,
+};
+
+/** Streak bonus added ON TOP of the win points. */
+function streakBonus(streak) {
+  if (streak >= 5) return 20;
+  if (streak === 4) return 15;
+  if (streak === 3) return 10;
+  if (streak === 2) return 5;
+  return 0;
+}
+
 function recalcRanks() {
-  leaderboard.sort((a, b) => b.wins - a.wins || b.winRate - a.winRate);
+  leaderboard.sort((a, b) => b.points - a.points || b.winRate - a.winRate);
   leaderboard.forEach((e, i) => { e.rank = i + 1; });
 }
 
@@ -143,20 +170,38 @@ app.get('/api/leaderboard/cities', (_req, res) => {
 });
 
 // Register / update player score (called after game ends)
+// Body: { name, city, won, draw?, gameType: 'pvp'|'ai', difficulty?: 'easy'|'medium'|'hard'|'gemini' }
 app.post('/api/leaderboard/score', (req, res) => {
-  const { name, city, won } = req.body;
+  const { name, city, won, draw = false, gameType = 'pvp', difficulty = '' } = req.body;
   if (!name || !city) return res.status(400).json({ error: 'name and city required' });
 
   let entry = leaderboard.find(e => e.name === name && e.city === city);
   if (!entry) {
-    entry = { id: uuidv4(), name, city, wins: 0, gamesPlayed: 0, winRate: 0, rank: 0 };
+    entry = { id: uuidv4(), name, city, wins: 0, gamesPlayed: 0, winRate: 0, points: 0, winStreak: 0, rank: 0 };
     leaderboard.push(entry);
   }
+
+  // Always award participation points
+  let earned = 2;
+
+  if (draw) {
+    entry.winStreak = 0;
+    earned = 5;
+  } else if (won) {
+    entry.wins += 1;
+    entry.winStreak = (entry.winStreak || 0) + 1;
+    const key = gameType === 'pvp' ? 'pvp' : `ai/${difficulty}`;
+    const base = WIN_POINTS[key] ?? WIN_POINTS['ai/medium'];
+    earned = base + streakBonus(entry.winStreak);
+  } else {
+    entry.winStreak = 0;
+  }
+
   entry.gamesPlayed += 1;
-  if (won) entry.wins += 1;
+  entry.points = (entry.points || 0) + earned;
   entry.winRate = Math.round((entry.wins / entry.gamesPlayed) * 100);
   recalcRanks();
-  res.json(entry);
+  res.json({ ...entry, pointsEarned: earned });
 });
 
 // ── Chat rate limiter (simple in-memory: 30 req / 10 min per IP) ──────────────

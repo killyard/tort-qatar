@@ -97,6 +97,41 @@ td.right{text-align:right}
 /* Loading spinner */
 .spinner{width:24px;height:24px;border:2px solid rgba(255,255,255,.2);border-top-color:rgba(255,255,255,.7);border-radius:999px;animation:spin 1s linear infinite;margin:30px auto}
 @keyframes spin{to{transform:rotate(360deg)}}
+
+/* Points badge */
+.pts{font-weight:600;color:#f5c842;font-variant-numeric:tabular-nums}
+
+/* Streak flame */
+.streak{font-size:12px;color:rgba(255,180,50,.85);margin-left:4px}
+
+/* Scoring guide */
+.scoring-guide{
+  margin-top:28px;
+  background:rgba(255,255,255,.09);
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  border:.5px solid rgba(255,255,255,.18);
+  border-radius:18px;
+  padding:22px 24px 26px;
+  color:rgba(255,255,255,.8);
+}
+.scoring-guide h3{
+  font-family:var(--serif);font-size:20px;font-weight:400;color:#fff;
+  margin-bottom:16px;
+}
+.scoring-section{margin-bottom:18px}
+.scoring-section:last-child{margin-bottom:0}
+.scoring-section h4{
+  font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;
+  color:rgba(255,255,255,.4);font-weight:500;margin-bottom:10px;
+}
+.score-row{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:7px 0;border-bottom:.5px solid rgba(255,255,255,.07);font-size:13.5px;
+}
+.score-row:last-child{border:none}
+.score-label{color:rgba(255,255,255,.75)}
+.score-val{font-weight:600;color:#f5c842;white-space:nowrap}
+.score-note{font-size:12px;color:rgba(255,255,255,.4);margin-top:6px;line-height:1.5}
 </style>
 </head>
 <body>
@@ -123,6 +158,36 @@ td.right{text-align:right}
       <div class="spinner"></div>
     </div>
   </div>
+
+  <!-- ── Scoring Guide ──────────────────────────────────────────────────── -->
+  <div class="scoring-guide">
+    <h3>⚡ Как начисляются очки</h3>
+
+    <div class="scoring-section">
+      <h4>Победа над ИИ</h4>
+      <div class="score-row"><span class="score-label">🤖 Лёгкий ИИ (Easy)</span><span class="score-val">+10 очков</span></div>
+      <div class="score-row"><span class="score-label">🤖 Средний ИИ (Medium)</span><span class="score-val">+15 очков</span></div>
+      <div class="score-row"><span class="score-label">🤖 Сложный ИИ (Hard)</span><span class="score-val">+25 очков</span></div>
+      <div class="score-row"><span class="score-label">🧠 Gemini AI</span><span class="score-val">+35 очков</span></div>
+    </div>
+
+    <div class="scoring-section">
+      <h4>Игра с живым соперником</h4>
+      <div class="score-row"><span class="score-label">🏆 Победа над реальным игроком</span><span class="score-val">+20 очков</span></div>
+      <div class="score-row"><span class="score-label">🤝 Ничья</span><span class="score-val">+5 очков</span></div>
+      <div class="score-row"><span class="score-label">💀 Поражение (любая игра)</span><span class="score-val">+2 очка</span></div>
+    </div>
+
+    <div class="scoring-section">
+      <h4>🔥 Бонус за серию побед подряд</h4>
+      <div class="score-row"><span class="score-label">2 победы подряд</span><span class="score-val">+5 бонус</span></div>
+      <div class="score-row"><span class="score-label">3 победы подряд</span><span class="score-val">+10 бонус</span></div>
+      <div class="score-row"><span class="score-label">4 победы подряд</span><span class="score-val">+15 бонус</span></div>
+      <div class="score-row"><span class="score-label">5+ побед подряд</span><span class="score-val">+20 бонус</span></div>
+      <p class="score-note">Бонус суммируется с очками за победу. Серия обнуляется при первом поражении или ничьей. Пример: победа над Hard AI на серии 3 = 25 + 10 = 35 очков.</p>
+    </div>
+  </div>
+
 </div>
 
 <script>
@@ -178,16 +243,18 @@ function renderTable(data) {
   const rows = data.map((e, i) => {
     const rankClass = i === 0 ? 'rank-1' : i === 1 ? 'rank-2' : i === 2 ? 'rank-3' : 'rank-other';
     const rank = i + 1;
+    const streakHtml = (e.winStreak >= 2) ? `<span class="streak">🔥${e.winStreak}</span>` : '';
     return `
       <tr>
         <td><span class="rank-badge ${rankClass}">${rank}</span></td>
         <td>
           <div class="name-cell">
             <span class="flag-icon">🏕</span>
-            <span>${esc(e.name)}</span>
+            <span>${esc(e.name)}${streakHtml}</span>
           </div>
         </td>
         <td>${esc(e.city)}</td>
+        <td class="pts">${(e.points ?? 0).toLocaleString()}</td>
         <td>${e.wins}</td>
         <td>${e.gamesPlayed}</td>
         <td class="right">
@@ -206,6 +273,7 @@ function renderTable(data) {
           <th>#</th>
           <th>Player</th>
           <th>City</th>
+          <th>Points</th>
           <th>Wins</th>
           <th>Games</th>
           <th class="right">Win rate</th>

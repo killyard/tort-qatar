@@ -11,6 +11,9 @@ import { createBoard, dropPiece, checkWinner, isDraw, findThreats, formatMoveHis
 import { analyzeGame } from './aiCoach.js';
 import { getChatReply } from './aiChat.js';
 import { getGeminiMove } from './geminiPlayer.js';
+import session from 'express-session';
+import passport from 'passport';
+import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const PORT = process.env.PORT || 3000;
@@ -20,6 +23,74 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 app.use(express.static(join(__dirname, '../public')));
+
+// ── Session + Passport ──────────────────────────────────────────────────────
+app.use(session({
+  secret: process.env.SESSION_SECRET || 'tort-qatar-dev-secret',
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    secure: process.env.NODE_ENV === 'production',
+    httpOnly: true,
+    maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+  },
+}));
+app.use(passport.initialize());
+app.use(passport.session());
+
+// Serialize/deserialize user (store full user object in session for simplicity)
+passport.serializeUser((user, done) => done(null, user));
+passport.deserializeUser((user, done) => done(null, user));
+
+// Google OAuth strategy
+passport.use(new GoogleStrategy(
+  {
+    clientID:     process.env.GOOGLE_CLIENT_ID,
+    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+    callbackURL:  (process.env.BASE_URL || 'http://localhost:3000') + '/auth/google/callback',
+    scope: ['profile', 'email'],
+  },
+  (_accessToken, _refreshToken, profile, done) => {
+    const user = {
+      id:     'google_' + profile.id,
+      name:   profile.displayName || profile.emails?.[0]?.value?.split('@')[0] || 'Guest',
+      email:  profile.emails?.[0]?.value || '',
+      avatar: profile.photos?.[0]?.value || '',
+      city:   '',
+      provider: 'google',
+    };
+    done(null, user);
+  }
+));
+
+// ── Auth routes ─────────────────────────────────────────────────────────────
+app.get('/auth/google',
+  passport.authenticate('google', { scope: ['profile', 'email'] })
+);
+
+app.get('/auth/google/callback',
+  passport.authenticate('google', { failureRedirect: '/game.html?auth=error' }),
+  (req, res) => {
+    // Merge saved city from query if present, then redirect
+    res.redirect('/game.html?auth=google');
+  }
+);
+
+app.get('/auth/logout', (req, res, next) => {
+  req.logout(err => {
+    if (err) return next(err);
+    req.session.destroy(() => res.redirect('/game.html'));
+  });
+});
+
+// Current session user
+app.get('/api/me', (req, res) => {
+  if (req.isAuthenticated() && req.user) {
+    res.json(req.user);
+  } else {
+    res.status(401).json({ error: 'not authenticated' });
+  }
+});
 
 // ── In-memory stores ───────────────────────────────────────────────────────
 /** @type {Map<string, GameRoom>} roomId → room */
@@ -200,8 +271,8 @@ app.post('/api/stripe/checkout', (req, res) => {
   });
 });
 
-// SPA fallback — any unknown GET returns index.html
-app.get('*', (_req, res) => {
+// SPA fallback — any unknown GET returns index.html (skip API + auth)
+app.get(/^(?!\/api|\/auth)/, (_req, res) => {
   res.sendFile(join(__dirname, '../public', 'index.html'));
 });
 

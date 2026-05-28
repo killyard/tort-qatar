@@ -1234,9 +1234,7 @@ let selectedLang = localStorage.getItem('lang') || 'en';
 
 // ── Auth screen (window.* so onclick= in HTML can reach them inside type="module") ──
 window.authGoogle = function() {
-  document.getElementById('authErr').textContent = '';
-  alert('Google sign-in coming soon. Entering as guest.');
-  window.enterAsGuest();
+  window.location.href = '/auth/google';
 };
 
 window.authForgot = function() {
@@ -1551,6 +1549,13 @@ const waitOverlay = document.getElementById('waitOverlay');
 
 // ── Session persistence ─────────────────────────────────────────────────────
 function saveUser(name, city, lang) {
+  // Accept object form: saveUser({ name, city, email, avatar, ... })
+  if (name && typeof name === 'object') {
+    const u = name;
+    localStorage.setItem('tq_user', JSON.stringify({ name: u.name, city: u.city || '', lang: u.lang || selectedLang, email: u.email || '', avatar: u.avatar || '', provider: u.provider || 'guest' }));
+    showUserButton(u.name, u.city);
+    return;
+  }
   localStorage.setItem('tq_user', JSON.stringify({ name, city, lang }));
   showUserButton(name, city);
 }
@@ -1617,7 +1622,7 @@ window.switchAccountFromProfile = function() {
 window.signOut = function() {
   localStorage.removeItem('tq_user');
   document.getElementById('userDropdown').classList.remove('open');
-  window.location.href = '/game.html';
+  window.location.href = '/auth/logout';
 };
 
 // ── New game modal ──────────────────────────────────────────────────────────
@@ -1703,19 +1708,40 @@ function requireName(inputId) {
   return val;
 }
 
-// ── On page load: check saved user ─────────────────────────────────────────
-const savedUser = loadUser();
-if (savedUser) {
-  // Return visit: skip auth+lobby, show new game modal directly
-  lobby.classList.add('hidden');
-  showUserButton(savedUser.name, savedUser.city);
-  if (savedUser.lang) setLang(savedUser.lang);
-  // Pre-fill lobby inputs in case user opens Change profile
-  document.getElementById('lobbyName').value = savedUser.name || '';
-  document.getElementById('lobbyCity').value = savedUser.city || '';
-  // Show new game modal automatically
-  window.openNewGame();
+// ── On page load: check session (/api/me) then localStorage ─────────────────
+async function initUser() {
+  // 1. Try server session (Google OAuth or future email auth)
+  try {
+    const r = await fetch('/api/me');
+    if (r.ok) {
+      const googleUser = await r.json();
+      saveUser(googleUser);
+      if (googleUser.lang) setLang(googleUser.lang);
+      document.getElementById('lobbyName').value = googleUser.name || '';
+      document.getElementById('lobbyCity').value = googleUser.city || '';
+      lobby.classList.add('hidden');
+      // Clean up URL param after Google redirect
+      if (window.location.search.includes('auth=')) {
+        window.history.replaceState({}, '', '/game.html');
+      }
+      window.openNewGame();
+      return;
+    }
+  } catch { /* offline / no session — fall through */ }
+
+  // 2. Fall back to localStorage (guest users)
+  const savedUser = loadUser();
+  if (savedUser) {
+    lobby.classList.add('hidden');
+    showUserButton(savedUser.name, savedUser.city);
+    if (savedUser.lang) setLang(savedUser.lang);
+    document.getElementById('lobbyName').value = savedUser.name || '';
+    document.getElementById('lobbyCity').value = savedUser.city || '';
+    window.openNewGame();
+  }
 }
+initUser();
+const savedUser = loadUser(); // keep for legacy refs below
 
 const urlParams = new URLSearchParams(window.location.search);
 const urlRoom = urlParams.get('room');

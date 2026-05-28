@@ -47,6 +47,9 @@
 - `9e79dff` fix: SVG mask overlay for transparent holes, timeline mark colors match chips
 - `c2a53d9` feat: points & streak scoring system + leaderboard guide block
 - `dc4ab36` fix: inline SVG board holes + remove timeline mark dots
+- `d222cab` feat: PostgreSQL + Redis persistence — db.js, cache.js, server.js wired up
+- `c88f9cb` style: replace index.html hero image with game.html canvas background
+- `18f2574` feat: mid-game AI Coach (Flash), post-game analysis (Pro), dual timer layout
 
 ## Next
 

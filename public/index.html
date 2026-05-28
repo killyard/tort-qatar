@@ -15,47 +15,14 @@
     --sans:"Inter",ui-sans-serif,system-ui,-apple-system,sans-serif;
   }
   *{box-sizing:border-box}
-  html,body{margin:0;padding:0;height:100%;overflow:hidden;background:#9fd2ef;
+  html,body{margin:0;padding:0;height:100%;overflow:hidden;background:#13111e;
     font-family:var(--sans);color:var(--ink);-webkit-font-smoothing:antialiased}
 
   /* ── Scene ─────────────────────────────────────────────── */
-  .scene{position:fixed;inset:0;overflow:hidden}
-  .scene::after{
-    content:"";position:absolute;inset:0;pointer-events:none;
-    mix-blend-mode:overlay;opacity:.18;
-    background-image:radial-gradient(rgba(255,255,255,.5) 1px,transparent 1.4px),
-                     radial-gradient(rgba(0,0,0,.25) 1px,transparent 1.6px);
-    background-size:3px 3px,5px 5px;background-position:0 0,1px 2px;
-  }
-  .scene::before{
-    content:"";position:absolute;inset:0;pointer-events:none;z-index:2;
-    background:
-      linear-gradient(to bottom,rgba(123,178,217,.28) 0%,rgba(123,178,217,0) 18%,rgba(123,178,217,0) 70%,rgba(120,176,93,.18) 100%),
-      radial-gradient(120% 80% at 50% 60%,transparent 50%,rgba(20,40,60,.18) 100%);
-  }
-  .scene-img{
-    position:absolute;left:50%;top:50%;
-    width:max(100vw,calc(100vh*1.5));height:max(100vh,calc(100vw/1.5));
-    transform:translate(-50%,-50%);will-change:transform;
-    user-select:none;-webkit-user-drag:none;pointer-events:none;
-  }
-  .scene-img.parallax{
-    transform:translate(calc(-50% + var(--px,0px)),calc(-50% + var(--py,0px))) scale(1.04);
-    transition:transform .4s cubic-bezier(.2,.7,.1,1);
-  }
-  .door-halo{
-    position:absolute;left:50%;top:70%;width:90px;height:170px;
-    transform:translate(-50%,-50%);
-    background:radial-gradient(50% 50% at 50% 50%,rgba(255,228,170,.32),rgba(255,228,170,0) 70%);
-    z-index:4;pointer-events:none;animation:halo 6s ease-in-out infinite;filter:blur(2px);
-  }
-  @keyframes halo{0%,100%{opacity:.55}50%{opacity:.85}}
-  .sun{
-    position:absolute;z-index:3;pointer-events:none;
-    width:520px;height:520px;left:78%;top:8%;transform:translate(-50%,-50%);
-    background:radial-gradient(closest-side,rgba(255,240,210,.5),rgba(255,240,210,0) 70%);
-    filter:blur(8px);
-  }
+  .scene{position:fixed;inset:0;overflow:hidden;z-index:0}
+  #bgCanvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+  .scene-overlay{position:absolute;inset:0;background:linear-gradient(to bottom,
+    rgba(12,10,20,.15) 0%,rgba(12,10,20,0) 50%,rgba(12,10,20,.4) 100%);pointer-events:none}
 
   /* ── Top bar ─────────────────────────────────────────── */
   .top{
@@ -64,7 +31,7 @@
     padding:26px 36px;pointer-events:none;
   }
   .top>*{pointer-events:auto}
-  .brand{display:flex;align-items:center;gap:12px;color:var(--ink);text-decoration:none}
+  .brand{display:flex;align-items:center;gap:12px;color:rgba(255,255,255,.92);text-decoration:none}
   .brand-mark{
     width:34px;height:34px;border-radius:11px;
     background:rgba(255,255,255,.62);
@@ -74,8 +41,8 @@
     display:grid;place-items:center;
   }
   .brand-mark svg{display:block}
-  .brand-name{font-family:var(--serif);font-weight:400;font-size:20px;letter-spacing:.01em;line-height:1}
-  .brand-name em{font-style:italic;font-weight:300;color:var(--ink-soft)}
+  .brand-name{font-family:var(--serif);font-weight:400;font-size:20px;letter-spacing:.01em;line-height:1;color:#fff}
+  .brand-name em{font-style:italic;font-weight:300;color:rgba(255,255,255,.6)}
   .nav{
     display:flex;align-items:center;gap:6px;
     background:rgba(255,255,255,.5);
@@ -85,7 +52,7 @@
     padding:5px;border-radius:999px;
   }
   .nav a{
-    color:var(--ink);text-decoration:none;font-size:13px;font-weight:500;
+    color:rgba(255,255,255,.88);text-decoration:none;font-size:13px;font-weight:500;
     letter-spacing:.005em;padding:8px 14px;border-radius:999px;transition:background .18s ease;
   }
   .nav a:hover{background:rgba(255,255,255,.55)}
@@ -315,10 +282,9 @@
 <body>
 
 <!-- ── Hero scene ─────────────────────────────────────────── -->
-<div class="scene" id="scene">
-  <img class="scene-img" id="sceneImg" src="/assets/hero-steppe.png" alt="" />
-  <div class="sun"></div>
-  <div class="door-halo"></div>
+<div class="scene">
+  <canvas id="bgCanvas"></canvas>
+  <div class="scene-overlay"></div>
 </div>
 
 <!-- ── Top bar ──────────────────────────────────────────────── -->
@@ -428,21 +394,82 @@
 </div><!-- /auth-screen -->
 
 <script>
-  /* ── Parallax ───────────────────────────────────────── */
-  const img = document.getElementById('sceneImg');
-  let raf=0,tx=0,ty=0,cx=0,cy=0;
-  img.classList.add('parallax');
-  window.addEventListener('pointermove',(e)=>{
-    tx=((e.clientX/window.innerWidth)-.5)*-22;
-    ty=((e.clientY/window.innerHeight)-.5)*-14;
-    if(!raf) raf=requestAnimationFrame(tick);
-  });
-  function tick(){
-    cx+=(tx-cx)*.08; cy+=(ty-cy)*.08;
-    img.style.setProperty('--px',cx.toFixed(2)+'px');
-    img.style.setProperty('--py',cy.toFixed(2)+'px');
-    raf=(Math.abs(tx-cx)>.05||Math.abs(ty-cy)>.05)?requestAnimationFrame(tick):0;
-  }
+  /* ── Background canvas (same as game.html) ─────────── */
+  (function initBg() {
+    const canvas = document.getElementById('bgCanvas');
+    const ctx = canvas.getContext('2d');
+    let W, H, t = 0;
+    const N = 55;
+    const nodes = [];
+    const CONN_DIST = 160;
+    function resize() {
+      W = window.innerWidth; H = window.innerHeight;
+      canvas.width = W; canvas.height = H;
+    }
+    window.addEventListener('resize', resize);
+    resize();
+    for (let i = 0; i < N; i++) {
+      nodes.push({ x: Math.random()*W, y: Math.random()*H,
+        vx: (Math.random()-.5)*.28, vy: (Math.random()-.5)*.28 });
+    }
+    const mouse = { x: W/2, y: H/2 };
+    document.addEventListener('mousemove', e => { mouse.x = e.clientX; mouse.y = e.clientY; });
+    function drawFrame() {
+      const g = ctx.createLinearGradient(0, 0, W, H);
+      g.addColorStop(0, `hsl(${230+Math.sin(t*.008)*18},40%,7%)`);
+      g.addColorStop(.5, `hsl(${260+Math.sin(t*.006)*14},35%,9%)`);
+      g.addColorStop(1, `hsl(${220+Math.sin(t*.01)*12},38%,6%)`);
+      ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+      const ax = W*.5+Math.sin(t*.004)*W*.25, ay = H*.38+Math.cos(t*.003)*H*.12;
+      const ag = ctx.createRadialGradient(ax,ay,0,ax,ay,W*.42);
+      ag.addColorStop(0,`hsla(${260+Math.sin(t*.005)*30},70%,55%,0.045)`);
+      ag.addColorStop(.5,`hsla(${200+Math.cos(t*.004)*20},80%,50%,0.025)`);
+      ag.addColorStop(1,'hsla(0,0%,0%,0)');
+      ctx.fillStyle=ag; ctx.fillRect(0,0,W,H);
+      const bx=W*.35+Math.cos(t*.007)*W*.2, by=H*.6+Math.sin(t*.005)*H*.1;
+      const bg2=ctx.createRadialGradient(bx,by,0,bx,by,W*.3);
+      bg2.addColorStop(0,`hsla(${180+Math.sin(t*.006)*20},65%,50%,0.035)`);
+      bg2.addColorStop(1,'hsla(0,0%,0%,0)');
+      ctx.fillStyle=bg2; ctx.fillRect(0,0,W,H);
+      const degree=new Int8Array(N), allEdges=[];
+      for(let i=0;i<N;i++) for(let j=i+1;j<N;j++){
+        const dx=nodes[i].x-nodes[j].x, dy=nodes[i].y-nodes[j].y;
+        allEdges.push({i,j,d:dx*dx+dy*dy});
+      }
+      allEdges.sort((a,b)=>a.d-b.d);
+      for(const e of allEdges){
+        if(degree[e.i]>=3||degree[e.j]>=3) continue;
+        degree[e.i]++; degree[e.j]++;
+        const d=Math.sqrt(e.d), alpha=Math.max(0,(1-d/CONN_DIST))*.24;
+        ctx.beginPath(); ctx.moveTo(nodes[e.i].x,nodes[e.i].y); ctx.lineTo(nodes[e.j].x,nodes[e.j].y);
+        ctx.strokeStyle=`rgba(180,170,255,${alpha})`; ctx.lineWidth=.6; ctx.stroke();
+      }
+      for(const n of nodes){
+        const dx=n.x-mouse.x, dy=n.y-mouse.y, d=Math.sqrt(dx*dx+dy*dy);
+        if(d<CONN_DIST*1.4){
+          const alpha=(1-d/(CONN_DIST*1.4))*.32;
+          ctx.beginPath(); ctx.moveTo(n.x,n.y); ctx.lineTo(mouse.x,mouse.y);
+          ctx.strokeStyle=`rgba(210,180,255,${alpha})`; ctx.lineWidth=.8; ctx.stroke();
+        }
+      }
+      for(const n of nodes){
+        ctx.beginPath(); ctx.arc(n.x,n.y,1.6,0,Math.PI*2);
+        ctx.fillStyle='rgba(200,190,255,0.55)'; ctx.fill();
+      }
+      ctx.beginPath(); ctx.arc(mouse.x,mouse.y,2.5,0,Math.PI*2);
+      ctx.fillStyle='rgba(220,200,255,0.7)'; ctx.fill();
+    }
+    function frame(){
+      t++;
+      for(const n of nodes){
+        n.x+=n.vx; n.y+=n.vy;
+        if(n.x<0||n.x>W) n.vx*=-1;
+        if(n.y<0||n.y>H) n.vy*=-1;
+      }
+      drawFrame(); requestAnimationFrame(frame);
+    }
+    frame();
+  })();
 
   /* ── Auth ───────────────────────────────────────────── */
   const screen = document.getElementById('authScreen');

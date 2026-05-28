@@ -24,3 +24,4 @@
   - Move completed todos to Done
   - Keep "Next" and "Todo" sections current
 - Always commit `docs/ROADMAP.md` together with the feature commit or as a follow-up
+- Always push immediately after commit — use one line: `git add -A; git commit -m "…"; git push`

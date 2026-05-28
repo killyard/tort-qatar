@@ -35,6 +35,7 @@
 - `b8ce526` feat: replace auth-form with wide 1916x821 yurt image, recalibrate door bounds
 - `6160396` fix: scale lobby bg by height (no vertical gaps), JS positioning updated
 - `39cac44` feat: remove door positioning logic, center lobby card simply, switch bg to auth.png
+- `6f2893b` docs: update ROADMAP with 39cac44
 
 ## Next
 

@@ -3126,11 +3126,24 @@ window.setBoardSize = function(el, cols, rows) {
     arrow.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="rgba(255,255,255,.7)" style="display:block"><path d="M12 4v12M6 14l6 6 6-6"/></svg>`;
     colInd.appendChild(arrow);
   }
-  // Reset solo board state
+  // Full game-state reset so old chips / game-over styles don't bleed through
+  gameStarted = false;
+  gameFinished = false;
+  aiMovePending = false;
   soloBoard = Array.from({length:rows}, () => Array(cols).fill(0));
-  soloHistory = []; soloWinCells = null; soloCurrentTurn = 1; soloStatus = 'playing';
+  soloHistory = []; soloWinCells = null; soloWinner = null;
+  soloCurrentTurn = 1; soloStatus = 'playing';
+  board.classList.remove('game-over');
+  tlHide();
   renderBoard(soloBoard, null);
   rebuildBoardMask();
+  // Re-lock board + show Start button if in solo mode
+  if (soloMode) {
+    document.getElementById('boardWrap').classList.add('board-locked');
+    document.getElementById('btnStartGame').classList.add('visible');
+    document.getElementById('btnResign').style.display = 'none';
+  }
+  updateTurnIndicators(1, 'playing');
 };
 
 async function loadMiniLeaderboard() {

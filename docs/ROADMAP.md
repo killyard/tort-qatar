@@ -40,6 +40,9 @@
 - `3c64b1a` feat: auth screen — Google / email / guest flow before lobby
 - `a8aee56` docs: update ROADMAP with 3c64b1a
 - `a25fa18` feat: auth form — always-visible email/password, forgot password, new bg image
+- `3c64b1a` feat: auth screen — Google / email / guest flow before lobby (already logged above, dedup)
+- `c0b6fe0` feat: animated Connect Four bg — falling pieces + 4-piece cursor trail
+- `9e74ad3` fix: lobby covers game UI, own canvas for animated bg
 
 ## Next
 

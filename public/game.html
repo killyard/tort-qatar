@@ -34,7 +34,66 @@ html,body{height:100%;background:#8dbfdb;font-family:var(--sans);color:var(--ink
 .cursor-piece{
   position:fixed;z-index:9999;border-radius:50%;pointer-events:none;
   transition:none;will-change:transform;
-  box-shadow:0 2px 10px rgba(0,0,0,.4);
+}
+/* ── User button (top-right, post-login) ─────────────────── */
+.user-btn{
+  position:fixed;top:14px;right:14px;z-index:200;
+  display:flex;align-items:center;gap:8px;
+  padding:7px 14px 7px 8px;border-radius:999px;border:none;cursor:pointer;
+  background:rgba(255,255,255,.14);
+  backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  border:.5px solid rgba(255,255,255,.28);
+  color:rgba(255,255,255,.9);font-size:13px;font-family:var(--sans);font-weight:500;
+  transition:background .15s;
+}
+.user-btn:hover{background:rgba(255,255,255,.22)}
+.user-avatar{
+  width:26px;height:26px;border-radius:50%;
+  background:rgba(255,255,255,.22);
+  display:flex;align-items:center;justify-content:center;
+  font-size:12px;font-weight:700;color:#fff;flex-shrink:0;
+}
+.user-dropdown{
+  position:fixed;top:52px;right:14px;z-index:201;
+  background:rgba(22,20,35,.92);
+  backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);
+  border:.5px solid rgba(255,255,255,.18);border-radius:14px;
+  padding:14px;min-width:200px;
+  box-shadow:0 16px 40px rgba(0,0,0,.45);
+  display:none;
+}
+.user-dropdown.open{display:block}
+.user-dd-name{font-size:14px;font-weight:600;color:#fff;margin-bottom:2px}
+.user-dd-city{font-size:12px;color:rgba(255,255,255,.45);margin-bottom:12px}
+.user-dd-btn{
+  width:100%;padding:9px 12px;border-radius:10px;border:none;
+  background:rgba(255,255,255,.08);color:rgba(255,255,255,.75);
+  font-size:13px;font-family:var(--sans);cursor:pointer;text-align:left;
+  transition:background .15s;margin-bottom:6px;
+}
+.user-dd-btn:hover{background:rgba(255,255,255,.16);color:#fff}
+.user-dd-btn:last-child{margin-bottom:0}
+/* ── New game modal ──────────────────────────────────────── */
+.ngm-overlay{
+  position:fixed;inset:0;z-index:300;
+  background:rgba(10,8,20,.65);
+  backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
+  display:none;align-items:center;justify-content:center;
+}
+.ngm-overlay.open{display:flex}
+.ngm-card{
+  background:rgba(255,255,255,.52);
+  backdrop-filter:blur(32px) saturate(200%);-webkit-backdrop-filter:blur(32px) saturate(200%);
+  border:.5px solid rgba(255,255,255,.75);border-radius:24px;
+  padding:28px 24px;width:360px;max-width:90vw;
+  box-shadow:0 1px 0 rgba(255,255,255,.8) inset,0 16px 48px rgba(0,0,0,.28);
+}
+.ngm-title{font-family:var(--serif);font-size:20px;font-weight:400;color:var(--ink);margin-bottom:4px}
+.ngm-sub{font-size:12px;color:var(--ink-mute);margin-bottom:20px}
+.ngm-close{
+  float:right;background:none;border:none;cursor:pointer;
+  color:var(--ink-mute);font-size:18px;line-height:1;padding:0 2px;
+  margin-top:-2px;
 }
 /* lobby covers game UI; background matches canvas palette */
 .lobby{background:linear-gradient(180deg,#0e0b1a 0%,#130a1f 55%,#0a0d18 100%)!important}
@@ -331,7 +390,7 @@ html,body{height:100%;background:#8dbfdb;font-family:var(--sans);color:var(--ink
 .auth-card{
   position:absolute;z-index:2;
   left:50%;top:50%;transform:translate(-50%,-50%);
-  width:340px;max-width:90vw;
+  width:360px;max-width:90vw;
   background:rgba(255,255,255,.52);
   backdrop-filter:blur(32px) saturate(200%);-webkit-backdrop-filter:blur(32px) saturate(200%);
   border:.5px solid rgba(255,255,255,.75);
@@ -352,7 +411,7 @@ html,body{height:100%;background:#8dbfdb;font-family:var(--sans);color:var(--ink
 .auth-social-btn:hover{background:rgba(255,255,255,.92);transform:translateY(-1px)}
 .auth-social-btn svg{flex-shrink:0}
 .auth-field{
-  width:100%;padding:10px 13px;border-radius:10px;box-sizing:border-box;
+  width:100%;padding:10px 16px;border-radius:999px;box-sizing:border-box;
   border:.5px solid rgba(29,42,35,.2);
   background:rgba(255,255,255,.55);color:var(--ink);font-size:13.5px;
   font-family:var(--sans);outline:none;margin-bottom:9px;transition:border-color .15s,background .15s;
@@ -402,7 +461,7 @@ html,body{height:100%;background:#8dbfdb;font-family:var(--sans);color:var(--ink
 .lobby-title{font-family:var(--serif);font-size:26px;font-weight:400;color:var(--ink);margin-bottom:2px}
 .lobby-sub{font-size:12px;color:var(--ink-mute);margin-bottom:20px;letter-spacing:.04em}
 .lobby-input{
-  width:100%;padding:10px 13px;border-radius:10px;box-sizing:border-box;
+  width:100%;padding:10px 16px;border-radius:999px;box-sizing:border-box;
   border:.5px solid rgba(29,42,35,.2);
   background:rgba(255,255,255,.55);color:var(--ink);font-size:13.5px;
   font-family:var(--sans);outline:none;margin-bottom:9px;transition:border-color .15s,background .15s;
@@ -445,7 +504,7 @@ html,body{height:100%;background:#8dbfdb;font-family:var(--sans);color:var(--ink
 .lobby-divider{text-align:center;color:var(--ink-mute);font-size:11px;margin:8px 0}
 .join-row{display:flex;gap:8px}
 .join-code{
-  flex:1;padding:10px 12px;border-radius:10px;box-sizing:border-box;
+  flex:1;padding:10px 16px;border-radius:999px;box-sizing:border-box;
   border:.5px solid rgba(29,42,35,.2);
   background:rgba(255,255,255,.55);color:var(--ink);font-size:13.5px;
   font-family:var(--sans);outline:none;letter-spacing:.08em;text-transform:uppercase;transition:border-color .15s,background .15s;
@@ -533,27 +592,27 @@ html,body{height:100%;background:#8dbfdb;font-family:var(--sans);color:var(--ink
     <!-- Language -->
     <div class="lobby-label" id="labelLang">Language</div>
     <div class="lobby-tab-group">
-      <button class="lobby-tab active" id="langEn" onclick="setLang('en')">🇬🇧 English</button>
-      <button class="lobby-tab"        id="langRu" onclick="setLang('ru')">🇷🇺 Русский</button>
-      <button class="lobby-tab"        id="langKk" onclick="setLang('kk')">🇰🇿 Қазақша</button>
+      <button class="lobby-tab active" id="langEn" onclick="setLang('en')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 010 20M12 2a15 15 0 000 20"/></svg> EN</button>
+      <button class="lobby-tab"        id="langRu" onclick="setLang('ru')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 010 20M12 2a15 15 0 000 20"/></svg> RU</button>
+      <button class="lobby-tab"        id="langKk" onclick="setLang('kk')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 010 20M12 2a15 15 0 000 20"/></svg> KK</button>
     </div>
 
     <!-- Mode -->
     <div class="lobby-label" id="labelMode">Mode</div>
     <div class="lobby-tab-group">
-      <button class="lobby-tab active" id="tabVsAI"     onclick="setTab('ai')"    >🤖 vs Computer</button>
-      <button class="lobby-tab"        id="tabVsFriend" onclick="setTab('friend')">👥 vs Friend</button>
+      <button class="lobby-tab active" id="tabVsAI"     onclick="setTab('ai')"    ><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/><circle cx="9" cy="10" r="1.5" fill="currentColor" stroke="none"/><circle cx="15" cy="10" r="1.5" fill="currentColor" stroke="none"/></svg> <span id="tabVsAILabel">vs AI</span></button>
+      <button class="lobby-tab"        id="tabVsFriend" onclick="setTab('friend')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 014-4h4a4 4 0 014 4v2"/><path d="M16 3.13a4 4 0 010 7.75M21 21v-2a4 4 0 00-3-3.87"/></svg> <span id="tabVsFriendLabel">vs Friend</span></button>
     </div>
 
     <!-- AI options -->
     <div id="aiOptions">
       <div class="lobby-label" id="labelDiff">Difficulty</div>
       <div class="lobby-tab-group">
-        <button class="lobby-tab active" id="diffEasy"   onclick="setDiff('easy')"  >🌱 Easy</button>
-        <button class="lobby-tab"        id="diffMedium" onclick="setDiff('medium')">⚔ Medium</button>
-        <button class="lobby-tab"        id="diffHard"   onclick="setDiff('hard')"  >🔥 Hard</button>
+        <button class="lobby-tab active" id="diffEasy"   onclick="setDiff('easy')"  ><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 100 20A10 10 0 0012 2z"/><path d="M12 6v6l4 2"/></svg> <span id="diffEasyLabel">Easy</span></button>
+        <button class="lobby-tab"        id="diffMedium" onclick="setDiff('medium')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> <span id="diffMediumLabel">Medium</span></button>
+        <button class="lobby-tab"        id="diffHard"   onclick="setDiff('hard')"  ><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg> <span id="diffHardLabel">Hard</span></button>
       </div>
-      <button class="lobby-btn primary" id="btnVsAI">Play vs Computer</button>
+      <button class="lobby-btn primary" id="btnVsAI">Play vs AI</button>
     </div>
 
     <!-- Friend options -->
@@ -568,6 +627,53 @@ html,body{height:100%;background:#8dbfdb;font-family:var(--sans);color:var(--ink
 
     <div style="margin-top:10px">
       <button class="lobby-btn outline" id="btnBack" onclick="backToAuth()">← Back</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── User button + dropdown (shown after first login) ── -->
+<button class="user-btn" id="userBtn" style="display:none" onclick="toggleUserDropdown()">
+  <div class="user-avatar" id="userAvatar">?</div>
+  <span id="userBtnName">Guest</span>
+</button>
+<div class="user-dropdown" id="userDropdown">
+  <div class="user-dd-name" id="userDdName">—</div>
+  <div class="user-dd-city" id="userDdCity">—</div>
+  <button class="user-dd-btn" onclick="openChangeProfile()">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:7px;vertical-align:middle"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 013 3L12 15l-4 1 1-4z"/></svg>Change profile
+  </button>
+  <button class="user-dd-btn" onclick="signOut()">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:7px;vertical-align:middle"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg>Sign out
+  </button>
+</div>
+
+<!-- ── New game modal (return visits) ── -->
+<div class="ngm-overlay" id="ngmOverlay" onclick="ngmOutsideClick(event)">
+  <div class="ngm-card">
+    <button class="ngm-close" onclick="closeNgm()">✕</button>
+    <div class="ngm-title">New game</div>
+    <div class="ngm-sub" id="ngmSub">Choose mode and difficulty</div>
+    <div class="lobby-label">Mode</div>
+    <div class="lobby-tab-group" style="margin-bottom:14px">
+      <button class="lobby-tab active" id="ngmTabAI"     onclick="ngmSetTab('ai')"    ><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/><circle cx="9" cy="10" r="1.5" fill="currentColor" stroke="none"/><circle cx="15" cy="10" r="1.5" fill="currentColor" stroke="none"/></svg> vs AI</button>
+      <button class="lobby-tab"        id="ngmTabFriend" onclick="ngmSetTab('friend')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 014-4h4a4 4 0 014 4v2"/><path d="M16 3.13a4 4 0 010 7.75M21 21v-2a4 4 0 00-3-3.87"/></svg> vs Friend</button>
+    </div>
+    <div id="ngmAiOpts">
+      <div class="lobby-label">Difficulty</div>
+      <div class="lobby-tab-group" style="margin-bottom:18px">
+        <button class="lobby-tab active" id="ngmDiffEasy"   onclick="ngmSetDiff('easy')"  ><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 100 20A10 10 0 0012 2z"/><path d="M12 6v6l4 2"/></svg> Easy</button>
+        <button class="lobby-tab"        id="ngmDiffMedium" onclick="ngmSetDiff('medium')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> Medium</button>
+        <button class="lobby-tab"        id="ngmDiffHard"   onclick="ngmSetDiff('hard')"  ><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg> Hard</button>
+      </div>
+      <button class="lobby-btn primary" onclick="ngmPlayAI()">Play vs AI</button>
+    </div>
+    <div id="ngmFriendOpts" style="display:none">
+      <button class="lobby-btn primary" onclick="ngmCreateRoom()">Create new room</button>
+      <div class="lobby-divider">— or join with a code —</div>
+      <div class="join-row">
+        <input class="join-code" id="ngmJoinCode" placeholder="Room code" maxlength="8" />
+        <button class="join-btn" onclick="ngmJoin()">Join</button>
+      </div>
     </div>
   </div>
 </div>
@@ -634,7 +740,7 @@ html,body{height:100%;background:#8dbfdb;font-family:var(--sans);color:var(--ink
       <button class="ctrl-btn" id="btnRematch" style="display:none" onclick="sendRematch()">↺ Rematch</button>
       <button class="ctrl-btn" id="btnCoach" style="display:none" onclick="openCoach()">🧠 AI Coach</button>
       <button class="ctrl-btn danger" id="btnResign" onclick="sendResign()">Resign</button>
-      <button class="ctrl-btn" onclick="window.location.reload()">New game</button>
+      <button class="ctrl-btn" onclick="openNewGame()">New game</button>
     </div>
   </div>
 
@@ -763,9 +869,9 @@ const LOBBY_T = {
     sub:'Connect Four · steppe duels',
     name:'Your name', city:'Your city (e.g. Almaty)',
     labelLang:'Language', labelMode:'Mode', labelDiff:'Difficulty',
-    vsAI:'🤖 vs Computer', vsFriend:'👥 vs Friend',
-    easy:'🌱 Easy', medium:'⚔ Medium', hard:'🔥 Hard',
-    playVsAI:'Play vs Computer', createRoom:'Create new room',
+    vsAI:'vs AI', vsFriend:'vs Friend',
+    easy:'Easy', medium:'Medium', hard:'Hard',
+    playVsAI:'Play vs AI', createRoom:'Create new room',
     joinDiv:'— or join with a code —', joinCode:'Room code', join:'Join',
     back:'← Back',
   },
@@ -773,9 +879,9 @@ const LOBBY_T = {
     sub:'Четыре в ряд · дуэли в степи',
     name:'Ваше имя', city:'Ваш город (напр. Алматы)',
     labelLang:'Язык', labelMode:'Режим', labelDiff:'Сложность',
-    vsAI:'🤖 против ИИ', vsFriend:'👥 против друга',
-    easy:'🌱 Легко', medium:'⚔ Средне', hard:'🔥 Сложно',
-    playVsAI:'Играть против ИИ', createRoom:'Создать комнату',
+    vsAI:'vs ИИ', vsFriend:'vs Друг',
+    easy:'Легко', medium:'Средне', hard:'Сложно',
+    playVsAI:'Играть vs ИИ', createRoom:'Создать комнату',
     joinDiv:'— или введите код комнаты —', joinCode:'Код комнаты', join:'Войти',
     back:'← Назад',
   },
@@ -783,25 +889,26 @@ const LOBBY_T = {
     sub:'Төрт қатар · дала дуэлі',
     name:'Атыңыз', city:'Қалаңыз (мыс. Алматы)',
     labelLang:'Тіл', labelMode:'Режим', labelDiff:'Қиындық',
-    vsAI:'🤖 ИИ-ға қарсы', vsFriend:'👥 досқа қарсы',
-    easy:'🌱 Оңай', medium:'⚔ Орташа', hard:'🔥 Қиын',
-    playVsAI:'ИИ-ға қарсы ойна', createRoom:'Бөлме жасау',
+    vsAI:'ЖИ-ға қарсы', vsFriend:'Досқа қарсы',
+    easy:'Оңай', medium:'Орташа', hard:'Қиын',
+    playVsAI:'ЖИ-ға қарсы ойна', createRoom:'Бөлме жасау',
     joinDiv:'— немесе код енгізіңіз —', joinCode:'Бөлме коды', join:'Кіру',
     back:'← Артқа',
   },
 };
 
-// ── Animated background: falling Connect Four pieces ─────────────────────────
+// ── Abstract background: particle mesh + aurora gradient ─────────────────────
 (function initBg() {
-  // Draw on both the game scene canvas AND the lobby canvas
   const canvases = [
     document.getElementById('bgCanvas'),
     document.getElementById('lobbyCanvas'),
   ].filter(Boolean);
   const contexts = canvases.map(c => c.getContext('2d'));
-  const COLORS = ['#f5b731','#e03535'];  // yellow & red
-  const GRID_COLOR = 'rgba(255,255,255,0.04)';
-  let W, H, pieces = [];
+  let W, H, t = 0;
+
+  const N = 55; // nodes
+  const nodes = [];
+  const CONN_DIST = 160;
 
   function resize() {
     W = window.innerWidth; H = window.innerHeight;
@@ -810,91 +917,143 @@ const LOBBY_T = {
   window.addEventListener('resize', resize);
   resize();
 
-  function makePiece(x) {
-    const r = 8 + Math.random() * 18;
-    return {
-      x: x ?? Math.random() * W,
-      y: -r * 2,
-      r,
-      color: COLORS[Math.floor(Math.random() * 2)],
-      speed: 0.25 + Math.random() * 0.55,
-      drift: (Math.random() - 0.5) * 0.18,
-      opacity: 0.12 + Math.random() * 0.22,
-    };
+  // Init nodes
+  for (let i = 0; i < N; i++) {
+    nodes.push({
+      x: Math.random() * W, y: Math.random() * H,
+      vx: (Math.random() - 0.5) * 0.28,
+      vy: (Math.random() - 0.5) * 0.28,
+    });
   }
 
-  // Seed initial pieces spread across screen
-  for (let i = 0; i < 38; i++) {
-    const p = makePiece();
-    p.y = Math.random() * H;
-    pieces.push(p);
-  }
+  // Mouse-reactive node
+  const mouse = { x: W / 2, y: H / 2 };
+  document.addEventListener('mousemove', e => { mouse.x = e.clientX; mouse.y = e.clientY; });
 
   function drawFrame(ctx) {
-    const grad = ctx.createLinearGradient(0, 0, 0, H);
-    grad.addColorStop(0, '#0e0b1a');
-    grad.addColorStop(0.5, '#130a1f');
-    grad.addColorStop(1, '#0a0d18');
-    ctx.fillStyle = grad;
+    // ── Background: slow shifting deep gradient ──
+    const g = ctx.createLinearGradient(0, 0, W, H);
+    const hue = (t * 0.012) % 360;
+    g.addColorStop(0, `hsl(${230 + Math.sin(t*0.008)*18},40%,7%)`);
+    g.addColorStop(0.5, `hsl(${260 + Math.sin(t*0.006)*14},35%,9%)`);
+    g.addColorStop(1, `hsl(${220 + Math.sin(t*0.01)*12},38%,6%)`);
+    ctx.fillStyle = g;
     ctx.fillRect(0, 0, W, H);
-    // grid
-    ctx.strokeStyle = GRID_COLOR; ctx.lineWidth = 1;
-    const gap = 54;
-    for (let x = gap/2; x < W; x += gap) { ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,H); ctx.stroke(); }
-    for (let y = gap/2; y < H; y += gap) { ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke(); }
-    // pieces
-    for (const p of pieces) {
-      ctx.save();
-      ctx.globalAlpha = p.opacity;
-      ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
-      ctx.fillStyle = p.color; ctx.shadowColor = p.color; ctx.shadowBlur = 10; ctx.fill();
-      ctx.globalAlpha = p.opacity * 0.5;
-      ctx.beginPath(); ctx.arc(p.x - p.r*.28, p.y - p.r*.28, p.r*.42, 0, Math.PI*2);
-      ctx.fillStyle = 'rgba(255,255,255,0.6)'; ctx.shadowBlur = 0; ctx.fill();
-      ctx.restore();
+
+    // ── Aurora streak: large blurred ellipse drifting ──
+    const ax = W * 0.5 + Math.sin(t * 0.004) * W * 0.25;
+    const ay = H * 0.38 + Math.cos(t * 0.003) * H * 0.12;
+    const ag = ctx.createRadialGradient(ax, ay, 0, ax, ay, W * 0.42);
+    ag.addColorStop(0, `hsla(${260 + Math.sin(t*0.005)*30},70%,55%,0.045)`);
+    ag.addColorStop(0.5, `hsla(${200 + Math.cos(t*0.004)*20},80%,50%,0.025)`);
+    ag.addColorStop(1, 'hsla(0,0%,0%,0)');
+    ctx.fillStyle = ag;
+    ctx.fillRect(0, 0, W, H);
+
+    // Secondary aurora
+    const bx = W * 0.35 + Math.cos(t * 0.007) * W * 0.2;
+    const by = H * 0.6 + Math.sin(t * 0.005) * H * 0.1;
+    const bg2 = ctx.createRadialGradient(bx, by, 0, bx, by, W * 0.3);
+    bg2.addColorStop(0, `hsla(${180 + Math.sin(t*0.006)*20},65%,50%,0.035)`);
+    bg2.addColorStop(1, 'hsla(0,0%,0%,0)');
+    ctx.fillStyle = bg2;
+    ctx.fillRect(0, 0, W, H);
+
+    // ── Particle network — each node connects to its 4 nearest (Connect Four) ──
+    const drawn = new Set();
+    for (let i = 0; i < N; i++) {
+      // Find 4 nearest neighbours
+      const dists = [];
+      for (let j = 0; j < N; j++) {
+        if (i === j) continue;
+        const dx = nodes[i].x - nodes[j].x;
+        const dy = nodes[i].y - nodes[j].y;
+        dists.push({ j, d: Math.sqrt(dx*dx + dy*dy) });
+      }
+      dists.sort((a, b) => a.d - b.d);
+      for (let k = 0; k < 3; k++) {
+        const { j, d } = dists[k];
+        const key = i < j ? `${i}-${j}` : `${j}-${i}`;
+        if (drawn.has(key)) continue;
+        drawn.add(key);
+        const alpha = Math.max(0, (1 - d / CONN_DIST)) * 0.22;
+        ctx.beginPath();
+        ctx.moveTo(nodes[i].x, nodes[i].y);
+        ctx.lineTo(nodes[j].x, nodes[j].y);
+        ctx.strokeStyle = `rgba(180,170,255,${alpha})`;
+        ctx.lineWidth = 0.6;
+        ctx.stroke();
+      }
     }
+
+    // Mouse connections
+    for (const n of nodes) {
+      const dx = n.x - mouse.x, dy = n.y - mouse.y;
+      const d = Math.sqrt(dx*dx + dy*dy);
+      if (d < CONN_DIST * 1.4) {
+        const alpha = (1 - d / (CONN_DIST * 1.4)) * 0.32;
+        ctx.beginPath();
+        ctx.moveTo(n.x, n.y);
+        ctx.lineTo(mouse.x, mouse.y);
+        ctx.strokeStyle = `rgba(210,180,255,${alpha})`;
+        ctx.lineWidth = 0.8;
+        ctx.stroke();
+      }
+    }
+
+    // Nodes (dots)
+    for (const n of nodes) {
+      ctx.beginPath();
+      ctx.arc(n.x, n.y, 1.6, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(200,190,255,0.55)';
+      ctx.fill();
+    }
+
+    // Mouse node
+    ctx.beginPath();
+    ctx.arc(mouse.x, mouse.y, 2.5, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(220,200,255,0.7)';
+    ctx.fill();
   }
 
   function frame() {
-    for (const ctx of contexts) drawFrame(ctx);
-    for (const p of pieces) {
-      p.y += p.speed; p.x += p.drift;
-      if (p.y > H + p.r*2) Object.assign(p, makePiece(Math.random()*W));
+    t++;
+    // Move nodes
+    for (const n of nodes) {
+      n.x += n.vx; n.y += n.vy;
+      if (n.x < 0 || n.x > W) n.vx *= -1;
+      if (n.y < 0 || n.y > H) n.vy *= -1;
     }
+    for (const ctx of contexts) drawFrame(ctx);
     requestAnimationFrame(frame);
   }
   frame();
 })();
 
-// ── Cursor-following 4 pieces ─────────────────────────────────────────────────
+// ── Cursor trail: 4 connected dots ───────────────────────────────────────────
 (function initCursor() {
-  const COLORS = ['#f5b731','#e03535','#f5b731','#e03535'];
-  const SIZE   = [18, 15, 12, 9];  // decreasing tail
-  const LERP   = [0.18, 0.13, 0.09, 0.065];
-
-  const nodes = COLORS.map((color, i) => {
+  const nodes = Array.from({length: 4}, (_, i) => {
     const el = document.createElement('div');
+    const s = 10 - i * 1.8;
     el.className = 'cursor-piece';
-    const s = SIZE[i];
-    el.style.cssText = `width:${s}px;height:${s}px;background:${color};margin-left:${-s/2}px;margin-top:${-s/2}px;opacity:${0.85 - i*0.12}`;
+    el.style.cssText = `width:${s}px;height:${s}px;background:rgba(200,180,255,${0.7 - i*0.14});margin-left:${-s/2}px;margin-top:${-s/2}px`;
     document.body.appendChild(el);
-    return { el, x: -100, y: -100, lerp: LERP[i] };
+    return { el, x: -100, y: -100, lerp: 0.22 - i * 0.04 };
   });
 
   let mx = -100, my = -100;
   document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
 
-  function tick() {
+  (function tick() {
     let tx = mx, ty = my;
     for (const n of nodes) {
       n.x += (tx - n.x) * n.lerp;
       n.y += (ty - n.y) * n.lerp;
       n.el.style.transform = `translate(${n.x}px,${n.y}px)`;
-      tx = n.x; ty = n.y;  // each piece follows the one before it
+      tx = n.x; ty = n.y;
     }
     requestAnimationFrame(tick);
-  }
-  tick();
+  })();
 })();
 
 window.setLang = function(lang) {
@@ -911,12 +1070,12 @@ window.setLang = function(lang) {
   document.getElementById('labelLang').textContent     = t.labelLang;
   document.getElementById('labelMode').textContent     = t.labelMode;
   document.getElementById('labelDiff').textContent     = t.labelDiff;
-  document.getElementById('tabVsAI').textContent       = t.vsAI;
-  document.getElementById('tabVsFriend').textContent   = t.vsFriend;
-  document.getElementById('diffEasy').textContent      = t.easy;
-  document.getElementById('diffMedium').textContent    = t.medium;
-  document.getElementById('diffHard').textContent      = t.hard;
-  document.getElementById('btnVsAI').textContent       = t.playVsAI;
+  document.getElementById('tabVsAILabel').textContent    = t.vsAI;
+  document.getElementById('tabVsFriendLabel').textContent = t.vsFriend;
+  document.getElementById('diffEasyLabel').textContent   = t.easy;
+  document.getElementById('diffMediumLabel').textContent = t.medium;
+  document.getElementById('diffHardLabel').textContent   = t.hard;
+  document.getElementById('btnVsAI').textContent         = t.playVsAI;
   document.getElementById('btnCreate').textContent     = t.createRoom;
   document.getElementById('joinDivider').textContent   = t.joinDiv;
   document.getElementById('joinCode').placeholder      = t.joinCode;
@@ -990,17 +1149,136 @@ function highlightCol(col, on) {
 const lobby = document.getElementById('lobby');
 const waitOverlay = document.getElementById('waitOverlay');
 
+// ── Session persistence ─────────────────────────────────────────────────────
+function saveUser(name, city, lang) {
+  localStorage.setItem('tq_user', JSON.stringify({ name, city, lang }));
+  showUserButton(name, city);
+}
+
+function loadUser() {
+  try { return JSON.parse(localStorage.getItem('tq_user')); } catch { return null; }
+}
+
+function showUserButton(name, city) {
+  const btn = document.getElementById('userBtn');
+  btn.style.display = 'flex';
+  document.getElementById('userAvatar').textContent = (name || '?')[0].toUpperCase();
+  document.getElementById('userBtnName').textContent = name || 'Guest';
+  document.getElementById('userDdName').textContent = name || 'Guest';
+  document.getElementById('userDdCity').textContent = city || '';
+}
+
+window.toggleUserDropdown = function() {
+  document.getElementById('userDropdown').classList.toggle('open');
+};
+document.addEventListener('click', e => {
+  if (!e.target.closest('#userBtn') && !e.target.closest('#userDropdown'))
+    document.getElementById('userDropdown').classList.remove('open');
+});
+
+window.openChangeProfile = function() {
+  document.getElementById('userDropdown').classList.remove('open');
+  // Show lobby form to update profile
+  lobby.classList.remove('hidden');
+  document.getElementById('authCard').style.display = 'none';
+  document.getElementById('lobbyCard').style.display = 'block';
+  const u = loadUser();
+  if (u) {
+    document.getElementById('lobbyName').value = u.name || '';
+    document.getElementById('lobbyCity').value = u.city || '';
+  }
+};
+
+window.signOut = function() {
+  localStorage.removeItem('tq_user');
+  document.getElementById('userBtn').style.display = 'none';
+  document.getElementById('userDropdown').classList.remove('open');
+  location.reload();
+};
+
+// ── New game modal ──────────────────────────────────────────────────────────
+let ngmTab = 'ai', ngmDiff = 'medium';
+
+window.openNewGame = function() {
+  document.getElementById('ngmOverlay').classList.add('open');
+};
+window.closeNgm = function() {
+  document.getElementById('ngmOverlay').classList.remove('open');
+};
+window.ngmOutsideClick = function(e) {
+  if (e.target === document.getElementById('ngmOverlay')) window.closeNgm();
+};
+window.ngmSetTab = function(tab) {
+  ngmTab = tab;
+  document.getElementById('ngmTabAI').classList.toggle('active', tab === 'ai');
+  document.getElementById('ngmTabFriend').classList.toggle('active', tab === 'friend');
+  document.getElementById('ngmAiOpts').style.display = tab === 'ai' ? '' : 'none';
+  document.getElementById('ngmFriendOpts').style.display = tab === 'friend' ? '' : 'none';
+};
+window.ngmSetDiff = function(d) {
+  ngmDiff = d;
+  ['easy','medium','hard'].forEach(x => {
+    document.getElementById('ngmDiff' + x.charAt(0).toUpperCase() + x.slice(1))
+      .classList.toggle('active', x === d);
+  });
+};
+window.ngmPlayAI = function() {
+  window.closeNgm();
+  aiDifficulty = ngmDiff;
+  const u = loadUser();
+  myName = u?.name || 'You';
+  myCity = u?.city || 'Almaty';
+  startSoloGame();
+};
+window.ngmCreateRoom = function() {
+  window.closeNgm();
+  const u = loadUser();
+  myName = u?.name || 'Nomad';
+  myCity = u?.city || 'Almaty';
+  myPlayerNumber = 1;
+  socket.emit('room:create', { name: myName, city: myCity });
+  lobby.classList.add('hidden');
+};
+window.ngmJoin = function() {
+  window.closeNgm();
+  const code = document.getElementById('ngmJoinCode').value.trim().toUpperCase();
+  if (!code) return;
+  const u = loadUser();
+  myName = u?.name || 'Nomad';
+  myCity = u?.city || 'Almaty';
+  myPlayerNumber = 2;
+  socket.emit('room:join', { roomId: code, name: myName, city: myCity });
+  lobby.classList.add('hidden');
+};
+
+// ── On page load: check saved user ─────────────────────────────────────────
+const savedUser = loadUser();
+if (savedUser) {
+  // Return visit: skip auth+lobby, show new game modal directly
+  lobby.classList.add('hidden');
+  showUserButton(savedUser.name, savedUser.city);
+  if (savedUser.lang) setLang(savedUser.lang);
+  // Pre-fill lobby inputs in case user opens Change profile
+  document.getElementById('lobbyName').value = savedUser.name || '';
+  document.getElementById('lobbyCity').value = savedUser.city || '';
+  // Show new game modal automatically
+  window.openNewGame();
+}
+
 const urlParams = new URLSearchParams(window.location.search);
 const urlRoom = urlParams.get('room');
 if (urlRoom) {
   document.getElementById('joinCode').value = urlRoom.toUpperCase();
+  document.getElementById('ngmJoinCode').value = urlRoom.toUpperCase();
   setTab('friend');
+  if (savedUser) { window.closeNgm(); window.ngmSetTab('friend'); window.openNewGame(); }
 }
 
-// vs AI
+// vs AI — save user on play
 document.getElementById('btnVsAI').addEventListener('click', () => {
   myName = document.getElementById('lobbyName').value.trim() || 'You';
   myCity = document.getElementById('lobbyCity').value.trim() || 'Almaty';
+  saveUser(myName, myCity, selectedLang);
   startSoloGame();
 });
 
@@ -1008,6 +1286,7 @@ document.getElementById('btnVsAI').addEventListener('click', () => {
 document.getElementById('btnCreate').addEventListener('click', () => {
   myName = document.getElementById('lobbyName').value.trim() || 'Nomad';
   myCity = document.getElementById('lobbyCity').value.trim() || 'Almaty';
+  saveUser(myName, myCity, selectedLang);
   myPlayerNumber = 1;
   socket.emit('room:create', { name: myName, city: myCity });
 });
@@ -1021,6 +1300,7 @@ function joinRoom() {
   if (!code) return;
   myName = document.getElementById('lobbyName').value.trim() || 'Nomad';
   myCity = document.getElementById('lobbyCity').value.trim() || 'Almaty';
+  saveUser(myName, myCity, selectedLang);
   myPlayerNumber = 2;
   socket.emit('room:join', { roomId: code, name: myName, city: myCity });
 }

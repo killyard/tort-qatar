@@ -2452,4 +2452,130 @@ function appendCoachMsg(text, cls) {
   const area = document.getElementById('chatArea');
   if (!area) return null;
   const div = document.createElement('div');
-  div.className = 'chat-msg ' + (cls 
+  div.className = 'chat-msg ' + (cls || 'coach');
+  div.innerHTML = '<span class="msg-name coach">\ud83e\udde0\u00a0Coach</span><span class="msg-body">' + esc(text) + '</span>';
+  area.appendChild(div);
+  area.scrollTop = area.scrollHeight;
+  return div;
+}
+
+function renderCoachInChat(d) {
+  const area = document.getElementById('chatArea');
+  if (!area) return;
+  const s1 = document.createElement('div');
+  s1.className = 'chat-msg coach'; s1.innerHTML = '<span class="msg-name coach">\ud83e\udde0\u00a0Coach</span><span class="msg-body">' + esc(d.summary) + '</span>';
+  area.appendChild(s1);
+  if (d.insights && d.insights.length) {
+    const s2 = document.createElement('div');
+    s2.className = 'chat-msg coach';
+    s2.innerHTML = '<span class="msg-name coach">\ud83d\udcca\u00a0Observations</span><span class="msg-body">' + esc(d.insights.join('\n')) + '</span>';
+    area.appendChild(s2);
+  }
+  if (d.smartMove) {
+    const s3 = document.createElement('div');
+    s3.className = 'chat-msg coach';
+    s3.innerHTML = '<span class="msg-name coach">\u2728\u00a0Best play (move #' + (d.smartMove.moveNumber ?? '?') + ')</span><span class="msg-body">' + esc(d.smartMove.description ?? '') + '</span>';
+    area.appendChild(s3);
+  }
+  if (d.keyMoment) {
+    const s4 = document.createElement('div');
+    s4.className = 'chat-msg coach';
+    s4.innerHTML = '<span class="msg-name coach">\u26a0\ufe0f\u00a0Key moment (move #' + (d.keyMoment.moveNumber ?? '?') + ')</span><span class="msg-body">' + esc(d.keyMoment.description ?? '') + '</span>';
+    area.appendChild(s4);
+  }
+  if (d.tip) {
+    const s5 = document.createElement('div');
+    s5.className = 'chat-msg coach';
+    s5.innerHTML = '<span class="msg-name coach">\ud83d\udca1\u00a0Tip</span><span class="msg-body">' + esc(d.tip) + '</span>';
+    area.appendChild(s5);
+  }
+  area.scrollTop = area.scrollHeight;
+  const cw = document.getElementById('chatWidget');
+  if (cw && cw.classList.contains('collapsed')) document.getElementById('chatUnreadDot').classList.add('visible');
+}
+
+function renderCoach(d) {
+  const smartMoveHtml = d.smartMove ? `
+    <div class="coach-section-title">Best play</div>
+    <div class="key-moment" style="border-color:rgba(100,220,130,.35);background:rgba(100,220,130,.08)">
+      <div class="key-moment-move" style="color:#6ddc82">Move #${d.smartMove.moveNumber ?? '?'} \u2726</div>
+      <div class="key-moment-desc">${esc(d.smartMove.description ?? '')}</div>
+    </div>` : '';
+  document.getElementById('coachContent').innerHTML = `
+    <div class="coach-summary">${esc(d.summary)}</div>
+    <div class="coach-section-title">Observations</div>
+    <div class="coach-insights">
+      ${d.insights.map(i => `<div class="coach-insight"><span class="insight-dot"></span><span>${esc(i)}</span></div>`).join('')}
+    </div>
+    ${smartMoveHtml}
+    <div class="coach-section-title">Biggest mistake</div>
+    <div class="key-moment">
+      <div class="key-moment-move">Move #${d.keyMoment?.moveNumber ?? '?'}</div>
+      <div class="key-moment-desc">${esc(d.keyMoment?.description ?? '')}</div>
+    </div>
+    <div class="coach-section-title">Tip for next game</div>
+    <div class="coach-tip">\ud83d\udca1 ${esc(d.tip)}</div>
+  `;
+  document.getElementById('coachActions').style.display = 'flex';
+}
+
+window.closeCoach = function() { document.getElementById('coachModal').classList.remove('open'); };
+
+// \u2500\u2500 Stripe stub \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+window.openStripe = async function openStripe() {
+  try {
+    const res = await fetch('/api/stripe/checkout', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ plan: 'pro_monthly' }),
+    });
+    const { url, note } = await res.json();
+    alert(`Pro checkout: ${url}\n\n${note}`);
+  } catch(e) { alert('Stripe not configured. Add STRIPE_SECRET_KEY to .env'); }
+};
+
+// \u2500\u2500 Keyboard \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeCoach();
+  const col = parseInt(e.key) - 1;
+  if (col >= 0 && col < 7 && isMyTurn()) handleCellClick(col);
+});
+
+// \u2500\u2500 Customization helpers \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+window.setPlayerToken = function(el) {
+  document.querySelectorAll('.token-opt').forEach(b => b.classList.remove('selected'));
+  el.classList.add('selected');
+  const token = el.dataset.token;
+  document.getElementById('av1').textContent = token;
+  document.getElementById('userAvatar').textContent = token;
+  const u = loadUser();
+  if (u) { u.token = token; saveUser(u); }
+};
+
+window.setBoardSize = function(el, cols, rows) {
+  document.querySelectorAll('.board-size-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+};
+
+async function loadMiniLeaderboard() {
+  try {
+    const r = await fetch('/api/leaderboard');
+    const data = await r.json();
+    const lb = document.getElementById('miniLeaderboard');
+    if (!lb) return;
+    const rows = (data.leaders || data).slice(0, 6);
+    lb.innerHTML = rows.map((p, i) => {
+      const medal = i === 0 ? '\ud83e\uddf�' : i === 1 ? '\ud83e\uddf�' : i === 2 ? '\ud83e\uddf‰' : '';
+      return `<div class="mini-lb-row">
+        ${medal ? `<span style="font-size:13px">${medal}</span>` : `<span class="mini-lb-rank">${i+1}</span>`}
+        <span class="mini-lb-name">${p.name || p.playerName || 'Unknown'}</span>
+        <span class="mini-lb-score">${p.wins || p.score || 0}W</span>
+      </div>`;
+    }).join('');
+  } catch(e) { /* silent */ }
+}
+document.addEventListener('DOMContentLoaded', () => setTimeout(loadMiniLeaderboard, 1500));
+
+</script>
+</body>
+</html>

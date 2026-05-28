@@ -357,7 +357,6 @@ html,body{height:100%;background:#8dbfdb;font-family:var(--sans);color:var(--ink
   background:rgba(160,38,22,.14)!important;
   box-shadow:0 5px 22px rgba(192,57,43,.5),inset 0 1px 0 rgba(255,255,255,.06)!important;
 }
-/* Inner glass disc — handles visuals + pendulum rotation */
 .chip-face{
   position:absolute;inset:2px;border-radius:50%;
   display:flex;align-items:center;justify-content:center;
@@ -389,18 +388,15 @@ html,body{height:100%;background:#8dbfdb;font-family:var(--sans);color:var(--ink
   backdrop-filter:blur(4px) saturate(1.6);
   -webkit-backdrop-filter:blur(4px) saturate(1.6);
 }
-/* Kazakh ornament SVG inside chip */
 .chip-ornament{
   width:78%;height:78%;
   position:relative;z-index:1;flex-shrink:0;pointer-events:none;
 }
-/* Pendulum rocking: -30°→+30°→-30° */
 @keyframes chip-rock{
   0%  {transform:perspective(260px) rotateY(-30deg)}
   50% {transform:perspective(260px) rotateY(30deg)}
   100%{transform:perspective(260px) rotateY(-30deg)}
 }
-/* Winner: chip face glows too */
 .cell.winner-cell .chip-face{
   animation:chip-rock 3.6s ease-in-out infinite,winner-face-glow 1s ease-in-out infinite alternate;
 }
@@ -2082,11 +2078,10 @@ function renderState(state) {
   }
 }
 
-// ── Kazakh ornament SVGs ────────────────────────────────────────────────────
-// P1: Shanyrak (шаңырақ) — yurt crown wheel with 8 spokes
+// ── Kazakh ornament SVGs ─────────────────────────────────────────────────
+// P1: Shanyrak (yurt crown wheel, 8 spokes)
 const SHANYRAQ_SVG = `<svg class="chip-ornament" viewBox="0 0 56 56" xmlns="http://www.w3.org/2000/svg"><circle cx="28" cy="28" r="23.5" fill="none" stroke="rgba(255,255,255,.40)" stroke-width="1.5" stroke-dasharray="3.8 2.4"/><circle cx="28" cy="28" r="11" fill="none" stroke="rgba(255,255,255,.30)" stroke-width="1"/><line x1="28" y1="4.5" x2="28" y2="17" stroke="rgba(255,255,255,.42)" stroke-width="1.4" stroke-linecap="round"/><line x1="28" y1="39" x2="28" y2="51.5" stroke="rgba(255,255,255,.42)" stroke-width="1.4" stroke-linecap="round"/><line x1="4.5" y1="28" x2="17" y2="28" stroke="rgba(255,255,255,.42)" stroke-width="1.4" stroke-linecap="round"/><line x1="39" y1="28" x2="51.5" y2="28" stroke="rgba(255,255,255,.42)" stroke-width="1.4" stroke-linecap="round"/><line x1="35.8" y1="20.2" x2="44.6" y2="11.4" stroke="rgba(255,255,255,.28)" stroke-width="1.1" stroke-linecap="round"/><line x1="20.2" y1="20.2" x2="11.4" y2="11.4" stroke="rgba(255,255,255,.28)" stroke-width="1.1" stroke-linecap="round"/><line x1="35.8" y1="35.8" x2="44.6" y2="44.6" stroke="rgba(255,255,255,.28)" stroke-width="1.1" stroke-linecap="round"/><line x1="20.2" y1="35.8" x2="11.4" y2="44.6" stroke="rgba(255,255,255,.28)" stroke-width="1.1" stroke-linecap="round"/><circle cx="28" cy="28" r="4.5" fill="rgba(255,255,255,.42)" stroke="rgba(255,255,255,.58)" stroke-width=".9"/><circle cx="28" cy="4.5" r="2.2" fill="rgba(255,255,255,.50)"/><circle cx="28" cy="51.5" r="2.2" fill="rgba(255,255,255,.50)"/><circle cx="4.5" cy="28" r="2.2" fill="rgba(255,255,255,.50)"/><circle cx="51.5" cy="28" r="2.2" fill="rgba(255,255,255,.50)"/></svg>`;
-
-// P2: Koshkar Muiz (қошқар мүйіз) — 4-fold ram-horn pattern
+// P2: Koshkar Muiz (4-fold ram-horn pattern)
 const KOSHKAR_SVG = `<svg class="chip-ornament" viewBox="0 0 56 56" xmlns="http://www.w3.org/2000/svg"><circle cx="28" cy="28" r="23.5" fill="none" stroke="rgba(255,255,255,.35)" stroke-width="1.3"/><g fill="none" stroke-linecap="round"><g><line x1="28" y1="28" x2="28" y2="18" stroke="rgba(255,255,255,.38)" stroke-width="1.2"/><path d="M28,18 C22,12 10,14 8,20 C6,24 10,27 14,23" stroke="rgba(255,255,255,.46)" stroke-width="1.4"/><path d="M28,18 C34,12 46,14 48,20 C50,24 46,27 42,23" stroke="rgba(255,255,255,.46)" stroke-width="1.4"/></g><g transform="rotate(90,28,28)"><line x1="28" y1="28" x2="28" y2="18" stroke="rgba(255,255,255,.38)" stroke-width="1.2"/><path d="M28,18 C22,12 10,14 8,20 C6,24 10,27 14,23" stroke="rgba(255,255,255,.46)" stroke-width="1.4"/><path d="M28,18 C34,12 46,14 48,20 C50,24 46,27 42,23" stroke="rgba(255,255,255,.46)" stroke-width="1.4"/></g><g transform="rotate(180,28,28)"><line x1="28" y1="28" x2="28" y2="18" stroke="rgba(255,255,255,.38)" stroke-width="1.2"/><path d="M28,18 C22,12 10,14 8,20 C6,24 10,27 14,23" stroke="rgba(255,255,255,.46)" stroke-width="1.4"/><path d="M28,18 C34,12 46,14 48,20 C50,24 46,27 42,23" stroke="rgba(255,255,255,.46)" stroke-width="1.4"/></g><g transform="rotate(270,28,28)"><line x1="28" y1="28" x2="28" y2="18" stroke="rgba(255,255,255,.38)" stroke-width="1.2"/><path d="M28,18 C22,12 10,14 8,20 C6,24 10,27 14,23" stroke="rgba(255,255,255,.46)" stroke-width="1.4"/><path d="M28,18 C34,12 46,14 48,20 C50,24 46,27 42,23" stroke="rgba(255,255,255,.46)" stroke-width="1.4"/></g></g><polygon points="28,23.5 32.5,28 28,32.5 23.5,28" fill="rgba(255,255,255,.40)" stroke="rgba(255,255,255,.54)" stroke-width=".8"/></svg>`;
 
 function chipFaceHTML(playerNum) {
@@ -2462,27 +2457,32 @@ function appendCoachMsg(text, cls) {
 function renderCoachInChat(d) {
   const area = document.getElementById('chatArea');
   if (!area) return;
+  // Summary
   const s1 = document.createElement('div');
   s1.className = 'chat-msg coach'; s1.innerHTML = '<span class="msg-name coach">\ud83e\udde0\u00a0Coach</span><span class="msg-body">' + esc(d.summary) + '</span>';
   area.appendChild(s1);
+  // Insights
   if (d.insights && d.insights.length) {
     const s2 = document.createElement('div');
     s2.className = 'chat-msg coach';
     s2.innerHTML = '<span class="msg-name coach">\ud83d\udcca\u00a0Observations</span><span class="msg-body">' + esc(d.insights.join('\n')) + '</span>';
     area.appendChild(s2);
   }
+  // Best play
   if (d.smartMove) {
     const s3 = document.createElement('div');
     s3.className = 'chat-msg coach';
     s3.innerHTML = '<span class="msg-name coach">\u2728\u00a0Best play (move #' + (d.smartMove.moveNumber ?? '?') + ')</span><span class="msg-body">' + esc(d.smartMove.description ?? '') + '</span>';
     area.appendChild(s3);
   }
+  // Key moment
   if (d.keyMoment) {
     const s4 = document.createElement('div');
     s4.className = 'chat-msg coach';
     s4.innerHTML = '<span class="msg-name coach">\u26a0\ufe0f\u00a0Key moment (move #' + (d.keyMoment.moveNumber ?? '?') + ')</span><span class="msg-body">' + esc(d.keyMoment.description ?? '') + '</span>';
     area.appendChild(s4);
   }
+  // Tip
   if (d.tip) {
     const s5 = document.createElement('div');
     s5.className = 'chat-msg coach';
@@ -2490,6 +2490,7 @@ function renderCoachInChat(d) {
     area.appendChild(s5);
   }
   area.scrollTop = area.scrollHeight;
+  // Show unread dot if widget collapsed
   const cw = document.getElementById('chatWidget');
   if (cw && cw.classList.contains('collapsed')) document.getElementById('chatUnreadDot').classList.add('visible');
 }
@@ -2498,9 +2499,10 @@ function renderCoach(d) {
   const smartMoveHtml = d.smartMove ? `
     <div class="coach-section-title">Best play</div>
     <div class="key-moment" style="border-color:rgba(100,220,130,.35);background:rgba(100,220,130,.08)">
-      <div class="key-moment-move" style="color:#6ddc82">Move #${d.smartMove.moveNumber ?? '?'} \u2726</div>
+      <div class="key-moment-move" style="color:#6ddc82">Move #${d.smartMove.moveNumber ?? '?'} ✦</div>
       <div class="key-moment-desc">${esc(d.smartMove.description ?? '')}</div>
     </div>` : '';
+
   document.getElementById('coachContent').innerHTML = `
     <div class="coach-summary">${esc(d.summary)}</div>
     <div class="coach-section-title">Observations</div>
@@ -2514,14 +2516,14 @@ function renderCoach(d) {
       <div class="key-moment-desc">${esc(d.keyMoment?.description ?? '')}</div>
     </div>
     <div class="coach-section-title">Tip for next game</div>
-    <div class="coach-tip">\ud83d\udca1 ${esc(d.tip)}</div>
+    <div class="coach-tip">💡 ${esc(d.tip)}</div>
   `;
   document.getElementById('coachActions').style.display = 'flex';
 }
 
 window.closeCoach = function() { document.getElementById('coachModal').classList.remove('open'); };
 
-// \u2500\u2500 Stripe stub \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+// ── Stripe stub ────────────────────────────────────────────────────────────
 window.openStripe = async function openStripe() {
   try {
     const res = await fetch('/api/stripe/checkout', {
@@ -2532,22 +2534,25 @@ window.openStripe = async function openStripe() {
     const { url, note } = await res.json();
     alert(`Pro checkout: ${url}\n\n${note}`);
   } catch(e) { alert('Stripe not configured. Add STRIPE_SECRET_KEY to .env'); }
-};
+}
 
-// \u2500\u2500 Keyboard \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+// ── Keyboard ───────────────────────────────────────────────────────────────
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') closeCoach();
+  // 1-7 to drop in column
   const col = parseInt(e.key) - 1;
   if (col >= 0 && col < 7 && isMyTurn()) handleCellClick(col);
 });
 
-// \u2500\u2500 Customization helpers \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+// ── Customization helpers ────────────────────────────────────────────────────
 window.setPlayerToken = function(el) {
   document.querySelectorAll('.token-opt').forEach(b => b.classList.remove('selected'));
   el.classList.add('selected');
   const token = el.dataset.token;
+  // Update P1 avatar
   document.getElementById('av1').textContent = token;
   document.getElementById('userAvatar').textContent = token;
+  // Persist
   const u = loadUser();
   if (u) { u.token = token; saveUser(u); }
 };
@@ -2555,6 +2560,7 @@ window.setPlayerToken = function(el) {
 window.setBoardSize = function(el, cols, rows) {
   document.querySelectorAll('.board-size-btn').forEach(b => b.classList.remove('active'));
   el.classList.add('active');
+  // Board resize is PRO — for now only 7×6 is active, others open Stripe
 };
 
 async function loadMiniLeaderboard() {
@@ -2565,7 +2571,8 @@ async function loadMiniLeaderboard() {
     if (!lb) return;
     const rows = (data.leaders || data).slice(0, 6);
     lb.innerHTML = rows.map((p, i) => {
-      const medal = i === 0 ? '\ud83e\uddf�' : i === 1 ? '\ud83e\uddf�' : i === 2 ? '\ud83e\uddf‰' : '';
+      const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : '';
+      const rankStr = medal || `<span class="mini-lb-rank">${i+1}</span>`;
       return `<div class="mini-lb-row">
         ${medal ? `<span style="font-size:13px">${medal}</span>` : `<span class="mini-lb-rank">${i+1}</span>`}
         <span class="mini-lb-name">${p.name || p.playerName || 'Unknown'}</span>
@@ -2574,6 +2581,7 @@ async function loadMiniLeaderboard() {
     }).join('');
   } catch(e) { /* silent */ }
 }
+// Load leaderboard on init
 document.addEventListener('DOMContentLoaded', () => setTimeout(loadMiniLeaderboard, 1500));
 
 </script>

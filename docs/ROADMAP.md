@@ -34,6 +34,7 @@
 - `b17d4d3` fix: JS-based lobby card positioning within yurt door frame (object-fit contain)
 - `b8ce526` feat: replace auth-form with wide 1916x821 yurt image, recalibrate door bounds
 - `6160396` fix: scale lobby bg by height (no vertical gaps), JS positioning updated
+- `39cac44` feat: remove door positioning logic, center lobby card simply, switch bg to auth.png
 
 ## Next
 

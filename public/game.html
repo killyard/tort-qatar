@@ -2968,6 +2968,16 @@ window.setPlayerToken = function(el) {
 };
 
 window.setBoardSize = function(el, cols, rows) {
+  // Block mid-game: solo game in progress, or multiplayer in progress
+  const soloActive  = gameStarted && !gameFinished && soloMode;
+  const mpActive    = !soloMode && gameState?.status === 'playing';
+  if (soloActive || mpActive) {
+    // Flash the active button to signal rejection
+    el.style.animation = 'none';
+    el.style.opacity = '.35';
+    setTimeout(() => { el.style.opacity = ''; }, 400);
+    return;
+  }
   document.querySelectorAll('.board-size-btn').forEach(b => b.classList.remove('active'));
   el.classList.add('active');
   if (cols === boardCols && rows === boardRows) return;

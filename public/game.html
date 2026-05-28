@@ -2588,12 +2588,8 @@ function renderState(state) {
     }
     if (state.status === 'playing') gameFinished = false;
   }
-  // AI Coach: available mid-game (hints) and at game end (full analysis)
-  if (state.status === 'playing' && state.history?.length > 0) {
-    document.getElementById('btnCoach').style.display = '';
-  } else if (state.status === 'waiting') {
-    document.getElementById('btnCoach').style.display = 'none';
-  }
+  // AI Coach is disabled in multiplayer (PvP) — would be unfair against a human opponent
+  document.getElementById('btnCoach').style.display = 'none';
   if (state.players[0]) {
     document.getElementById('name1').textContent = state.players[0].name;
     document.getElementById('city1').textContent = state.players[0].city;
@@ -2616,7 +2612,7 @@ function renderState(state) {
     stopAllTimers();
     document.getElementById('btnResign').style.display = 'none';
     document.getElementById('btnRematch').style.display = '';
-    document.getElementById('btnCoach').style.display = ''; // multiplayer: only at end
+    // AI Coach intentionally NOT shown in multiplayer post-game — fairness
     document.getElementById('board').classList.add('game-over');
     setTimeout(() => tlShow(state.history), 300);
     const myPlayer = state.players.find(p => p.playerNumber === myPlayerNumber);

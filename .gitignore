@@ -6,3 +6,6 @@ Thumbs.db
 
 # AI tool config — not part of the project
 CLAUDE.md
+
+# Leaderboard data — persisted on server, not tracked in git
+data/leaderboard.json

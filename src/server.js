@@ -5,6 +5,7 @@ import { createServer } from 'http';
 import { Server } from 'socket.io';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
+import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs';
 import { v4 as uuidv4 } from 'uuid';
 import cors from 'cors';
 import { createBoard, dropPiece, checkWinner, isDraw, findThreats, formatMoveHistory } from './gameEngine.js';
@@ -104,8 +105,26 @@ app.get('/api/me', (req, res) => {
 /** @type {Map<string, GameRoom>} roomId → room */
 const rooms = new Map();
 
+// ── Leaderboard persistence (JSON file) ────────────────────────────────────
+const LB_PATH = join(__dirname, '../data/leaderboard.json');
+
+function loadLeaderboard() {
+  try {
+    if (existsSync(LB_PATH)) return JSON.parse(readFileSync(LB_PATH, 'utf8'));
+  } catch (e) { console.warn('[LB] load error', e.message); }
+  return [];
+}
+
+function saveLeaderboard() {
+  try {
+    const dir = join(__dirname, '../data');
+    if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
+    writeFileSync(LB_PATH, JSON.stringify(leaderboard, null, 2), 'utf8');
+  } catch (e) { console.warn('[LB] save error', e.message); }
+}
+
 /** @type {Array<LeaderboardEntry>} */
-let leaderboard = [];
+let leaderboard = loadLeaderboard();
 
 /**
  * Points awarded for a WIN by game type / difficulty.
@@ -137,6 +156,7 @@ function streakBonus(streak) {
 function recalcRanks() {
   leaderboard.sort((a, b) => b.points - a.points || b.winRate - a.winRate);
   leaderboard.forEach((e, i) => { e.rank = i + 1; });
+  saveLeaderboard();
 }
 
 // ── REST API ───────────────────────────────────────────────────────────────

@@ -1685,17 +1685,13 @@ window.ngmJoin = function() {
   const cityInput = document.getElementById('lobbyCity');
   if (cityInput.value.trim()) return;
   try {
-    // Try ip-api.com first (free, no auth needed), fall back to ipapi.co
+    // freeipapi.com — free, HTTPS, no CORS issues
     let city = '';
     try {
-      const r1 = await fetch('http://ip-api.com/json/?fields=city,regionName', { signal: AbortSignal.timeout(4000) });
+      const r1 = await fetch('https://freeipapi.com/api/json', { signal: AbortSignal.timeout(5000) });
       const d1 = await r1.json();
-      city = d1.city || d1.regionName || '';
-    } catch {
-      const r2 = await fetch('https://ipapi.co/json/', { signal: AbortSignal.timeout(4000) });
-      const d2 = await r2.json();
-      city = d2.city || d2.region || '';
-    }
+      city = d1.cityName || d1.regionName || '';
+    } catch { /* best-effort, city stays empty */ }
     if (city && !cityInput.value.trim()) {
       cityInput.value = city;
       cityInput.placeholder = city;

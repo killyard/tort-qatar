@@ -74,7 +74,7 @@ if (GOOGLE_ENABLED) {
 // ── Auth routes ─────────────────────────────────────────────────────────────
 app.get('/auth/google', (req, res, next) => {
   if (!GOOGLE_ENABLED) return res.redirect('/game.html?auth=error&reason=no_credentials');
-  passport.authenticate('google', { scope: ['profile', 'email'] })(req, res, next);
+  passport.authenticate('google', { scope: ['profile', 'email'], prompt: 'select_account' })(req, res, next);
 });
 
 app.get('/auth/google/callback', (req, res, next) => {

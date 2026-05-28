@@ -16,7 +16,7 @@ import {
 } from './cache.js';
 import cors from 'cors';
 import { createBoard, dropPiece, checkWinner, isDraw, findThreats, formatMoveHistory } from './gameEngine.js';
-import { analyzeGame } from './aiCoach.js';
+import { analyzeGame, suggestMove } from './aiCoach.js';
 import { getChatReply } from './aiChat.js';
 import { getGeminiMove } from './geminiPlayer.js';
 import session from 'express-session';
@@ -382,6 +382,19 @@ app.post('/api/coach/analyze', async (req, res) => {
   }
 });
 
+// Mid-game move suggestion (Gemini 2.5 Flash — fast)
+// Body: { board, history, coachFor, playerName }
+app.post('/api/coach/suggest', async (req, res) => {
+  const { board, history, coachFor, playerName } = req.body;
+  if (!board) return res.status(400).json({ error: 'board required' });
+  try {
+    const suggestion = await suggestMove({ board, history: history || [], coachFor: coachFor || 1, playerName: playerName || 'Player' });
+    res.json(suggestion);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // Stripe stub — returns a mock checkout session
 app.post('/api/stripe/checkout', (req, res) => {
   const { plan } = req.body; // 'pro_monthly' | 'pro_yearly'
@@ -482,127 +495,6 @@ io.on('connection', (socket) => {
 
     const player = room.players.find(p => p.socketId === socket.id);
     if (!player || player.playerNumber !== room.currentTurn) {
-      return socket.emit('room:error', { message: 'Not your turn.' });
-    }
-
-    const { board, row, error } = dropPiece(room.board, col, player.playerNumber);
-    if (error) return socket.emit('room:error', { message: 'Invalid move: ' + error });
-
-    room.board = board;
-    room.history.push({ player: player.playerNumber, col, row });
-
-    const result = checkWinner(board, row, col);
-    if (result) {
-      room.status = 'finished';
-      room.winner = result.winner;
-      room.winCells = result.cells;
-    } else if (isDraw(board)) {
-      room.status = 'finished';
-      room.winner = 0; // draw
-    } else {
-      room.currentTurn = room.currentTurn === 1 ? 2 : 1;
-    }
-
-    broadcastRoom(room);
-
-    if (room.status === 'finished') {
-      const winnerPlayer = room.players.find(p => p.playerNumber === room.winner);
-      const text = room.winner === 0
-        ? 'The steppe has witnessed a draw!'
-        : `${winnerPlayer?.name ?? 'Player ' + room.winner} wins! 🏆`;
-      io.to(roomId).emit('room:chat', { system: true, text });
-    }
-  });
-
-  // Rematch request
-  socket.on('game:rematch', ({ roomId }) => {
-    const room = rooms.get(roomId);
-    if (!room || room.players.length < 2) return;
-    room.board = createBoard();
-    room.history = [];
-    room.status = 'playing';
-    room.winner = null;
-    room.winCells = null;
-    // Swap who goes first
-    room.currentTurn = room.currentTurn === 1 ? 2 : 1;
-    broadcastRoom(room);
-    io.to(roomId).emit('room:chat', { system: true, text: 'Rematch! The steppe awaits…' });
-  });
-
-  // Resign
-  socket.on('game:resign', ({ roomId }) => {
-    const room = rooms.get(roomId);
-    if (!room || room.status !== 'playing') return;
-    const player = room.players.find(p => p.socketId === socket.id);
-    if (!player) return;
-    room.status = 'finished';
-    room.winner = player.playerNumber === 1 ? 2 : 1;
-    broadcastRoom(room);
-    io.to(roomId).emit('room:chat', { system: true, text: `${player.name} resigned. Honour to the winner.` });
-  });
-
-  // Chat
-  socket.on('room:chat', ({ roomId, text }) => {
-    const room = rooms.get(roomId);
-    if (!room) return;
-    const player = room.players.find(p => p.socketId === socket.id);
-    const message = {
-      system: false,
-      name: player?.name ?? 'Guest',
-      playerNumber: player?.playerNumber ?? 0,
-      text: String(text).slice(0, 200),
-      ts: Date.now(),
-    };
-    room.chat.push(message);
-    io.to(roomId).emit('room:chat', message);
-  });
-
-  // Disconnect
-  socket.on('disconnect', () => {
-    console.log(`[WS] disconnect ${socket.id}`);
-    const room = getRoomBySocket(socket.id);
-    if (!room) return;
-    const player = room.players.find(p => p.socketId === socket.id);
-    if (player && room.status === 'playing') {
-      room.status = 'finished';
-      room.winner = player.playerNumber === 1 ? 2 : 1;
-      broadcastRoom(room);
-      io.to(room.id).emit('room:chat', { system: true, text: `${player.name} disconnected. The wind carries them away.` });
-    }
-    // Clean up stale rooms after 1 hour
-    setTimeout(() => {
-      if (Date.now() - room.createdAt > 3_600_000) rooms.delete(room.id);
-    }, 3_600_000);
-  });
-});
-
-// ── Start ──────────────────────────────────────────────────────────────────
-async function start() {
-  // Run DB migrations (no-op if DATABASE_URL not set)
-  await runMigrations();
-
-  // Seed Redis from PostgreSQL on every cold start
-  if (isDbEnabled() && isCacheEnabled()) {
-    try {
-      const rows = await getLeaderboardFromDB({ limit: 500 });
-      await lbSeedFromDB(rows);
-    } catch (err) {
-      console.warn('[Startup] Redis seed failed (non-fatal):', err.message);
-    }
-  }
-
-  httpServer.listen(PORT, () => {
-    console.log(`\n🏕️  Tört Qatar server running → http://localhost:${PORT}`);
-    console.log(`   DB:    ${isDbEnabled()  ? '✅ PostgreSQL' : '⚠️  JSON file (set DATABASE_URL to enable)'}`);
-    console.log(`   Cache: ${isCacheEnabled() ? '✅ Redis'      : '⚠️  disabled (set REDIS_URL to enable)'}\n`);
-  });
-}
-
-start().catch(err => {
-  console.error('[Fatal] startup error:', err);
-  process.exit(1);
-});
-erNumber !== room.currentTurn) {
       return socket.emit('room:error', { message: 'Not your turn.' });
     }
 

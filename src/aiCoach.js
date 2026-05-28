@@ -1,9 +1,10 @@
-// ── AI Coach — powered by Google Gemini 2.5 Pro ──────────────────────────────
+// ── AI Coach — Gemini 2.5 Pro (post-game) + Flash (mid-game hints) ────────────
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { createBoard, dropPiece, checkWinner, findThreats } from './gameEngine.js';
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-const model = genAI.getGenerativeModel({ model: 'gemini-2.5-pro' });
+const genAI  = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+const model  = genAI.getGenerativeModel({ model: 'gemini-2.5-pro' });
+const flash  = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
 
 /**
  * Replay the game move by move and return a list of tactical annotations:
@@ -144,5 +145,89 @@ If omitting smartMove, just leave it out of the JSON entirely.`;
       },
       tip: 'Always check if your opponent can win in one move before placing your piece.',
     };
+  }
+}
+
+// ── Mid-game move suggester (Gemini 2.5 Flash) ────────────────────────────────
+export async function suggestMove({ board, history, coachFor, playerName }) {
+  const rows = board.length;
+  const cols = board[0].length;
+  const opponent = coachFor === 1 ? 2 : 1;
+
+  const myWins  = findThreats(board, coachFor);
+  const oppWins = findThreats(board, opponent);
+
+  const available = [];
+  for (let c = 0; c < cols; c++) {
+    if (board[0][c] === 0) available.push(c);
+  }
+
+  // Immediate win
+  if (myWins.size > 0) {
+    const col = [...myWins][0];
+    return { bestCol: col, reason: `Column ${col + 1} gives you an immediate win! Play it now.`, urgency: 'winning' };
+  }
+
+  // Must block
+  if (oppWins.size > 0) {
+    const col = [...oppWins][0];
+    if (oppWins.size === 1) {
+      return { bestCol: col, reason: `Block column ${col + 1} — opponent wins there next turn!`, urgency: 'blocking' };
+    } else {
+      const colList = [...oppWins].map(c => c + 1).join(' and ');
+      return { bestCol: col, reason: `Opponent threatens columns ${colList}. Block column ${col + 1} as priority.`, urgency: 'blocking' };
+    }
+  }
+
+  // Fork detection
+  function countThreats(b, c, p) {
+    const result = dropPiece(b, c, p);
+    if (result.error) return 0;
+    return findThreats(result.board, p).size;
+  }
+
+  let bestForkCol = -1;
+  let maxForkThreats = 0;
+  for (const c of available) {
+    const t = countThreats(board, c, coachFor);
+    if (t >= 2 && t > maxForkThreats) { maxForkThreats = t; bestForkCol = c; }
+  }
+
+  const boardStr = board.map((r, ri) =>
+    `Row${ri + 1}: ${r.map(v => v === 0 ? '.' : v === coachFor ? 'X' : 'O').join(' ')}`
+  ).join('\n');
+  const lastMoves = history.slice(-6).map((m, i) => `M${history.length - 5 + i}: P${m.player}->col${m.col + 1}`).join(', ');
+  const forkNote = bestForkCol >= 0 ? `Engine: Column ${bestForkCol + 1} creates ${maxForkThreats} simultaneous threats (FORK).` : '';
+
+  const prompt = `You are a fast Connect Four coach. Player ${coachFor} (${playerName}) plays as X, opponent as O.
+
+BOARD (${rows}x${cols}, row1=top):
+${boardStr}
+
+LAST 6 MOVES: ${lastMoves || 'none'}
+AVAILABLE COLUMNS: ${available.map(c => c + 1).join(', ')}
+${forkNote}
+
+No immediate wins or forced blocks (handled by engine).
+${bestForkCol >= 0 ? `Column ${bestForkCol + 1} creates a fork — strong candidate.` : 'No fork found.'}
+
+Recommend ONE column. Consider: center col ${Math.ceil(cols / 2)}, building threats, avoiding opponent forks.
+Respond raw JSON only: {"bestCol": <0-indexed int>, "reason": "<max 20 words>", "urgency": "strategic"}`;
+
+  try {
+    const result = await flash.generateContent(prompt);
+    const raw = result.response.text().trim();
+    const m = raw.match(/\{[\s\S]*?\}/);
+    if (!m) throw new Error('No JSON');
+    const parsed = JSON.parse(m[0]);
+    if (!available.includes(parsed.bestCol)) {
+      parsed.bestCol = bestForkCol >= 0 ? bestForkCol : available[Math.floor(available.length / 2)];
+    }
+    return { bestCol: parsed.bestCol, reason: parsed.reason || 'Best strategic move.', urgency: 'strategic' };
+  } catch (err) {
+    console.error('[Coach/suggest]', err.message);
+    const centerCol = Math.floor(cols / 2);
+    const fallback = bestForkCol >= 0 ? bestForkCol : (available.includes(centerCol) ? centerCol : available[0]);
+    return { bestCol: fallback, reason: `Column ${fallback + 1} — center control is key.`, urgency: 'strategic' };
   }
 }

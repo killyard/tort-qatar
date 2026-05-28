@@ -150,9 +150,15 @@ html,body{height:100%;background:#8dbfdb;font-family:var(--sans);color:var(--ink
   text-shadow:0 2px 12px rgba(0,0,0,.4);
 }
 .timer.urgent{color:#f5a623;animation:pulse .6s ease-in-out infinite alternate}
-/* Left panel timer hidden — only right panel shows time */
-#timer1{display:none}
-/* Points display replaces left timer */
+/* Dual timer row in right panel */
+.dual-timer{display:flex;gap:8px;margin-bottom:4px}
+.timer-half{flex:1;background:rgba(255,255,255,.07);border-radius:10px;padding:6px 10px;text-align:center}
+.timer-half-label{font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.timer-half-label.p1{color:rgba(232,160,32,.7)}
+.timer-half-label.p2{color:rgba(192,57,43,.7)}
+.timer-half .timer{font-size:18px;margin:0;padding:0;background:none;border:none}
+#timer1{display:block}
+/* Points display in left panel */
 .points-display{
   text-align:center;padding:6px 0 4px;
 }
@@ -565,6 +571,8 @@ html,body{height:100%;background:#8dbfdb;font-family:var(--sans);color:var(--ink
 .ctrl-btn:hover{background:rgba(255,255,255,.28);transform:translateY(-1px)}
 .ctrl-btn.danger{border-color:rgba(192,57,43,.5);color:#e8877c}
 .ctrl-btn.danger:hover{background:rgba(192,57,43,.2)}
+/* Suggested column highlight (mid-game coach) */
+.cell.suggested-col{outline:2.5px solid rgba(100,220,130,.85);outline-offset:-2px;background:rgba(100,220,130,.12) !important;transition:outline .15s,background .15s}
 .ctrl-btn.coach-btn{
   background:rgba(110,30,200,.82);
   border-color:rgba(180,100,255,.55);
@@ -1265,10 +1273,7 @@ html,body{height:100%;background:#8dbfdb;font-family:var(--sans);color:var(--ink
         <div class="player-name" id="name1">Waiting…</div>
         <div class="player-city" id="city1">—</div>
       </div>
-      <div class="turn-dot" id="dot1"></div>
     </div>
-
-    <div class="timer" id="timer1">—:——</div>
 
     <div class="points-display">
       <div class="points-val" id="points1">0</div>
@@ -1382,18 +1387,29 @@ html,body{height:100%;background:#8dbfdb;font-family:var(--sans);color:var(--ink
     </div>
   </div>
 
-  <!-- ── Right panel: Player 2 + Move History ── -->
+  <!-- ── Right panel: Timers + Move History ── -->
   <div class="glass player-panel" id="rightPanel">
-    <div class="panel-head">
-      <div class="avatar p2" id="av2"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="display:block"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></div>
-      <div class="player-name-wrap">
-        <div class="player-name" id="name2">Waiting…</div>
-        <div class="player-city" id="city2">—</div>
-      </div>
-      <div class="turn-dot" id="dot2"></div>
+    <!-- hidden elements kept for JS compatibility -->
+    <div style="display:none">
+      <div id="av2"></div>
+      <div id="name2">Waiting…</div>
+      <div id="city2">—</div>
     </div>
 
-    <div class="timer" id="timer2">—:——</div>
+    <div class="panel-section-label" id="gameProgressLabel" style="margin-top:0;margin-bottom:8px">Ход игры</div>
+
+    <div class="dual-timer">
+      <div class="timer-half">
+        <div class="timer-half-label p1" id="timerLabel1">Я</div>
+        <div class="timer" id="timer1">0:00</div>
+        <div class="turn-dot" id="dot1" style="margin:4px auto 0"></div>
+      </div>
+      <div class="timer-half">
+        <div class="timer-half-label p2" id="timerLabel2">Соперник</div>
+        <div class="timer" id="timer2">0:00</div>
+        <div class="turn-dot" id="dot2" style="margin:4px auto 0"></div>
+      </div>
+    </div>
 
     <div class="stat-row"><span class="stat-label">Wins</span><span class="stat-value" id="wins2">0</span></div>
     <div class="stat-row"><span class="stat-label">Moves made</span><span class="stat-value" id="moves2">0</span></div>
@@ -2177,6 +2193,8 @@ function startSoloGame() {
   document.getElementById('city2').textContent = 'Steppe Bot';
   document.getElementById('p2BarName').textContent = `AI (${aiDifficulty})`;
   document.getElementById('p2BarCity').textContent = 'Steppe Bot';
+  // Sync dual-timer labels
+  syncTimerLabels(myName, `AI (${aiDifficulty})`);
 
   renderSoloState();
   rebuildBoardMask();
@@ -2410,8 +2428,10 @@ socket.on('room:chat', (msg) => { appendChat(msg); });
 function renderState(state) {
   // Ensure roomId is always set for the joining player
   if (!soloMode && state.id) roomId = state.id;
-  // AI Coach not available during multiplayer — only at game end
-  if (state.status !== 'finished') {
+  // AI Coach: available mid-game (hints) and at game end (full analysis)
+  if (state.status === 'playing' && state.history?.length > 0) {
+    document.getElementById('btnCoach').style.display = '';
+  } else if (state.status === 'waiting') {
     document.getElementById('btnCoach').style.display = 'none';
   }
   if (state.players[0]) {
@@ -2423,6 +2443,7 @@ function renderState(state) {
     document.getElementById('city2').textContent = state.players[1].city;
     document.getElementById('p2BarName').textContent = state.players[1].name;
     document.getElementById('p2BarCity').textContent = state.players[1].city;
+    syncTimerLabels(state.players[0]?.name || myName, state.players[1].name);
   }
   renderBoard(state.board, state.winCells);
   const mpNames = { 1: state.players[0]?.name ?? 'P1', 2: state.players[1]?.name ?? 'P2' };
@@ -2594,6 +2615,20 @@ function stopTimer(playerIdx) {
   timerIntervals[playerIdx] = null;
 }
 function stopAllTimers() { stopTimer(0); stopTimer(1); }
+
+function syncTimerLabels(name1, name2) {
+  const l1 = document.getElementById('timerLabel1');
+  const l2 = document.getElementById('timerLabel2');
+  if (l1) l1.textContent = name1 || 'Я';
+  if (l2) l2.textContent = name2 || 'Соперник';
+  // Also localise the "Game Progress" heading
+  const lbl = document.getElementById('gameProgressLabel');
+  if (lbl) {
+    const T = { en: 'Game Progress', ru: 'Ход игры', kk: 'Ойын барысы' };
+    lbl.textContent = T[selectedLang] || 'Game Progress';
+  }
+}
+
 function updateTimerDisplay(playerIdx) {
   const s = timerSeconds[playerIdx];
   const mm = String(Math.floor(s / 60)).padStart(2, '0');
@@ -2831,26 +2866,77 @@ function renderInlineCoach(d) {
   `;
 }
 
-// "AI Coach" button: switch to Analysis tab and fetch if needed (both modes)
+// "AI Coach" button \u2014 two modes:
+//   Mid-game  \u2192 Gemini 2.5 Flash: suggest best next move (can call repeatedly)
+//   Post-game \u2192 Gemini 2.5 Pro:   full analysis (cached after first call)
 window.openCoach = async function openCoach() {
   if (!gameState) return;
-  // Make sure chat widget is open
   const cw = document.getElementById('chatWidget');
   if (cw && cw.classList.contains('collapsed')) cw.classList.remove('collapsed');
-  if (lastCoachData) { renderCoachInChat(lastCoachData); return; }
-  if (coachRequested) return;
-  coachRequested = true;
-  // Show loading message in chat
-  const loadDiv = appendCoachMsg('Analyzing your game\u2026', 'coach');
+
+  // \u2500\u2500 POST-GAME: full analysis \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+  if (gameFinished) {
+    if (lastCoachData) { renderCoachInChat(lastCoachData); return; }
+    if (coachRequested) return;
+    coachRequested = true;
+    const loadDiv = appendCoachMsg('Analyzing your game\u2026', 'coach');
+    try {
+      const data = await fetchCoachData();
+      lastCoachData = data;
+      if (loadDiv && loadDiv.parentNode) loadDiv.parentNode.removeChild(loadDiv);
+      renderCoachInChat(data);
+    } catch(e) {
+      if (loadDiv) loadDiv.querySelector('.msg-body').textContent = 'Could not reach AI Coach.';
+    }
+    return;
+  }
+
+  // \u2500\u2500 MID-GAME: next move suggestion (Flash, each call is fresh) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+  const board = soloMode ? soloBoard : gameState?.board;
+  const history = soloMode ? soloHistory : (gameState?.history || []);
+  if (!board) return;
+
+  const loadDiv = appendCoachMsg('Thinking\u2026', 'coach');
   try {
-    const data = await fetchCoachData();
-    lastCoachData = data;
+    const res = await fetch('/api/coach/suggest', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ board, history, coachFor: myPlayerNumber, playerName: myName }),
+    });
+    const suggestion = await res.json();
     if (loadDiv && loadDiv.parentNode) loadDiv.parentNode.removeChild(loadDiv);
-    renderCoachInChat(data);
+
+    const col = suggestion.bestCol;
+    const urgencyIcon = suggestion.urgency === 'winning' ? '\ud83c\udfc6' : suggestion.urgency === 'blocking' ? '\ud83d\udee1\ufe0f' : '\ud83d\udca1';
+    const urgencyLabel = suggestion.urgency === 'winning' ? 'Win now' : suggestion.urgency === 'blocking' ? 'Block!' : 'Best move';
+
+    // Show highlighted suggestion in chat
+    const div = document.createElement('div');
+    div.className = 'chat-msg coach';
+    div.innerHTML = `<span class="msg-name coach">\ud83e\udde0 Coach</span><span class="msg-body">${urgencyIcon} <strong>${urgencyLabel} \u2014 column ${col + 1}</strong><br><span style="opacity:.8">${esc(suggestion.reason)}</span></span>`;
+    document.getElementById('chatArea').appendChild(div);
+    document.getElementById('chatArea').scrollTop = 99999;
+
+    // Briefly highlight the suggested column on the board
+    highlightSuggestedCol(col);
   } catch(e) {
     if (loadDiv) loadDiv.querySelector('.msg-body').textContent = 'Could not reach AI Coach.';
   }
 };
+
+// Flash a green highlight on the suggested column for 2.5 seconds
+function highlightSuggestedCol(col) {
+  const boardEl = document.getElementById('board');
+  const oldHighlights = boardEl.querySelectorAll('.suggested-col');
+  oldHighlights.forEach(c => c.classList.remove('suggested-col'));
+
+  for (let r = 0; r < boardRows; r++) {
+    if (cells[r]?.[col]) cells[r][col].classList.add('suggested-col');
+  }
+  setTimeout(() => {
+    boardEl.querySelectorAll('.suggested-col').forEach(c => c.classList.remove('suggested-col'));
+  }, 2500);
+}
 
 function appendCoachMsg(text, cls) {
   const area = document.getElementById('chatArea');

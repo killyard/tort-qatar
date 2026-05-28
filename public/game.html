@@ -1392,10 +1392,31 @@ html,body{height:100%;background:#8dbfdb;font-family:var(--sans);color:var(--ink
       <button class="board-size-btn" onclick="setBoardSize(this,6,5)">6×5</button>
     </div>
 
-    <!-- Mini leaderboard -->
-    <div class="panel-section-label">Leaderboard</div>
-    <div id="miniLeaderboard" style="display:flex;flex-direction:column;gap:0;overflow:hidden;">
-      <div style="font-size:10px;color:rgba(255,255,255,.30);padding:4px 0;">Loading…</div>
+    <!-- Leaderboard / Справочник tabs -->
+    <div style="display:flex;gap:2px;background:rgba(255,255,255,.07);border-radius:8px;padding:3px;margin-top:8px;flex-shrink:0">
+      <button id="leftTabLb" class="panel-tab active" onclick="switchLeftTab('lb')">Лидерборд</button>
+      <button id="leftTabRef" class="panel-tab" onclick="switchLeftTab('ref')">Справочник</button>
+    </div>
+    <div id="leftPaneLb" style="display:flex;flex-direction:column;margin-top:6px">
+      <div id="miniLeaderboard" style="display:flex;flex-direction:column;gap:0;overflow:hidden;">
+        <div style="font-size:10px;color:rgba(255,255,255,.30);padding:4px 0;">Loading…</div>
+      </div>
+    </div>
+    <div id="leftPaneRef" style="display:none;flex-direction:column;margin-top:6px">
+      <div style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.38);font-weight:500;margin-bottom:8px">Победа над ИИ</div>
+      <div class="mini-lb-row"><span class="mini-lb-name">🤖 Лёгкий</span><span class="mini-lb-score">+10</span></div>
+      <div class="mini-lb-row"><span class="mini-lb-name">🤖 Средний</span><span class="mini-lb-score">+15</span></div>
+      <div class="mini-lb-row"><span class="mini-lb-name">🤖 Сложный</span><span class="mini-lb-score">+25</span></div>
+      <div class="mini-lb-row"><span class="mini-lb-name">🧠 Gemini AI</span><span class="mini-lb-score">+35</span></div>
+      <div style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.38);font-weight:500;margin-top:12px;margin-bottom:8px">Живой соперник</div>
+      <div class="mini-lb-row"><span class="mini-lb-name">🏆 Победа</span><span class="mini-lb-score">+20</span></div>
+      <div class="mini-lb-row"><span class="mini-lb-name">🤝 Ничья</span><span class="mini-lb-score">+5</span></div>
+      <div class="mini-lb-row"><span class="mini-lb-name">💀 Поражение</span><span class="mini-lb-score">+2</span></div>
+      <div style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.38);font-weight:500;margin-top:12px;margin-bottom:8px">🔥 Серия побед</div>
+      <div class="mini-lb-row"><span class="mini-lb-name">2 подряд</span><span class="mini-lb-score">+5</span></div>
+      <div class="mini-lb-row"><span class="mini-lb-name">3 подряд</span><span class="mini-lb-score">+10</span></div>
+      <div class="mini-lb-row"><span class="mini-lb-name">4 подряд</span><span class="mini-lb-score">+15</span></div>
+      <div class="mini-lb-row"><span class="mini-lb-name">5+ подряд</span><span class="mini-lb-score">+20</span></div>
     </div>
   </div>
 
@@ -2103,6 +2124,8 @@ async function initUser() {
       if (window.location.search.includes('auth=')) {
         window.history.replaceState({}, '', '/game.html');
       }
+      loadPlayerPoints(googleUser.name || '', googleUser.city || '');
+      loadMiniLeaderboard();
       window.openNewGame();
       return;
     }
@@ -2116,7 +2139,11 @@ async function initUser() {
     if (savedUser.lang) setLang(savedUser.lang);
     document.getElementById('lobbyName').value = savedUser.name || '';
     document.getElementById('lobbyCity').value = savedUser.city || '';
+    loadPlayerPoints(savedUser.name, savedUser.city);
+    loadMiniLeaderboard();
     window.openNewGame();
+  } else {
+    loadMiniLeaderboard();
   }
 }
 initUser();
@@ -2529,6 +2556,15 @@ socket.on('room:created', ({ roomId: rId }) => { enterGame(rId); });
 socket.on('room:error', ({ message }) => { alert(message); });
 socket.on('room:state', (state) => { gameState = state; renderState(state); });
 socket.on('room:chat', (msg) => { appendChat(msg); });
+socket.on('leaderboard:update', () => { loadMiniLeaderboard(); });
+
+// ── Left panel tab switcher ────────────────────────────────────────────────
+window.switchLeftTab = function(tab) {
+  document.getElementById('leftTabLb').classList.toggle('active', tab === 'lb');
+  document.getElementById('leftTabRef').classList.toggle('active', tab === 'ref');
+  document.getElementById('leftPaneLb').style.display = tab === 'lb' ? 'flex' : 'none';
+  document.getElementById('leftPaneRef').style.display = tab === 'ref' ? 'flex' : 'none';
+};
 
 // ── State rendering (multiplayer) ──────────────────────────────────────────
 function renderState(state) {
@@ -2924,6 +2960,7 @@ async function postScore(name, city, won, draw = false) {
         if (el) el.textContent = data.points.toLocaleString();
         localStorage.setItem(ptsKey(name, city), data.points);
       }
+      loadMiniLeaderboard();
     }
   } catch(e) { /* offline */ }
 }
@@ -2943,6 +2980,27 @@ async function loadPlayerPoints(name, city) {
         localStorage.setItem(ptsKey(name, city), data.points);
       }
     }
+  } catch(e) { /* offline */ }
+}
+
+// ── Mini leaderboard ───────────────────────────────────────────────────────
+async function loadMiniLeaderboard() {
+  const el = document.getElementById('miniLeaderboard');
+  if (!el) return;
+  try {
+    const res = await fetch('/api/leaderboard?limit=7');
+    if (!res.ok) return;
+    const rows = await res.json();
+    if (!rows || !rows.length) {
+      el.innerHTML = '<div style="font-size:11px;color:rgba(255,255,255,.30);padding:4px 0;">No scores yet</div>';
+      return;
+    }
+    el.innerHTML = rows.map(r => `
+      <div class="mini-lb-row">
+        <span class="mini-lb-rank">${r.rank}</span>
+        <span class="mini-lb-name">${r.name}${r.city ? ' <span style="color:rgba(255,255,255,.35);font-size:10px">· ' + r.city + '</span>' : ''}</span>
+        <span class="mini-lb-score">${r.points ?? 0} pts</span>
+      </div>`).join('');
   } catch(e) { /* offline */ }
 }
 

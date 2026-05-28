@@ -239,6 +239,7 @@ app.post('/api/leaderboard/score', async (req, res) => {
         winRate:     scoreRow.win_rate,
       };
       await lbSync(lbEntry);
+      io.emit('leaderboard:update');
       return res.json({ ...lbEntry, rank: 0, pointsEarned: earned });
     }
 
@@ -266,6 +267,7 @@ app.post('/api/leaderboard/score', async (req, res) => {
     entry.points = (entry.points || 0) + earned;
     entry.winRate = Math.round((entry.wins / entry.gamesPlayed) * 100);
     recalcRanksLocal();
+    io.emit('leaderboard:update');
     return res.json({ ...entry, pointsEarned: earned });
 
   } catch (err) {

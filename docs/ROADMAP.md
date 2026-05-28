@@ -54,8 +54,10 @@
 - `18f2574` feat: mid-game AI Coach (Flash), post-game analysis (Pro), dual timer layout
 - `8ec530d` fix: remove X close buttons from New Game + Profile modals, match profile modal style
 - `1654f73` fix: board overlay cleared on size change, NGM defaults to Medium, leaderboard shows pts, chat aligned to right panel, profile modal restyle + close X re-added
-- `pending` fix: multiplayer — both players can now move (gameStarted mirrored from server status in renderState; previously only solo doStartGame set it, so isMyTurn() blocked P2)
-- `pending` feat: mobile responsive overhaul — page scrolls, single-column stack (board → player → progress), sticky bottom action bar (Start/Resign/New game) above collapsed chat, cells use aspect-ratio:1 for circular fit, breakpoints at 900/600/420px
+- `d69e13d` fix: restore truncated DOMContentLoaded tail — auth + guest login broken
+- `c49e6e2` fix: clear stale board frame overlay on size change so old hole pattern doesn't stretch over new grid
+- `9447436` fix: multiplayer P2 can move — mirror server status into gameStarted in renderState (gate isMyTurn correctly for both clients)
+- `eda904f` feat: mobile responsive overhaul — page scrolls, sticky bottom action footer with Start/controls, full-width chat collapsed by default, aspect-ratio cells, breakpoints 900/600/420
 
 ## Next
 

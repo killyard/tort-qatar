@@ -192,4 +192,16 @@ export function getBestMove(board, aiPlayer, difficulty = 'medium') {
   // Immediate block check
   const human = aiPlayer === 1 ? 2 : 1;
   for (const col of cols) {
-    const { board: next, 
+    const { board: next, row } = dropPiece(board, col, human);
+    if (checkWin(next, row, col, human)) return col;
+  }
+
+  // Full search
+  let bestCol = cols[0], bestScore = -Infinity;
+  for (const col of cols) {
+    const { board: next } = dropPiece(board, col, aiPlayer);
+    const score = minimax(next, depth - 1, -Infinity, Infinity, false, aiPlayer);
+    if (score > bestScore) { bestScore = score; bestCol = col; }
+  }
+  return bestCol;
+}

@@ -65,6 +65,7 @@
 - `7c69877` fix: remove duplicate loadMiniLeaderboard + disable AI Coach in multiplayer (fairness)
 - `677136d` feat: leaderboard shows one row per unique player — server-side dedupe by name+city + aggregated SUM query + stable client-side player id
 - `f06541a` feat(pvp): left panel always shows local player — name/city/points/wins/moves/timer/turn-dot all map to ME regardless of host/joiner
+- `cf5e99b` fix: remove duplicate tail in server.js — Render SyntaxError at line 654 (35 dup lines)
 
 ## Next
 

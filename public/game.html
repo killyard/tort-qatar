@@ -37,7 +37,7 @@ html,body{height:100%;background:#8dbfdb;font-family:var(--sans);color:var(--ink
 }
 /* ── User button (top-right, post-login) ─────────────────── */
 .user-btn{
-  position:fixed;top:14px;right:14px;z-index:200;
+  position:relative;
   display:flex;align-items:center;gap:8px;
   padding:7px 14px 7px 8px;border-radius:999px;border:none;cursor:pointer;
   background:rgba(255,255,255,.14);
@@ -54,7 +54,7 @@ html,body{height:100%;background:#8dbfdb;font-family:var(--sans);color:var(--ink
   font-size:12px;font-weight:700;color:#fff;flex-shrink:0;
 }
 .user-dropdown{
-  position:fixed;top:52px;right:14px;z-index:201;
+  position:fixed;top:62px;right:14px;z-index:201;
   background:rgba(22,20,35,.92);
   backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);
   border:.5px solid rgba(255,255,255,.18);border-radius:14px;
@@ -99,7 +99,7 @@ html,body{height:100%;background:#8dbfdb;font-family:var(--sans);color:var(--ink
 .lobby{background:linear-gradient(180deg,#0e0b1a 0%,#130a1f 55%,#0a0d18 100%)!important}
 
 /* ── Layout ────────────────────────────────────────────── */
-.ui{position:relative;z-index:1;display:grid;grid-template-columns:360px 1fr;height:100vh;padding:14px;gap:12px;align-items:center}
+.ui{position:relative;z-index:1;display:grid;grid-template-columns:360px 1fr 320px;height:100vh;padding:14px;gap:12px;align-items:center}
 
 /* ── Glass panel ───────────────────────────────────────── */
 .glass{
@@ -208,7 +208,58 @@ html,body{height:100%;background:#8dbfdb;font-family:var(--sans);color:var(--ink
   display:flex;align-items:center;justify-content:center;gap:6px;
 }
 .pro-btn:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(200,129,10,.6)}
+/* ── Top-bar cluster (PRO pill + profile) ──────────────── */
+.top-bar-cluster{
+  position:fixed;top:14px;right:14px;z-index:200;
+  display:none;align-items:center;gap:8px;
+}
+.pro-upgrade-pill{
+  padding:7px 14px;border-radius:999px;border:none;cursor:pointer;
+  background:linear-gradient(135deg,#c8810a,#f0b030);
+  color:#fff;font-size:12px;font-weight:700;font-family:var(--sans);
+  letter-spacing:.06em;white-space:nowrap;
+  box-shadow:0 3px 12px rgba(200,129,10,.50);
+  transition:transform .15s,box-shadow .15s;
+}
+.pro-upgrade-pill:hover{transform:translateY(-1px);box-shadow:0 5px 18px rgba(200,129,10,.7)}
+/* user-btn is now inside the cluster; keep its own styles but remove fixed pos */
 
+
+
+/* ── Left panel customization ──────────────────────────── */
+.panel-section-label{
+  font-size:9px;letter-spacing:.12em;text-transform:uppercase;
+  color:rgba(255,255,255,.40);margin-top:6px;padding-bottom:4px;
+  border-bottom:.5px solid rgba(255,255,255,.10);
+}
+.token-grid{
+  display:grid;grid-template-columns:repeat(4,1fr);gap:6px;
+}
+.token-opt{
+  width:100%;aspect-ratio:1;border-radius:10px;border:.5px solid rgba(255,255,255,.20);
+  background:rgba(255,255,255,.08);font-size:18px;
+  display:grid;place-items:center;cursor:pointer;transition:background .15s,border-color .15s;
+}
+.token-opt:hover{background:rgba(255,255,255,.18)}
+.token-opt.selected{background:rgba(255,255,255,.26);border-color:rgba(255,255,255,.65);
+  box-shadow:0 0 0 2px rgba(255,255,255,.25)}
+.board-size-row{display:flex;gap:5px;flex-wrap:wrap;}
+.board-size-btn{
+  flex:1;min-width:60px;padding:5px 4px;border-radius:8px;border:.5px solid rgba(255,255,255,.22);
+  background:rgba(255,255,255,.08);color:rgba(255,255,255,.70);font-size:11px;font-family:var(--sans);
+  cursor:pointer;text-align:center;transition:background .15s;
+}
+.board-size-btn.active{background:rgba(255,255,255,.88);color:#1d2a23;font-weight:600;border-color:transparent;}
+.board-size-btn.locked{opacity:.45;cursor:default;}
+.mini-lb-row{
+  display:flex;align-items:center;gap:8px;padding:5px 0;
+  border-bottom:.5px solid rgba(255,255,255,.07);font-size:11px;
+}
+.mini-lb-rank{color:rgba(255,255,255,.38);width:14px;text-align:center;font-size:10px}
+.mini-lb-name{flex:1;color:rgba(255,255,255,.80);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mini-lb-score{color:rgba(169,235,136,.85);font-weight:600}
+/* Move history in right panel */
+.moves-list-wrap{flex:1;overflow-y:auto;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.12) transparent;min-height:0;}
 /* ── Center column ─────────────────────────────────────── */
 .game-center{
   display:flex;flex-direction:column;align-items:center;gap:10px;
@@ -919,10 +970,13 @@ html,body{height:100%;background:#8dbfdb;font-family:var(--sans);color:var(--ink
 </div>
 
 <!-- ── User button + dropdown (shown after first login) ── -->
-<button class="user-btn" id="userBtn" style="display:none" onclick="toggleUserDropdown()">
-  <div class="user-avatar" id="userAvatar">?</div>
-  <span id="userBtnName">Guest</span>
-</button>
+<div class="top-bar-cluster" id="topBarCluster" style="display:none">
+  <button class="pro-upgrade-pill" id="proUpgradePill" onclick="openStripe()">✦ Upgrade to PRO</button>
+  <button class="user-btn" id="userBtn" onclick="toggleUserDropdown()">
+    <div class="user-avatar" id="userAvatar">?</div>
+    <span id="userBtnName">Guest</span>
+  </button>
+</div>
 <div class="user-dropdown" id="userDropdown">
   <div class="user-dd-name" id="userDdName">—</div>
   <div class="user-dd-city" id="userDdCity">—</div>
@@ -984,8 +1038,32 @@ html,body{height:100%;background:#8dbfdb;font-family:var(--sans);color:var(--ink
     <div class="stat-row"><span class="stat-label">Wins</span><span class="stat-value" id="wins1">0</span></div>
     <div class="stat-row"><span class="stat-label">Moves made</span><span class="stat-value" id="moves1">0</span></div>
 
-    <div style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.4);margin-top:4px">Move history</div>
-    <div class="moves-list" id="movesList"></div>
+    <!-- Customization: piece style -->
+    <div class="panel-section-label">Piece style</div>
+    <div class="token-grid" id="tokenGrid">
+      <button class="token-opt selected" data-token="☀" onclick="setPlayerToken(this)">☀</button>
+      <button class="token-opt" data-token="🦅" onclick="setPlayerToken(this)">🦅</button>
+      <button class="token-opt" data-token="🌸" onclick="setPlayerToken(this)">🌸</button>
+      <button class="token-opt" data-token="⭐" onclick="setPlayerToken(this)">⭐</button>
+      <button class="token-opt" data-token="🐺" onclick="setPlayerToken(this)">🐺</button>
+      <button class="token-opt" data-token="🔥" onclick="setPlayerToken(this)">🔥</button>
+      <button class="token-opt" data-token="💎" onclick="setPlayerToken(this)">💎</button>
+      <button class="token-opt" data-token="🏹" onclick="setPlayerToken(this)">🏹</button>
+    </div>
+
+    <!-- Customization: board size -->
+    <div class="panel-section-label">Board size</div>
+    <div class="board-size-row">
+      <button class="board-size-btn active" onclick="setBoardSize(this,7,6)">7×6</button>
+      <button class="board-size-btn locked" title="PRO feature" onclick="openStripe()">8×7 ✦</button>
+      <button class="board-size-btn locked" title="PRO feature" onclick="openStripe()">6×5 ✦</button>
+    </div>
+
+    <!-- Mini leaderboard -->
+    <div class="panel-section-label">Leaderboard</div>
+    <div id="miniLeaderboard" style="display:flex;flex-direction:column;gap:0;overflow:hidden;">
+      <div style="font-size:10px;color:rgba(255,255,255,.30);padding:4px 0;">Loading…</div>
+    </div>
   </div>
 
   <!-- ── Center ── -->
@@ -1043,8 +1121,8 @@ html,body{height:100%;background:#8dbfdb;font-family:var(--sans);color:var(--ink
     </div>
   </div>
 
-  <!-- ── Right panel: Player 2 + Chat ── -->
-  <div class="glass player-panel" id="rightPanel" style="display:none">
+  <!-- ── Right panel: Player 2 + Move History ── -->
+  <div class="glass player-panel" id="rightPanel">
     <div class="panel-head">
       <div class="avatar p2" id="av2">🌙</div>
       <div class="player-name-wrap">
@@ -1059,24 +1137,10 @@ html,body{height:100%;background:#8dbfdb;font-family:var(--sans);color:var(--ink
     <div class="stat-row"><span class="stat-label">Wins</span><span class="stat-value" id="wins2">0</span></div>
     <div class="stat-row"><span class="stat-label">Moves made</span><span class="stat-value" id="moves2">0</span></div>
 
-    <!-- Tabs: Chat | AI Analysis -->
-    <div class="panel-tabs">
-      <button class="panel-tab active" id="tabChat" onclick="switchTab('chat')">Chat</button>
-      <button class="panel-tab" id="tabAnalysis" onclick="switchTab('analysis')">AI Analysis</button>
+    <div class="panel-section-label">Move history</div>
+    <div class="moves-list-wrap">
+      <div class="moves-list" id="movesList"></div>
     </div>
-
-    <!-- Chat pane (legacy; chatArea now in widget) -->
-    <div class="tab-pane active" id="paneChat" style="display:none"></div>
-
-    <!-- AI Analysis tab -->
-    <div class="tab-pane" id="paneAnalysis">
-      <button id="btnCoachPanel" onclick="openCoach()" style="display:none;width:100%;padding:9px;border-radius:10px;border:none;background:linear-gradient(135deg,#2a6a4a,#3d9e6e);color:#fff;font-size:12px;font-weight:600;font-family:var(--sans);cursor:pointer;letter-spacing:.04em;margin-bottom:8px;flex-shrink:0;">🧠 Analyze game</button>
-      <div id="inlineCoachContent" class="inline-coach-content">
-        <div class="inline-coach-placeholder">Finish a game, then tap "Analyze game" above.</div>
-      </div>
-    </div>
-
-    <button class="pro-btn" onclick="openStripe()">✦ Upgrade to Pro</button>
   </div>
 
 </div>
@@ -1489,7 +1553,7 @@ function loadUser() {
 
 function showUserButton(name, city) {
   const btn = document.getElementById('userBtn');
-  btn.style.display = 'flex';
+  document.getElementById('topBarCluster').style.display = 'flex';
   document.getElementById('userAvatar').textContent = (name || '?')[0].toUpperCase();
   document.getElementById('userBtnName').textContent = name || 'Guest';
   document.getElementById('userDdName').textContent = name || 'Guest';
@@ -2347,6 +2411,47 @@ document.addEventListener('keydown', e => {
   const col = parseInt(e.key) - 1;
   if (col >= 0 && col < 7 && isMyTurn()) handleCellClick(col);
 });
+
+// ── Customization helpers ────────────────────────────────────────────────────
+window.setPlayerToken = function(el) {
+  document.querySelectorAll('.token-opt').forEach(b => b.classList.remove('selected'));
+  el.classList.add('selected');
+  const token = el.dataset.token;
+  // Update P1 avatar
+  document.getElementById('av1').textContent = token;
+  document.getElementById('userAvatar').textContent = token;
+  // Persist
+  const u = loadUser();
+  if (u) { u.token = token; saveUser(u); }
+};
+
+window.setBoardSize = function(el, cols, rows) {
+  document.querySelectorAll('.board-size-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  // Board resize is PRO — for now only 7×6 is active, others open Stripe
+};
+
+async function loadMiniLeaderboard() {
+  try {
+    const r = await fetch('/api/leaderboard');
+    const data = await r.json();
+    const lb = document.getElementById('miniLeaderboard');
+    if (!lb) return;
+    const rows = (data.leaders || data).slice(0, 6);
+    lb.innerHTML = rows.map((p, i) => {
+      const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : '';
+      const rankStr = medal || `<span class="mini-lb-rank">${i+1}</span>`;
+      return `<div class="mini-lb-row">
+        ${medal ? `<span style="font-size:13px">${medal}</span>` : `<span class="mini-lb-rank">${i+1}</span>`}
+        <span class="mini-lb-name">${p.name || p.playerName || 'Unknown'}</span>
+        <span class="mini-lb-score">${p.wins || p.score || 0}W</span>
+      </div>`;
+    }).join('');
+  } catch(e) { /* silent */ }
+}
+// Load leaderboard on init
+document.addEventListener('DOMContentLoaded', () => setTimeout(loadMiniLeaderboard, 1500));
+
 </script>
 </body>
 </html>

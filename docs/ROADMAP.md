@@ -28,6 +28,8 @@
 - `be1af9f` fix: lobby form — dark text on light glass, narrower card fits door frame
 - `cf3cd54` docs: update ROADMAP with be1af9f
 - `eb23b44` feat: lobby i18n EN/RU/KK, dark active tab, form centering in door
+- `3ee66c6` docs: update ROADMAP with eb23b44
+- `8ca933e` fix: center lobby card within yurt door opening
 
 ## Next
 

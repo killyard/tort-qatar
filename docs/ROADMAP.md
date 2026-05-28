@@ -55,6 +55,7 @@
 - `8ec530d` fix: remove X close buttons from New Game + Profile modals, match profile modal style
 - `1654f73` fix: board overlay cleared on size change, NGM defaults to Medium, leaderboard shows pts, chat aligned to right panel, profile modal restyle + close X re-added
 - `pending` fix: multiplayer — both players can now move (gameStarted mirrored from server status in renderState; previously only solo doStartGame set it, so isMyTurn() blocked P2)
+- `pending` feat: mobile responsive overhaul — page scrolls, single-column stack (board → player → progress), sticky bottom action bar (Start/Resign/New game) above collapsed chat, cells use aspect-ratio:1 for circular fit, breakpoints at 900/600/420px
 
 ## Next
 

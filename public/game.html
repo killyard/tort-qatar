@@ -1128,14 +1128,89 @@ html,body{height:100%;background:#8dbfdb;font-family:var(--sans);color:var(--ink
   display:flex;gap:6px;flex-shrink:0;padding:6px 10px 0;
   border-top:.5px solid rgba(255,255,255,.08);margin-top:4px;
 }
-/* ── Responsive ────────────────────────────────────────── */
+/* Default (desktop) — bottom action wrapper just stacks its children */
+.game-bottom-actions{display:flex;flex-direction:column;align-items:center;gap:10px;width:100%}
+
+/* ── Responsive (tablet + mobile) ─────────────────────────────────────── */
 @media(max-width:900px){
-  .ui{grid-template-columns:1fr;grid-template-rows:auto 1fr auto;padding:8px;gap:8px;overflow-y:auto;height:auto;min-height:100vh}
-  .player-panel{flex-direction:row;align-items:center;flex-wrap:wrap;gap:8px;max-height:none;padding:12px}
-  .timer,.moves-list,.chat-area{display:none}
-  .game-center{padding:4px 0}
-  .cell{width:44px;height:44px}
-  .board{gap:5px;padding:10px}
+  /* Allow the page itself to scroll on touch devices */
+  html,body{overflow-y:auto;overflow-x:hidden;height:auto;min-height:100%}
+
+  /* Single column, content height; leave space for top buttons + bottom footer */
+  .ui{
+    display:flex;flex-direction:column;
+    grid-template-columns:1fr;grid-template-rows:none;
+    height:auto;min-height:100vh;
+    padding:58px 10px 96px;   /* top: top-bar cluster; bottom: sticky mobile footer */
+    gap:10px;
+    overflow:visible;
+    align-items:stretch;
+  }
+
+  /* Order: board first, then player panel, then game progress */
+  .game-center{order:1;width:100%;padding:4px 0;gap:8px}
+  #leftPanel  {order:2}
+  #rightPanel {order:3;margin-top:0;max-height:none;overflow:visible}
+
+  /* Panels: full width, no fixed heights */
+  .player-panel{padding:14px;max-height:none}
+
+  /* Board scales down; cells keep circular aspect via aspect-ratio */
+  .cell{width:auto;height:auto;aspect-ratio:1;min-width:0}
+  .board{gap:5px;padding:8px;width:100%;box-sizing:border-box}
+  .board-col,.board-wrap{width:100%}
+
+  /* Status row + p2 bar fit narrow widths */
+  .status-row{flex-wrap:wrap;gap:6px}
+  .p2-bar{width:100%;justify-content:flex-start}
+  .room-bar{font-size:11px;flex-wrap:wrap}
+
+  /* Top-bar cluster shrinks; hide PRO pill below 700px */
+  .top-bar-cluster{top:8px;right:8px;gap:6px}
+  .user-btn{padding:5px 12px 5px 6px;font-size:12px}
+  .user-avatar{width:22px;height:22px;font-size:11px}
+
+  /* Chat widget — flush to bottom, full width, starts collapsed via JS */
+  .chat-widget{
+    width:100% !important;left:0 !important;right:0 !important;
+    border-radius:14px 14px 0 0;
+    height:42vh;min-height:200px;max-height:50vh;
+  }
+  .chat-widget.collapsed{height:46px !important}
+
+  /* Sticky bottom action bar — Start / Resign / New game / Rematch always reachable.
+     We wrap the existing #btnStartGame and .game-controls in .game-bottom-actions
+     and pin THAT wrapper to the viewport bottom (above the collapsed chat header). */
+  .game-bottom-actions{
+    position:fixed;left:0;right:0;bottom:46px;z-index:140;
+    display:flex;flex-direction:column;align-items:center;gap:8px;
+    padding:10px 10px calc(8px + env(safe-area-inset-bottom,0px));
+    background:rgba(16,14,28,.92);
+    backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+    border-top:.5px solid rgba(255,255,255,.10);
+  }
+  .game-bottom-actions .game-controls{
+    display:flex;flex-wrap:wrap;justify-content:center;gap:6px;
+  }
+  .game-bottom-actions .ctrl-btn{padding:7px 12px;font-size:12px}
+  .game-bottom-actions #btnStartGame{padding:10px 22px;font-size:13px}
+}
+
+/* Very small screens (phones) */
+@media(max-width:600px){
+  .board{gap:4px;padding:6px}
+  .pro-upgrade-pill{display:none !important}
+  .player-panel{padding:12px}
+  .room-bar{padding:5px 10px;font-size:10px}
+  .ngm-card,.profile-modal-card{width:92vw;padding:22px 18px}
+  .top-bar-cluster{top:6px;right:6px}
+  .ui{padding:54px 8px 96px}
+}
+
+/* Very narrow boards (8x7 on small phones) */
+@media(max-width:420px){
+  .board{gap:3px;padding:5px}
+  .status-bar{font-size:13px}
 }
 </style>
 </head>
@@ -1372,16 +1447,18 @@ html,body{height:100%;background:#8dbfdb;font-family:var(--sans);color:var(--ink
     </div>
     </div><!-- /board-col -->
 
-    <button id="btnStartGame" onclick="doStartGame()">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-      Start game
-    </button>
+    <div class="game-bottom-actions">
+      <button id="btnStartGame" onclick="doStartGame()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+        Start game
+      </button>
 
-    <div class="game-controls">
-      <button class="ctrl-btn" id="btnRematch" style="display:none" onclick="sendRematch()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:-1px;display:inline-block"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg> Rematch</button>
-      <button class="ctrl-btn coach-btn" id="btnCoach" style="display:none" onclick="openCoach()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:-1px;display:inline-block"><path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96-.46 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 1.44-4.14z"/><path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96-.46 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-1.44-4.14z"/></svg> AI Coach</button>
-      <button class="ctrl-btn danger" id="btnResign" onclick="sendResign()">Resign</button>
-      <button class="ctrl-btn" onclick="openNewGame()">New game</button>
+      <div class="game-controls">
+        <button class="ctrl-btn" id="btnRematch" style="display:none" onclick="sendRematch()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:-1px;display:inline-block"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg> Rematch</button>
+        <button class="ctrl-btn coach-btn" id="btnCoach" style="display:none" onclick="openCoach()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:-1px;display:inline-block"><path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96-.46 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 1.44-4.14z"/><path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96-.46 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-1.44-4.14z"/></svg> AI Coach</button>
+        <button class="ctrl-btn danger" id="btnResign" onclick="sendResign()">Resign</button>
+        <button class="ctrl-btn" onclick="openNewGame()">New game</button>
+      </div>
     </div>
 
     <!-- ── Move Timeline (shown after game ends) ── -->
@@ -1858,8 +1935,11 @@ function showUserButton(name, city) {
   document.getElementById('userBtnName').textContent = name || 'Guest';
   document.getElementById('userDdName').textContent = name || 'Guest';
   document.getElementById('userDdCity').textContent = city || '';
-  // Reveal chat widget now that user is logged in
-  document.getElementById('chatWidget').classList.add('active');
+  // Reveal chat widget now that user is logged in.
+  // On mobile, start collapsed so it doesn't cover the bottom action bar.
+  const cw = document.getElementById('chatWidget');
+  cw.classList.add('active');
+  if (window.innerWidth <= 900) cw.classList.add('collapsed');
 }
 
 window.toggleUserDropdown = function() {

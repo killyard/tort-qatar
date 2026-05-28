@@ -54,6 +54,10 @@
 - `18f2574` feat: mid-game AI Coach (Flash), post-game analysis (Pro), dual timer layout
 - `8ec530d` fix: remove X close buttons from New Game + Profile modals, match profile modal style
 - `pending` fix: clear stale board frame overlay on size change so old hole pattern doesn't stretch over the new grid
+- `pending` fix: New Game modal defaults to Medium difficulty (matches actual game default); always resets to Medium when opened
+- `pending` fix: mini leaderboard shows player points (e.g. "4 pts") instead of "0W"
+- `pending` fix: chat widget right edge aligned to Game Progress panel (right:14px to match .ui padding)
+- `pending` fix: Profile modal restyled — white title + white field labels (Name/City), frosted dark inputs; close (X) buttons re-added to New Game + Profile modals
 
 ## Next
 

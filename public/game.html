@@ -866,18 +866,19 @@ html,body{height:100%;background:#8dbfdb;font-family:var(--sans);color:var(--ink
 /* Glass needs lighter text since bg is dark/blurred */
 .lobby-card *,
 .auth-card *,
-.ngm-card * {
+.ngm-card *,
+.profile-modal-card * {
   --ink: #ffffff !important;
   --ink-soft: rgba(255,255,255,.80) !important;
   --ink-mute: rgba(255,255,255,.52) !important;
   --ink-line: rgba(255,255,255,.18) !important;
 }
 /* Title stays white-ish serif */
-.auth-logo, .lobby-title, .ngm-title {
+.auth-logo, .lobby-title, .ngm-title, .profile-modal-title {
   color: #fff !important;
   text-shadow: 0 1px 8px rgba(0,0,0,.35);
 }
-.auth-sub, .lobby-sub, .ngm-sub { color: rgba(255,255,255,.65) !important; }
+.auth-sub, .lobby-sub, .ngm-sub, .profile-modal-sub { color: rgba(255,255,255,.65) !important; }
 /* Inputs — frosted pill */
 .lobby-input, .auth-field, .join-code {
   background: rgba(255,255,255,.14) !important;
@@ -950,7 +951,9 @@ html,body{height:100%;background:#8dbfdb;font-family:var(--sans);color:var(--ink
 /* ── Chat widget (floating bottom-right) ────────────────── */
 .chat-widget {
   position: fixed;
-  bottom: 0; right: 20px; z-index: 150;
+  /* Aligned to the right panel (Game Progress): same 320px width and
+     right offset = .ui padding (14px) so right edges line up. */
+  bottom: 0; right: 14px; z-index: 150;
   width: 320px;
   height: 50vh; min-height: 240px;
   display: none; flex-direction: column;
@@ -1026,14 +1029,19 @@ html,body{height:100%;background:#8dbfdb;font-family:var(--sans);color:var(--ink
 
 .profile-modal-input {
   width: 100%; padding: 10px 16px; border-radius: 999px; box-sizing: border-box;
-  border: 1px solid rgba(255,255,255,.82);
-  background: rgba(255,255,255,.72); color: var(--ink); font-size: 13.5px;
-  font-family: var(--sans); outline: none; margin-bottom: 10px;
-  box-shadow: 0 1px 0 rgba(255,255,255,.9) inset, 0 2px 8px rgba(0,0,0,.05);
+  border: 1px solid rgba(255,255,255,.38);
+  background: rgba(255,255,255,.14); color: #fff; font-size: 13.5px;
+  font-family: var(--sans); outline: none; margin-bottom: 12px;
+  box-shadow: 0 1px 0 rgba(255,255,255,.22) inset;
   transition: border-color .15s, background .15s;
 }
-.profile-modal-input:focus { border-color: rgba(29,42,35,.45); background: rgba(255,255,255,.92); }
-.profile-modal-input::placeholder { color: var(--ink-mute); }
+.profile-modal-input:focus { border-color: rgba(255,255,255,.55); background: rgba(255,255,255,.20); }
+.profile-modal-input::placeholder { color: rgba(255,255,255,.45); }
+.profile-modal-label {
+  font-size: 10px; color: rgba(255,255,255,.55);
+  letter-spacing: .1em; text-transform: uppercase;
+  margin-top: 6px; margin-bottom: 6px;
+}
 .profile-modal-save {
   width: 100%; padding: 11px; border-radius: 999px; border: none;
   background: var(--ink); color: #f3efe6; font-size: 14px; font-weight: 600;
@@ -1049,6 +1057,17 @@ html,body{height:100%;background:#8dbfdb;font-family:var(--sans);color:var(--ink
 }
 .profile-modal-switch:hover { background: rgba(255,255,255,.55); color: var(--ink); }
 .profile-modal-err { font-size: 12px; color: #c0392b; text-align: center; min-height: 16px; margin-bottom: 6px; }
+
+/* Shared modal close (X) button — used by New Game + Profile modals */
+.modal-close {
+  position: absolute; top: 14px; right: 16px;
+  width: 30px; height: 30px; border-radius: 999px;
+  background: rgba(255,255,255,.12); border: .5px solid rgba(255,255,255,.2);
+  color: rgba(255,255,255,.72); cursor: pointer; font-size: 14px;
+  display: grid; place-items: center; line-height: 1;
+  transition: background .15s; z-index: 2;
+}
+.modal-close:hover { background: rgba(255,255,255,.22); }
 
 /* ── Start game button ───────────────────────────────────── */
 #btnStartGame {
@@ -1228,6 +1247,7 @@ html,body{height:100%;background:#8dbfdb;font-family:var(--sans);color:var(--ink
 <!-- ── New game modal (return visits) ── -->
 <div class="ngm-overlay" id="ngmOverlay" onclick="ngmOutsideClick(event)">
   <div class="ngm-card">
+    <button class="modal-close" type="button" onclick="closeNgm()" aria-label="Close">✕</button>
     <div class="ngm-title">New game</div>
     <div class="ngm-sub" id="ngmSub">Choose mode and difficulty</div>
     <div class="lobby-label">Mode</div>
@@ -1238,8 +1258,8 @@ html,body{height:100%;background:#8dbfdb;font-family:var(--sans);color:var(--ink
     <div id="ngmAiOpts">
       <div class="lobby-label">Difficulty</div>
       <div class="lobby-tab-group" style="margin-bottom:18px">
-        <button class="lobby-tab active" id="ngmDiffEasy"   onclick="ngmSetDiff('easy')"  ><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 100 20A10 10 0 0012 2z"/><path d="M12 6v6l4 2"/></svg> Easy</button>
-        <button class="lobby-tab"        id="ngmDiffMedium" onclick="ngmSetDiff('medium')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> Medium</button>
+        <button class="lobby-tab"        id="ngmDiffEasy"   onclick="ngmSetDiff('easy')"  ><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 100 20A10 10 0 0012 2z"/><path d="M12 6v6l4 2"/></svg> Easy</button>
+        <button class="lobby-tab active" id="ngmDiffMedium" onclick="ngmSetDiff('medium')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> Medium</button>
         <button class="lobby-tab"        id="ngmDiffHard"   onclick="ngmSetDiff('hard')"  ><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg> Hard</button>
       </div>
       <button class="lobby-btn primary" onclick="ngmPlayAI()">Play vs AI</button>
@@ -1437,10 +1457,13 @@ html,body{height:100%;background:#8dbfdb;font-family:var(--sans);color:var(--ink
 <!-- ════ PROFILE MODAL ════ -->
 <div class="profile-modal-overlay" id="profileModalOverlay" onclick="profileModalBgClick(event)">
   <div class="profile-modal-card" id="profileModalCard">
+    <button class="modal-close" type="button" onclick="closeProfileModal()" aria-label="Close">✕</button>
     <div class="profile-modal-title">Your profile</div>
     <div class="profile-modal-sub">Update your name and city</div>
     <div class="profile-modal-err" id="profileModalErr"></div>
+    <div class="profile-modal-label">Name</div>
     <input class="profile-modal-input" id="profileModalName" placeholder="Name" maxlength="24" />
+    <div class="profile-modal-label">City</div>
     <input class="profile-modal-input" id="profileModalCity" placeholder="City" maxlength="32" />
     <button class="profile-modal-save" onclick="saveProfileModal()">Save changes</button>
     <button class="profile-modal-switch" onclick="switchAccountFromProfile()">
@@ -1893,6 +1916,9 @@ window.signOut = function() {
 let ngmTab = 'ai', ngmDiff = 'medium';
 
 window.openNewGame = function() {
+  // Always reset difficulty to Medium when opening the modal
+  // (matches the actual game default if user doesn't click anything)
+  window.ngmSetDiff('medium');
   document.getElementById('ngmOverlay').classList.add('open');
 };
 window.closeNgm = function() {
@@ -3153,7 +3179,7 @@ async function loadMiniLeaderboard() {
       return `<div class="mini-lb-row">
         <span class="mini-lb-rank" style="color:${rankColor};font-weight:${i<3?700:400}">${i+1}</span>
         <span class="mini-lb-name">${p.name || p.playerName || 'Unknown'}</span>
-        <span class="mini-lb-score">${p.wins || p.score || 0}W</span>
+        <span class="mini-lb-score">${p.points ?? p.score ?? 0} pts</span>
       </div>`;
     }).join('');
   } catch(e) { /* silent */ }

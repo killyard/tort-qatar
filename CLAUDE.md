@@ -25,3 +25,12 @@
   - Keep "Next" and "Todo" sections current
 - Always commit `docs/ROADMAP.md` together with the feature commit or as a follow-up
 - Always push immediately after commit — use one line: `git add -A; git commit -m "…"; git push`
+
+## RULE: commit hash sync — MANDATORY
+
+**Whenever the user pastes git output containing a commit hash (e.g. `[main abc1234]`), Claude MUST immediately update `docs/ROADMAP.md` to record that hash in the Done section before doing anything else.**
+
+- Extract the hash and message from the git output
+- Add the entry to Done in `docs/ROADMAP.md`
+- Commit the ROADMAP update: `git add docs/ROADMAP.md; git commit -m "docs: update ROADMAP with <hash>"; git push`
+- Never skip this step, even if the conversation moves on to a new topic

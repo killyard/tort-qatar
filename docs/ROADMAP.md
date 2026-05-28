@@ -5,24 +5,21 @@
 - `7cd9152` initial commit — landing page (Kazakh Ghibli aesthetic), auth modal, hero scene, parallax
 - `dee9d15` full backend + frontend — Express server, Socket.io multiplayer, Connect Four engine, game UI, leaderboard, AI Coach endpoint, vs Computer mode (minimax + alpha-beta), repo restructured (`src/` backend, `public/` frontend)
 - `5e8f1ae` switched AI Coach from Anthropic Claude → Google Gemini 2.5 Pro
-- deployed to Render — live at https://tort-qatar.onrender.com
-- added `GEMINI_API_KEY` to Render env vars
-- added live demo link + Deploy to Render button to README.md
-- rewrote AI Coach prompt: structured step-by-step analysis (tactical scan → strategy → best play → response), missed-win detection, optional smartMove field; added "Best play" section to UI
-
-- solo mode: replaced chat panel with inline AI Coach analysis — auto-fetches on game end, renders next to the board
-- AI Coach: pre-compute missed wins and missed blocks server-side using game engine, inject as verified facts into Gemini prompt
+- `a5687bc` chore: add render.yaml + fix README for Render deploy — live at https://tort-qatar.onrender.com
+- `86e286a` docs: add live demo URL to README + update ROADMAP
+- `bc9b46b` feat: AI Coach — chronological analysis, missed-win detection, smart move highlight
+- `11526a8` feat: AI Coach — structured step-by-step analysis prompt, optional smartMove
+- `bf31164` feat: solo mode — inline AI Coach panel replaces chat, auto-analysis on game end
+- `f85ca10` fix: AI Coach — pre-compute missed wins/blocks via game engine, inject as verified facts
 
 ## Next
 
 - [ ] Rate limiting on `/api/coach/analyze` (prevent API key abuse)
+- [ ] Auth — replace non-functional Google/email buttons with simple username entry
+- [ ] Persistent leaderboard (JSON file or Supabase) — resets on server restart now
 
 ## Todo
 
-- [ ] Rate limiting on `/api/coach/analyze` (prevent API key abuse)
-- [ ] Hide chat panel in solo (vs AI) mode
-- [ ] Auth — replace non-functional Google/email buttons with simple username entry
-- [ ] Persistent leaderboard (JSON file or Supabase) — resets on server restart now
 - [ ] Timer countdown with forfeit on timeout
 - [ ] Spectator mode — watch live games via room link
 
@@ -31,4 +28,3 @@
 - `node_modules` must be reinstalled after clone (`npm install`)
 - AI Coach requires `GEMINI_API_KEY` in `.env` — falls back to static text if missing
 - Leaderboard data in-memory only — lost on server restart
-- Solo mode: chat panel visible but non-functional

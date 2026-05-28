@@ -14,6 +14,7 @@
 - `91d3d33` docs: sync ROADMAP with commit hashes, clean up todo/done sections
 - `c3aaced` feat: wider panels, richer move history (col/row/name), manual-only AI Coach
 - `49e253e` feat: Chat/Analysis tabs, Steppe Bot AI persona, proactive chat on key moments, Pro gate stub
+- `d50903e` docs: update ROADMAP with 49e253e
 
 ## Next
 

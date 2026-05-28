@@ -1007,7 +1007,7 @@ function soloSendTrigger(trigger) {
   })
     .then(r => r.json())
     .then(d => { if (d.reply) appendSoloChat(d.reply, false); })
-    .catch(() => {});
+    .catch(e => console.error('[Steppe Bot]', e));
 }
 
 function appendSoloChat(text, isPlayer) {

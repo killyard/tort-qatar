@@ -1,9 +1,7 @@
-// ── AI Chat — Steppe Bot persona, powered by Gemini ──────────────────────────
-import { GoogleGenerativeAI } from '@google/generative-ai';
+// ── AI Chat — Steppe Bot persona, powered by Groq (Llama) ────────────────────
+import Groq from 'groq-sdk';
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-// Use flash for chat — faster, cheaper, still great at short conversational replies
-const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
+const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
 const SYSTEM_PROMPT = `You are "Steppe Bot" — a competitive Connect Four player chatting with your opponent during a game on Tört Qatar, a Kazakh-themed Connect Four platform.
 
@@ -75,8 +73,13 @@ export async function getChatReply({ userMessage, trigger, gameContext }) {
   const prompt = `${SYSTEM_PROMPT}\n\n---\n${triggerLine}\n\nRespond with ONLY your chat message. No quotes. No labels. Max 100 characters.`;
 
   try {
-    const result = await model.generateContent(prompt);
-    const text = result.response.text().trim().slice(0, 120);
+    const completion = await groq.chat.completions.create({
+      model: 'llama-3.1-8b-instant',
+      messages: [{ role: 'user', content: prompt }],
+      max_tokens: 80,
+      temperature: 0.85,
+    });
+    const text = completion.choices[0]?.message?.content?.trim().slice(0, 120);
     return text || null;
   } catch (err) {
     console.error('[AI Chat]', err.message);

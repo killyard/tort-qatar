@@ -269,58 +269,78 @@ html,body{height:100%;background:#8dbfdb;font-family:var(--sans);color:var(--ink
 .mini-lb-score{color:rgba(169,235,136,.85);font-weight:600}
 /* ── Move Timeline scrubber ─────────────────────────────── */
 .timeline-wrap{
-  display:none;flex-direction:column;align-items:center;gap:8px;
-  width:100%;max-width:460px;margin-top:6px;
-  padding:10px 14px 8px;
-  background:rgba(255,255,255,.05);
-  border:.5px solid rgba(255,255,255,.10);
-  border-radius:14px;
-  backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
+  display:none;flex-direction:column;align-items:center;gap:6px;
+  width:100%;max-width:480px;margin-top:8px;
+  padding:12px 16px 10px;
+  background:rgba(255,255,255,.06);
+  border:.5px solid rgba(255,255,255,.12);
+  border-radius:16px;
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  box-shadow:0 2px 12px rgba(0,0,0,.25),inset 0 1px 0 rgba(255,255,255,.10);
 }
 .timeline-wrap.visible{display:flex}
-.timeline-row{display:flex;align-items:center;gap:8px;width:100%}
+.timeline-row{display:flex;align-items:center;gap:10px;width:100%}
 .tl-arrow{
-  background:rgba(255,255,255,.10);border:.5px solid rgba(255,255,255,.18);
-  color:rgba(255,255,255,.75);border-radius:8px;
-  width:26px;height:26px;font-size:14px;cursor:pointer;
+  background:rgba(255,255,255,.10);border:.5px solid rgba(255,255,255,.20);
+  color:rgba(255,255,255,.80);border-radius:50%;
+  width:28px;height:28px;font-size:13px;cursor:pointer;
   display:flex;align-items:center;justify-content:center;
-  flex-shrink:0;transition:background .12s;
+  flex-shrink:0;transition:background .12s,transform .1s;
+  user-select:none;
 }
-.tl-arrow:hover{background:rgba(255,255,255,.22)}
-.tl-arrow:disabled{opacity:.3;cursor:default}
+.tl-arrow:hover:not(:disabled){background:rgba(255,255,255,.22);transform:scale(1.08)}
+.tl-arrow:disabled{opacity:.25;cursor:default}
 .timeline-track{
-  position:relative;flex:1;height:26px;
-  display:flex;align-items:center;cursor:pointer;
+  position:relative;flex:1;height:36px;
+  display:flex;align-items:center;
+  cursor:grab;user-select:none;touch-action:none;
 }
+.timeline-track.dragging{cursor:grabbing}
 .timeline-rail{
-  position:absolute;left:0;right:0;height:3px;
-  background:rgba(255,255,255,.12);border-radius:2px;
+  position:absolute;left:0;right:0;height:4px;
+  background:rgba(255,255,255,.10);border-radius:3px;
 }
 .timeline-fill{
-  position:absolute;left:0;height:3px;
-  background:rgba(255,255,255,.30);border-radius:2px;
-  transition:width .08s;
+  position:absolute;left:0;height:4px;
+  background:linear-gradient(90deg,rgba(253,198,46,.60),rgba(178,88,255,.60));
+  border-radius:3px;
+  pointer-events:none;
 }
 .timeline-marks{
   position:absolute;left:0;right:0;top:0;bottom:0;
-  display:flex;align-items:center;
+  pointer-events:none;
 }
 .tl-mark{
-  position:absolute;width:9px;height:9px;border-radius:50%;
-  transform:translateX(-50%);cursor:pointer;
-  transition:transform .1s,box-shadow .1s;
-  border:1.5px solid rgba(255,255,255,.25);
+  position:absolute;width:10px;height:10px;border-radius:50%;
+  transform:translateX(-50%);
+  transition:transform .1s,box-shadow .1s,opacity .1s;
+  border:1.5px solid rgba(255,255,255,.20);
+  pointer-events:none;
 }
-.tl-mark.p1{background:rgba(253,198,46,.85);}
-.tl-mark.p2{background:rgba(230,90,70,.85);}
+.tl-mark.p1{background:rgba(253,198,46,.90);}
+.tl-mark.p2{background:rgba(230,90,70,.90);}
 .tl-mark.active{
-  transform:translateX(-50%) scale(1.45);
-  box-shadow:0 0 0 3px rgba(255,255,255,.25);
-  border-color:rgba(255,255,255,.70);
+  transform:translateX(-50%) scale(1.6);
+  box-shadow:0 0 0 3px rgba(255,255,255,.22);
+  border-color:rgba(255,255,255,.80);
+  z-index:1;
+}
+/* Draggable thumb */
+.tl-thumb{
+  position:absolute;width:16px;height:16px;border-radius:50%;
+  transform:translateX(-50%);
+  background:#fff;
+  box-shadow:0 1px 6px rgba(0,0,0,.45);
+  transition:transform .08s,box-shadow .08s;
+  pointer-events:none;z-index:2;
+}
+.timeline-track.dragging .tl-thumb{
+  transform:translateX(-50%) scale(1.2);
+  box-shadow:0 2px 12px rgba(0,0,0,.55);
 }
 .timeline-label{
-  font-size:10px;color:rgba(255,255,255,.40);letter-spacing:.04em;
-  white-space:nowrap;
+  font-size:10px;color:rgba(255,255,255,.45);letter-spacing:.04em;
+  white-space:nowrap;font-family:var(--sans);
 }
 /* History-mode badge on the board */
 .board-wrap.history-mode::after{
@@ -1324,6 +1344,7 @@ html,body{height:100%;background:#8dbfdb;font-family:var(--sans);color:var(--ink
           <div class="timeline-rail"></div>
           <div class="timeline-fill" id="timelineFill"></div>
           <div class="timeline-marks" id="timelineMarks"></div>
+          <div class="tl-thumb" id="tlThumb"></div>
         </div>
         <button class="tl-arrow" id="tlNext" onclick="tlStep(1)">&#8594;</button>
       </div>
@@ -2180,16 +2201,14 @@ function applyMove(col, player) {
 }
 
 // ── Move Timeline ─────────────────────────────────────────────────────────
-let tlIndex = 0;      // currently viewed move index (0 = empty board)
-let tlHistory = [];   // snapshot of history when game ended
+let tlIndex = 0;
+let tlHistory = [];
 
 function tlBuildBoard(upToIndex) {
-  // Replay moves 0..upToIndex-1 on a fresh board
   let b = freshBoard();
   for (let i = 0; i < upToIndex; i++) {
     const { col, player } = tlHistory[i];
-    const res = soloDrop(b, col, player);
-    b = res.board;
+    b = soloDrop(b, col, player).board;
   }
   return b;
 }
@@ -2197,96 +2216,114 @@ function tlBuildBoard(upToIndex) {
 function tlRender(index) {
   tlIndex = Math.max(0, Math.min(tlHistory.length, index));
   const total = tlHistory.length;
-
-  // Reconstruct board at this point
-  const board = tlBuildBoard(tlIndex);
-
-  // Find win cells only when at last move and game had a winner
   const isLast = tlIndex === total;
-  const winCells = isLast ? (gameState?.winCells || null) : null;
+  const pct = total > 0 ? (tlIndex / total) * 100 : 0;
 
-  // Remove history-mode class; re-render board without animation
+  // Rebuild board snapshot
+  const board = tlBuildBoard(tlIndex);
+  const winCells = isLast ? (gameState?.winCells || null) : null;
   const boardEl = document.getElementById('board');
   boardEl.classList.remove('game-over');
-
-  // Temporarily suppress drop animation by overriding class
   renderBoard(board, winCells);
-
-  // Remove drop-anim on all cells (no animation during scrub)
   boardEl.querySelectorAll('.cell.drop-anim').forEach(c => c.classList.remove('drop-anim'));
 
-  // Highlight the cell placed on this move
+  // Highlight last placed chip
   boardEl.querySelectorAll('.tl-last').forEach(c => c.classList.remove('tl-last'));
   if (tlIndex > 0) {
-    const move = tlHistory[tlIndex - 1];
-    if (cells[move.row] && cells[move.row][move.col]) {
-      cells[move.row][move.col].classList.add('tl-last');
-    }
+    const mv = tlHistory[tlIndex - 1];
+    if (cells[mv.row]?.[mv.col]) cells[mv.row][mv.col].classList.add('tl-last');
   }
 
-  // Restore game-over state if at last move and game finished
-  if (isLast && gameFinished) {
-    boardEl.classList.add('game-over');
-  }
+  if (isLast && gameFinished) boardEl.classList.add('game-over');
 
-  // History mode indicator on board-wrap
-  const wrap = document.getElementById('boardWrap');
-  if (!isLast) {
-    wrap.classList.add('history-mode');
-  } else {
-    wrap.classList.remove('history-mode');
-  }
+  document.getElementById('boardWrap').classList.toggle('history-mode', !isLast);
 
-  // Update fill bar
-  const pct = total > 0 ? (tlIndex / total) * 100 : 0;
+  // Fill bar + thumb
   document.getElementById('timelineFill').style.width = pct + '%';
+  document.getElementById('tlThumb').style.left = pct + '%';
 
-  // Highlight active mark
-  document.querySelectorAll('.tl-mark').forEach((m, i) => {
-    m.classList.toggle('active', i + 1 === tlIndex);
-  });
+  // Active mark
+  document.querySelectorAll('.tl-mark').forEach((m, i) =>
+    m.classList.toggle('active', i + 1 === tlIndex)
+  );
 
   // Label
-  document.getElementById('tlLabel').textContent =
-    tlIndex === 0 ? 'Start' :
-    `Move ${tlIndex} of ${total} — ${tlHistory[tlIndex-1].player === 1 ? 'P1' : 'P2'} col ${tlHistory[tlIndex-1].col + 1}`;
+  const mv = tlHistory[tlIndex - 1];
+  document.getElementById('tlLabel').textContent = tlIndex === 0
+    ? 'Start — scrub or use arrows'
+    : `Move ${tlIndex} / ${total} — ${mv.player === 1 ? 'P1' : 'P2'} · col ${mv.col + 1}`;
 
-  // Arrow buttons
   document.getElementById('tlPrev').disabled = tlIndex === 0;
   document.getElementById('tlNext').disabled = tlIndex === total;
 }
 
-window.tlStep = function(dir) {
-  tlRender(tlIndex + dir);
-};
+window.tlStep = function(dir) { tlRender(tlIndex + dir); };
+
+// Convert mouse/touch X on track to nearest move index
+function tlIndexFromX(track, clientX) {
+  const rect = track.getBoundingClientRect();
+  const ratio = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+  return Math.round(ratio * tlHistory.length);
+}
 
 function tlShow(history) {
   tlHistory = [...history];
-  tlIndex = tlHistory.length; // start at last move
-
   const total = tlHistory.length;
-  const track = document.getElementById('timelineTrack');
   const marksEl = document.getElementById('timelineMarks');
   marksEl.innerHTML = '';
 
-  // Build marks — evenly spaced across track width
   for (let i = 0; i < total; i++) {
-    const move = tlHistory[i];
-    const pct = total === 1 ? 50 : (i / (total - 1)) * 100;
+    const mv = tlHistory[i];
+    const pct = total <= 1 ? 50 : (i / (total - 1)) * 100;
     const mark = document.createElement('div');
-    mark.className = `tl-mark p${move.player}`;
+    mark.className = `tl-mark p${mv.player}`;
     mark.style.left = pct + '%';
-    mark.title = `Move ${i+1}: ${move.player === 1 ? 'P1' : 'P2'} col ${move.col+1}`;
-    const idx = i + 1;
-    mark.addEventListener('click', () => tlRender(idx));
     marksEl.appendChild(mark);
   }
 
-  // Show wrap
-  const wrap = document.getElementById('timelineWrap');
-  wrap.classList.add('visible');
+  // Drag + click on track
+  const track = document.getElementById('timelineTrack');
+  // Remove old listeners by replacing node
+  const fresh = track.cloneNode(true);
+  track.parentNode.replaceChild(fresh, track);
+  // Re-grab thumb reference after clone
+  const thumb = fresh.querySelector('#tlThumb') || document.getElementById('tlThumb');
 
-  // Render at final position
+  let dragging = false;
+
+  function onMove(clientX) {
+    tlRender(tlIndexFromX(fresh, clientX));
+  }
+
+  fresh.addEventListener('mousedown', e => {
+    dragging = true;
+    fresh.classList.add('dragging');
+    onMove(e.clientX);
+    e.preventDefault();
+  });
+  window.addEventListener('mousemove', e => {
+    if (!dragging) return;
+    onMove(e.clientX);
+  });
+  window.addEventListener('mouseup', () => {
+    if (dragging) { dragging = false; fresh.classList.remove('dragging'); }
+  });
+
+  fresh.addEventListener('touchstart', e => {
+    dragging = true;
+    fresh.classList.add('dragging');
+    onMove(e.touches[0].clientX);
+    e.preventDefault();
+  }, { passive: false });
+  window.addEventListener('touchmove', e => {
+    if (!dragging) return;
+    onMove(e.touches[0].clientX);
+  }, { passive: true });
+  window.addEventListener('touchend', () => {
+    if (dragging) { dragging = false; fresh.classList.remove('dragging'); }
+  });
+
+  document.getElementById('timelineWrap').classList.add('visible');
   tlRender(total);
 }
 

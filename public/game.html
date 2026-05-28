@@ -2454,6 +2454,17 @@ socket.on('room:chat', (msg) => { appendChat(msg); });
 function renderState(state) {
   // Ensure roomId is always set for the joining player
   if (!soloMode && state.id) roomId = state.id;
+  // Multiplayer has no "Start" button — game begins the moment both players
+  // are in. Gate isMyTurn() by mirroring server status into gameStarted so
+  // both clients (P1 AND P2) can drop chips.
+  if (!soloMode) {
+    if (state.status === 'playing' || state.status === 'finished') {
+      gameStarted = true;
+    } else {
+      gameStarted = false;
+    }
+    if (state.status === 'playing') gameFinished = false;
+  }
   // AI Coach: available mid-game (hints) and at game end (full analysis)
   if (state.status === 'playing' && state.history?.length > 0) {
     document.getElementById('btnCoach').style.display = '';

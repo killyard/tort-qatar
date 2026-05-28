@@ -53,11 +53,8 @@
 - `fb28cba` fix: full game-state reset on board-size change — clears chips, game-over class, timeline, locks board
 - `18f2574` feat: mid-game AI Coach (Flash), post-game analysis (Pro), dual timer layout
 - `8ec530d` fix: remove X close buttons from New Game + Profile modals, match profile modal style
-- `pending` fix: clear stale board frame overlay on size change so old hole pattern doesn't stretch over the new grid
-- `pending` fix: New Game modal defaults to Medium difficulty (matches actual game default); always resets to Medium when opened
-- `pending` fix: mini leaderboard shows player points (e.g. "4 pts") instead of "0W"
-- `pending` fix: chat widget right edge aligned to Game Progress panel (right:14px to match .ui padding)
-- `pending` fix: Profile modal restyled — white title + white field labels (Name/City), frosted dark inputs; close (X) buttons re-added to New Game + Profile modals
+- `1654f73` fix: board overlay cleared on size change, NGM defaults to Medium, leaderboard shows pts, chat aligned to right panel, profile modal restyle + close X re-added
+- `pending` fix: multiplayer — both players can now move (gameStarted mirrored from server status in renderState; previously only solo doStartGame set it, so isMyTurn() blocked P2)
 
 ## Next
 

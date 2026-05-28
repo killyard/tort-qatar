@@ -312,18 +312,16 @@ html,body{height:100%;background:#8dbfdb;font-family:var(--sans);color:var(--ink
   display:grid;grid-template-columns:repeat(7,1fr);
   gap:7px;padding:14px;
   perspective:500px;
-  background:rgba(255,255,255,.05);
-  backdrop-filter:blur(6px) saturate(150%);
-  -webkit-backdrop-filter:blur(6px) saturate(150%);
+  background:transparent;
   border-radius:18px;
-  border:1px solid rgba(255,255,255,.10);
+  border:1px solid rgba(255,255,255,.12);
   position:relative;overflow:hidden;
-  box-shadow:0 3px 4px rgba(0,0,0,.15),inset 1.2px 1.2px 1px rgba(255,255,255,.22),inset -1.4px -1.4px 3px rgba(0,0,0,.28);
+  box-shadow:0 4px 20px rgba(0,0,0,.40),inset 1.2px 1.2px 1px rgba(255,255,255,.18),inset -1.4px -1.4px 3px rgba(0,0,0,.32);
   outline:none;
 }
 .board::before{
   content:"";position:absolute;inset:0;border-radius:inherit;
-  background:linear-gradient(135deg,rgba(255,255,255,.12) 0%,rgba(255,255,255,.03) 24%,rgba(255,255,255,0) 52%);
+  background:linear-gradient(135deg,rgba(255,255,255,.10) 0%,rgba(255,255,255,.02) 24%,rgba(255,255,255,0) 52%);
   pointer-events:none;z-index:0;
 }
 .board>*{position:relative;z-index:1;}
@@ -345,7 +343,11 @@ html,body{height:100%;background:#8dbfdb;font-family:var(--sans);color:var(--ink
   border:none;outline:none;
   position:relative;
   transition:transform .1s;
-  box-shadow:inset 0 3px 8px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.04);
+  /* Outward shadow fills the board frame material; hole stays transparent */
+  box-shadow:
+    0 0 0 500px rgb(15,11,32),
+    inset 0 3px 8px rgba(0,0,0,.60),
+    inset 0 1px 0 rgba(255,255,255,.05);
 }
 .cell:hover:not(.filled){transform:scale(1.05)}
 /* ── 3D Liquid Glass Chips ──────────────────────────────── */
@@ -696,12 +698,13 @@ html,body{height:100%;background:#8dbfdb;font-family:var(--sans);color:var(--ink
 
 /* AI thinking indicator */
 .ai-thinking{
-  display:none;position:absolute;top:-32px;left:50%;transform:translateX(-50%);
-  background:rgba(10,30,20,.85);border:.5px solid rgba(255,255,255,.2);
-  padding:5px 14px;border-radius:999px;font-size:12px;color:rgba(255,255,255,.75);
-  white-space:nowrap;backdrop-filter:blur(8px);
+  display:none;position:absolute;top:50%;left:50%;
+  transform:translate(-50%,-50%);z-index:20;
+  background:rgba(10,30,20,.88);border:.5px solid rgba(255,255,255,.22);
+  padding:6px 16px;border-radius:999px;font-size:12px;color:rgba(255,255,255,.82);
+  white-space:nowrap;backdrop-filter:blur(10px);pointer-events:none;
 }
-.ai-thinking.visible{display:block}
+.ai-thinking.visible{display:flex;align-items:center;gap:6px;}
 
 
 /* ══════════════════════════════════════════════════════
@@ -1905,12 +1908,11 @@ function enterGame(rId) {
 }
 
 // ── Solo (vs AI) game engine ───────────────────────────────────────────────
-const ROWS = 6, COLS = 7;
-
-function freshBoard() { return Array.from({length: ROWS}, () => Array(COLS).fill(0)); }
+// Use dynamic board dimensions (boardRows/boardCols updated by setBoardSize)
+function freshBoard() { return Array.from({length: boardRows}, () => Array(boardCols).fill(0)); }
 
 function soloDrop(board, col, player) {
-  for (let r = ROWS - 1; r >= 0; r--) {
+  for (let r = boardRows - 1; r >= 0; r--) {
     if (board[r][col] === 0) {
       const next = board.map(row => [...row]);
       next[r][col] = player;
@@ -1927,12 +1929,12 @@ function soloCheckWinner(board, row, col) {
     const cells_w = [[row, col]];
     for (let i = 1; i < 4; i++) {
       const r = row+dr*i, c = col+dc*i;
-      if (r<0||r>=ROWS||c<0||c>=COLS||board[r][c]!==player) break;
+      if (r<0||r>=boardRows||c<0||c>=boardCols||board[r][c]!==player) break;
       cells_w.push([r,c]);
     }
     for (let i = 1; i < 4; i++) {
       const r = row-dr*i, c = col-dc*i;
-      if (r<0||r>=ROWS||c<0||c>=COLS||board[r][c]!==player) break;
+      if (r<0||r>=boardRows||c<0||c>=boardCols||board[r][c]!==player) break;
       cells_w.push([r,c]);
     }
     if (cells_w.length >= 4) return { winner: player, cells: cells_w };
@@ -2015,12 +2017,18 @@ function renderSoloState() {
   updateTurnIndicators(currentTurn, status);
   updateStatusBar(gameState);
 
+  // AI Coach: show in solo mode after first move (even during play)
+  if (gameStarted && soloHistory.length > 0) {
+    document.getElementById('btnCoach').style.display = '';
+  } else {
+    document.getElementById('btnCoach').style.display = 'none';
+  }
+
   if (status === 'finished') {
     gameFinished = true;
     stopAllTimers();
     document.getElementById('btnResign').style.display = 'none';
     document.getElementById('btnRematch').style.display = '';
-    document.getElementById('btnCoach').style.display = '';
     document.getElementById('board').classList.add('game-over');
     postScore(myName, myCity, soloWinner === 1);
     // Steppe Bot end-game message
@@ -2085,6 +2093,10 @@ socket.on('room:chat', (msg) => { appendChat(msg); });
 
 // ── State rendering (multiplayer) ──────────────────────────────────────────
 function renderState(state) {
+  // AI Coach not available during multiplayer — only at game end
+  if (state.status !== 'finished') {
+    document.getElementById('btnCoach').style.display = 'none';
+  }
   if (state.players[0]) {
     document.getElementById('name1').textContent = state.players[0].name;
     document.getElementById('city1').textContent = state.players[0].city;
@@ -2106,7 +2118,7 @@ function renderState(state) {
     stopAllTimers();
     document.getElementById('btnResign').style.display = 'none';
     document.getElementById('btnRematch').style.display = '';
-    document.getElementById('btnCoach').style.display = '';
+    document.getElementById('btnCoach').style.display = ''; // multiplayer: only at end
     document.getElementById('board').classList.add('game-over');
     const myPlayer = state.players.find(p => p.playerNumber === myPlayerNumber);
     if (myPlayer && !coachRequested)
@@ -2126,8 +2138,8 @@ function chipFaceHTML(playerNum) {
 
 function renderBoard(board, winCells) {
   const winSet = new Set((winCells || []).map(([r, c]) => `${r},${c}`));
-  for (let r = 0; r < 6; r++) {
-    for (let c = 0; c < 7; c++) {
+  for (let r = 0; r < boardRows; r++) {
+    for (let c = 0; c < boardCols; c++) {
       const cell = cells[r][c];
       const prev = cell.className;
       const prevFilled = prev.includes('filled');
@@ -2154,7 +2166,7 @@ function renderMoveHistory(history, names) {
   moveCountByPlayer = [0, 0];
   history.forEach((m, i) => {
     moveCountByPlayer[m.player - 1]++;
-    const floor = 6 - m.row; // row 0=top → floor 6; row 5=bottom → floor 1
+    const floor = boardRows - m.row; // row 0=top → floor boardRows; bottom row → floor 1
     const playerName = names ? names[m.player] : (m.player === 1 ? document.getElementById('name1').textContent : document.getElementById('name2').textContent);
     const item = document.createElement('div');
     item.className = 'move-item';

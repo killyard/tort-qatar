@@ -10,6 +10,7 @@ import cors from 'cors';
 import { createBoard, dropPiece, checkWinner, isDraw, findThreats, formatMoveHistory } from './gameEngine.js';
 import { analyzeGame } from './aiCoach.js';
 import { getChatReply } from './aiChat.js';
+import { getGeminiMove } from './geminiPlayer.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const PORT = process.env.PORT || 3000;
@@ -159,6 +160,19 @@ app.post('/api/chat', async (req, res) => {
   } catch (err) {
     console.error('[/api/chat]', err.message);
     res.status(500).json({ error: 'chat_error' });
+  }
+});
+
+// Gemini AI move
+app.post('/api/ai-move', async (req, res) => {
+  const { board, difficulty } = req.body;
+  if (!board) return res.status(400).json({ error: 'board required' });
+  try {
+    const col = await getGeminiMove(board, difficulty ?? 'medium');
+    res.json({ col });
+  } catch (err) {
+    console.error('[/api/ai-move]', err.message);
+    res.status(500).json({ error: 'gemini failed', col: -1 });
   }
 });
 

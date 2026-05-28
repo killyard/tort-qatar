@@ -414,11 +414,13 @@ html,body{height:100%;background:#8dbfdb;font-family:var(--sans);color:var(--ink
   border:none;outline:none;
   position:relative;
   transition:transform .1s;
-  /* Outward shadow fills the board frame material; hole stays transparent */
+  /* Outward shadow = board frame (clearly purple, distinct from page bg) */
+  /* Inset ring = visible hole border; depth shadow = 3D depth */
   box-shadow:
-    0 0 0 500px rgb(15,11,32),
-    inset 0 3px 8px rgba(0,0,0,.60),
-    inset 0 1px 0 rgba(255,255,255,.05);
+    0 0 0 500px rgb(28,18,66),
+    inset 0 0 0 1.5px rgba(255,255,255,.18),
+    inset 0 3px 10px rgba(0,0,0,.75),
+    inset 0 1px 0 rgba(255,255,255,.06);
 }
 .cell:hover:not(.filled){transform:scale(1.05)}
 /* ── 3D Liquid Glass Chips ──────────────────────────────── */

@@ -32,6 +32,9 @@
 - `a9c3260` feat: 3D liquid glass chips with Kazakh ornaments + pendulum rotation — Shanyrak (P1), Koshkar Muiz (P2), rotateY(-30°↔+30°) animation
 - `9484485` fix: restore missing JS functions truncated in merge (authGoogle, enterAsGuest, renderCoachInChat, openStripe, loadMiniLeaderboard)
 - `c310097` fix: rebuild game.html clean — all missing functions restored + 3D chips finalised
+- `c368a4a` docs: update ROADMAP with commits a9c3260–c310097
+- `f06db05` feat: SVG icons replace emoji, transparent board holes, unlock 8×7/6×5 board sizes
+- `0a4de39` feat: win state — purple winner chips, grey loser chips frozen; AI Coach button purple +25%
 
 ## Next
 

@@ -39,6 +39,7 @@
 - `2ee8284` docs: update ROADMAP with 0d7a446
 - `8861fcb` fix: SyntaxError on line 1975 — single quotes in SVG innerHTML string broke auth
 - `854809f` fix: dynamic board sizes (8×7/6×5 now play correctly), transparent holes, Thinking badge centered on board, AI Coach shows after first move in solo / only at game end in multiplayer
+- (pending) feat: move timeline scrubber after game end — step through every move, highlight last chip, history-mode badge; fix modal X buttons (position:absolute)
 
 ## Next
 

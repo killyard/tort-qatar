@@ -49,6 +49,8 @@
 - `dc4ab36` fix: inline SVG board holes + remove timeline mark dots
 - `d222cab` feat: PostgreSQL + Redis persistence — db.js, cache.js, server.js wired up
 - `c88f9cb` style: replace index.html hero image with game.html canvas background
+- `2441d96` feat: persist player points — localStorage + server restore on page load
+- `fb28cba` fix: full game-state reset on board-size change — clears chips, game-over class, timeline, locks board
 - `18f2574` feat: mid-game AI Coach (Flash), post-game analysis (Pro), dual timer layout
 
 ## Next

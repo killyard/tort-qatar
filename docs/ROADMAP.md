@@ -43,11 +43,13 @@
 - `3c64b1a` feat: auth screen — Google / email / guest flow before lobby (already logged above, dedup)
 - `c0b6fe0` feat: animated Connect Four bg — falling pieces + 4-piece cursor trail
 - `9e74ad3` fix: lobby covers game UI, own canvas for animated bg
+- `6024882` feat: professional particle-mesh bg, pill inputs, SVG icons, vs AI labels, session persistence + new game modal + user button
+- `783f99e` fix: strict max 3 edges per node in bg — degree-limited graph (node+3=4, Connect Four theme)
+- `c7a08c5` fix: lobby tab icon+text vertical alignment via flex
 
 ## Next
 
 - [ ] Rate limiting on `/api/coach/analyze` (prevent API key abuse)
-- [ ] Auth — replace non-functional Google/email buttons with simple username entry
 - [ ] Persistent leaderboard (JSON file or Supabase) — resets on server restart now
 
 ## Todo

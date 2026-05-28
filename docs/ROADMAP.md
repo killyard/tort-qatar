@@ -11,6 +11,7 @@
 - `11526a8` feat: AI Coach — structured step-by-step analysis prompt, optional smartMove
 - `bf31164` feat: solo mode — inline AI Coach panel replaces chat, auto-analysis on game end
 - `f85ca10` fix: AI Coach — pre-compute missed wins/blocks via game engine, inject as verified facts
+- `91d3d33` docs: sync ROADMAP with commit hashes, clean up todo/done sections
 
 ## Next
 

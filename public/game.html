@@ -31,7 +31,7 @@ html,body{height:100%;background:#8dbfdb;font-family:var(--sans);color:var(--ink
 .scene-overlay{position:absolute;inset:0;background:linear-gradient(to bottom,rgba(10,25,20,.55) 0%,rgba(10,25,20,.35) 60%,rgba(10,25,20,.65) 100%)}
 
 /* ── Layout ────────────────────────────────────────────── */
-.ui{position:relative;z-index:1;display:grid;grid-template-columns:260px 1fr 260px;height:100vh;padding:14px;gap:12px;align-items:center}
+.ui{position:relative;z-index:1;display:grid;grid-template-columns:390px 1fr 390px;height:100vh;padding:14px;gap:12px;align-items:center}
 
 /* ── Glass panel ───────────────────────────────────────── */
 .glass{
@@ -81,11 +81,13 @@ html,body{height:100%;background:#8dbfdb;font-family:var(--sans);color:var(--ink
   font-size:11.5px;color:rgba(255,255,255,.72);
   display:flex;flex-direction:column;gap:3px;
 }
-.move-item{padding:3px 0;display:flex;gap:6px}
-.move-num{color:rgba(255,255,255,.38);width:22px;text-align:right;flex-shrink:0}
-.move-badge{width:10px;height:10px;border-radius:999px;margin-top:2px;flex-shrink:0}
+.move-item{padding:3px 0;display:flex;align-items:center;gap:6px}
+.move-num{color:rgba(255,255,255,.38);width:22px;text-align:right;flex-shrink:0;font-size:11px}
+.move-badge{width:10px;height:10px;border-radius:999px;flex-shrink:0}
 .move-badge.p1{background:var(--p1)}
 .move-badge.p2{background:var(--p2)}
+.move-col{flex-shrink:0;color:rgba(255,255,255,.82)}
+.move-player{margin-left:auto;color:rgba(255,255,255,.38);font-size:10.5px;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:110px}
 
 /* ── Chat ──────────────────────────────────────────────── */
 .chat-area{flex:1;overflow-y:auto;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.2) transparent;display:flex;flex-direction:column;gap:5px;font-size:12px}
@@ -530,7 +532,7 @@ html,body{height:100%;background:#8dbfdb;font-family:var(--sans);color:var(--ink
     <div id="inlineCoach">
       <div id="inlineCoachLabel" style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.4);margin-top:4px">AI Coach</div>
       <div id="inlineCoachContent" class="inline-coach-content">
-        <div class="inline-coach-placeholder">Analysis will appear here when the game ends.</div>
+        <div class="inline-coach-placeholder">Press "AI Coach" after the game to analyze.</div>
       </div>
     </div>
 
@@ -733,7 +735,7 @@ function startSoloGame() {
   aiMovePending = false;
   timerSeconds = [0, 0];
   document.getElementById('rightPanel').classList.add('solo');
-  document.getElementById('inlineCoachContent').innerHTML = '<div class="inline-coach-placeholder">Analysis will appear here when the game ends.</div>';
+  document.getElementById('inlineCoachContent').innerHTML = '<div class="inline-coach-placeholder">Press "AI Coach" after the game to analyze.</div>';
 
   lobby.classList.add('hidden');
   waitOverlay.classList.add('hidden');
@@ -769,7 +771,8 @@ function renderSoloState() {
   };
 
   renderBoard(soloBoard, soloWinCells);
-  renderMoveHistory(soloHistory);
+  const aiLabel = document.getElementById('name2').textContent || 'AI';
+  renderMoveHistory(soloHistory, { 1: myName, 2: aiLabel });
   updateTurnIndicators(currentTurn, status);
   updateStatusBar(gameState);
 
@@ -780,7 +783,6 @@ function renderSoloState() {
     document.getElementById('btnRematch').style.display = '';
     document.getElementById('btnCoach').style.display = '';
     postScore(myName, myCity, soloWinner === 1);
-    fetchInlineCoach();
   } else if (currentTurn === 2 && !aiMovePending) {
     scheduleAIMove();
   }
@@ -832,7 +834,8 @@ function renderState(state) {
     document.getElementById('city2').textContent = state.players[1].city;
   }
   renderBoard(state.board, state.winCells);
-  renderMoveHistory(state.history);
+  const mpNames = { 1: state.players[0]?.name ?? 'P1', 2: state.players[1]?.name ?? 'P2' };
+  renderMoveHistory(state.history, mpNames);
   updateTurnIndicators(state.currentTurn, state.status);
   updateStatusBar(state);
   if (state.players.length >= 2) waitOverlay.classList.add('hidden');
@@ -864,15 +867,17 @@ function renderBoard(board, winCells) {
   }
 }
 
-function renderMoveHistory(history) {
+function renderMoveHistory(history, names) {
   const list = document.getElementById('movesList');
   list.innerHTML = '';
   moveCountByPlayer = [0, 0];
   history.forEach((m, i) => {
     moveCountByPlayer[m.player - 1]++;
+    const floor = 6 - m.row; // row 0=top → floor 6; row 5=bottom → floor 1
+    const playerName = names ? names[m.player] : (m.player === 1 ? document.getElementById('name1').textContent : document.getElementById('name2').textContent);
     const item = document.createElement('div');
     item.className = 'move-item';
-    item.innerHTML = `<span class="move-num">${i + 1}</span><span class="move-badge p${m.player}"></span><span>Col ${m.col + 1}</span>`;
+    item.innerHTML = `<span class="move-num">${i + 1}</span><span class="move-badge p${m.player}"></span><span class="move-col">Col ${m.col + 1} · R${floor}</span><span class="move-player">${esc(playerName)}</span>`;
     list.appendChild(item);
   });
   list.scrollTop = list.scrollHeight;

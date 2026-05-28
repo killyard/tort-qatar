@@ -318,6 +318,55 @@ html,body{height:100%;background:#8dbfdb;font-family:var(--sans);color:var(--ink
 .coach-action.primary{background:var(--ink);border-color:var(--ink)}
 .coach-action.primary:hover{background:#0f1a14}
 
+/* ── Auth card (sign-in step) ──────────────────────────── */
+.auth-card{
+  position:absolute;z-index:2;
+  left:50%;top:50%;transform:translate(-50%,-50%);
+  width:340px;max-width:90vw;
+  background:rgba(255,255,255,.52);
+  backdrop-filter:blur(32px) saturate(200%);-webkit-backdrop-filter:blur(32px) saturate(200%);
+  border:.5px solid rgba(255,255,255,.75);
+  border-radius:24px;padding:32px 28px 24px;
+  box-shadow:0 1px 0 rgba(255,255,255,.8) inset,0 16px 48px rgba(0,0,0,.18);
+}
+.auth-logo{font-family:var(--serif);font-size:28px;font-weight:400;color:var(--ink);text-align:center;margin-bottom:4px}
+.auth-sub{font-size:12px;color:var(--ink-mute);text-align:center;margin-bottom:28px;letter-spacing:.04em}
+.auth-sep{display:flex;align-items:center;gap:10px;margin:14px 0}
+.auth-sep::before,.auth-sep::after{content:'';flex:1;height:.5px;background:rgba(29,42,35,.15)}
+.auth-sep span{font-size:11px;color:var(--ink-mute);white-space:nowrap}
+.auth-social-btn{
+  width:100%;padding:11px;border-radius:999px;border:.5px solid rgba(29,42,35,.18);
+  background:rgba(255,255,255,.7);color:var(--ink);font-size:14px;font-weight:500;
+  font-family:var(--sans);cursor:pointer;display:flex;align-items:center;justify-content:center;
+  gap:9px;margin-bottom:10px;transition:background .15s,transform .1s;
+}
+.auth-social-btn:hover{background:rgba(255,255,255,.92);transform:translateY(-1px)}
+.auth-social-btn svg{flex-shrink:0}
+.auth-field{
+  width:100%;padding:10px 13px;border-radius:10px;box-sizing:border-box;
+  border:.5px solid rgba(29,42,35,.2);
+  background:rgba(255,255,255,.55);color:var(--ink);font-size:13.5px;
+  font-family:var(--sans);outline:none;margin-bottom:9px;transition:border-color .15s,background .15s;
+}
+.auth-field::placeholder{color:var(--ink-mute)}
+.auth-field:focus{border-color:rgba(29,42,35,.45);background:rgba(255,255,255,.8)}
+.auth-submit{
+  width:100%;padding:11px;border-radius:999px;border:none;box-sizing:border-box;
+  background:var(--ink);color:#f3efe6;font-size:14px;font-weight:600;
+  font-family:var(--sans);cursor:pointer;margin-top:4px;margin-bottom:10px;
+  box-shadow:0 4px 16px rgba(0,0,0,.25);transition:background .15s,transform .1s;
+}
+.auth-submit:hover{background:#0f1a14;transform:translateY(-1px)}
+.auth-guest{
+  width:100%;padding:10px;border-radius:999px;border:.5px solid rgba(29,42,35,.18);
+  background:transparent;color:var(--ink-soft);font-size:13px;font-weight:500;
+  font-family:var(--sans);cursor:pointer;transition:background .15s,color .15s;
+}
+.auth-guest:hover{background:rgba(255,255,255,.5);color:var(--ink)}
+.auth-err{font-size:12px;color:#c0392b;text-align:center;min-height:16px;margin-bottom:4px}
+/* toggle email form visibility */
+#authEmailForm{display:none}
+
 /* ── Lobby overlay (initial) ───────────────────────────── */
 .lobby{
   position:fixed;inset:0;z-index:100;
@@ -442,7 +491,39 @@ html,body{height:100%;background:#8dbfdb;font-family:var(--sans);color:var(--ink
 <!-- ════ LOBBY ════ -->
 <div class="lobby" id="lobby">
   <img class="lobby-bg" id="lobbyBg" src="/assets/auth.png" alt="" />
-  <div class="lobby-card" id="lobbyCard">
+
+  <!-- Step 1: Auth -->
+  <div class="auth-card" id="authCard">
+    <div class="auth-logo">Tört Qatar</div>
+    <div class="auth-sub">Connect Four · steppe duels</div>
+
+    <!-- Google -->
+    <button class="auth-social-btn" onclick="authGoogle()">
+      <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.875 2.684-6.615z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.964 10.707A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.707V4.961H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.039l3.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.961L3.964 7.293C4.672 5.163 6.656 3.58 9 3.58z"/></svg>
+      Continue with Google
+    </button>
+
+    <!-- Email/Password toggle -->
+    <button class="auth-social-btn" onclick="toggleEmailForm()" id="btnShowEmail">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m2 7 10 7 10-7"/></svg>
+      Continue with Email
+    </button>
+
+    <!-- Email form (hidden by default) -->
+    <div id="authEmailForm">
+      <input class="auth-field" id="authEmail" type="email" placeholder="Email" />
+      <input class="auth-field" id="authPassword" type="password" placeholder="Password" />
+      <div class="auth-err" id="authErr"></div>
+      <button class="auth-submit" onclick="authEmail()">Sign in</button>
+    </div>
+
+    <div class="auth-sep"><span>or</span></div>
+
+    <button class="auth-guest" onclick="enterAsGuest()">Enter as guest →</button>
+  </div>
+
+  <!-- Step 2: Guest lobby (name / city / settings) -->
+  <div class="lobby-card" id="lobbyCard" style="display:none">
     <div class="lobby-title">Tört Qatar</div>
     <div class="lobby-sub" id="lobbySub">Connect Four · steppe duels</div>
 
@@ -486,7 +567,7 @@ html,body{height:100%;background:#8dbfdb;font-family:var(--sans);color:var(--ink
     </div>
 
     <div style="margin-top:10px">
-      <button class="lobby-btn outline" id="btnBack" onclick="window.location='/'">← Back</button>
+      <button class="lobby-btn outline" id="btnBack" onclick="backToAuth()">← Back</button>
     </div>
   </div>
 </div>
@@ -642,6 +723,49 @@ let isPro = localStorage.getItem('isPro') === 'true';
 // Selected UI language (set in lobby, used for AI chat)
 let selectedLang = localStorage.getItem('lang') || 'en';
 
+
+// ── Auth screen ───────────────────────────────────────────
+function authGoogle() {
+  // TODO: implement real Google OAuth
+  // For now treat as guest with a note
+  document.getElementById('authErr') && (document.getElementById('authErr').textContent = '');
+  alert('Google sign-in coming soon. Entering as guest.');
+  enterAsGuest();
+}
+
+function toggleEmailForm() {
+  const form = document.getElementById('authEmailForm');
+  const btn  = document.getElementById('btnShowEmail');
+  const visible = form.style.display === 'flex' || form.style.display === 'block';
+  form.style.display = visible ? 'none' : 'block';
+  btn.style.background = visible ? '' : 'rgba(255,255,255,.92)';
+}
+
+function authEmail() {
+  const email = document.getElementById('authEmail').value.trim();
+  const pass  = document.getElementById('authPassword').value;
+  const err   = document.getElementById('authErr');
+  if (!email || !pass) { err.textContent = 'Please fill in both fields.'; return; }
+  // TODO: real auth — for now treat as guest using email prefix as name
+  const name = email.split('@')[0];
+  document.getElementById('lobbyName').value = name;
+  showLobbyForm();
+}
+
+function enterAsGuest() {
+  showLobbyForm();
+}
+
+function showLobbyForm() {
+  document.getElementById('authCard').style.display = 'none';
+  const lc = document.getElementById('lobbyCard');
+  lc.style.display = 'block';
+}
+
+function backToAuth() {
+  document.getElementById('lobbyCard').style.display = 'none';
+  document.getElementById('authCard').style.display = 'block';
+}
 
 const LOBBY_T = {
   en: {

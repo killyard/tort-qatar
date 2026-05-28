@@ -2,7 +2,7 @@
 
 [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy)
 
-> 🎮 **Live demo:** _coming soon_ — deploy your own copy with the button above
+> 🎮 **Live demo:** [tort-qatar.onrender.com](https://tort-qatar.onrender.com) — deploy your own copy with the button above
 
 > *"Tört Qatar" (Төрт Қатар) means "Four in a Row" in Kazakh.*
 

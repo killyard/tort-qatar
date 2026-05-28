@@ -1055,10 +1055,9 @@ html,body{height:100%;background:#8dbfdb;font-family:var(--sans);color:var(--ink
   background: linear-gradient(135deg,#e8a020,#f5c842);
   color: #1d2a23; font-size: 14px; font-weight: 700;
   font-family: var(--sans); cursor: pointer; letter-spacing: .04em;
-  box-shadow: 0 4px 18px rgba(200,129,10,.55);
-  transition: transform .18s, box-shadow .18s;
+  transition: transform .18s, opacity .18s;
 }
-#btnStartGame:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(200,129,10,.7); }
+#btnStartGame:hover { transform: translateY(-2px); opacity: .88; }
 #btnStartGame.visible { display: inline-flex; }
 .board-locked { opacity: .65; pointer-events: none; filter: blur(.5px); transition: opacity .3s, filter .3s; }
 
@@ -2149,6 +2148,7 @@ function startSoloGame() {
   soloMode = true;
   myPlayerNumber = 1;
   gameStarted = false;
+  document.getElementById('board').classList.remove('game-over');
   tlHide();
   soloBoard = freshBoard();
   soloHistory = [];

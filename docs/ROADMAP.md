@@ -24,6 +24,7 @@
 - `a8bd688` feat: switch Steppe Bot chat to Gemini 3.5 Flash, fix critical_mistake perspective
 - `d823b96` docs: update ROADMAP with a8bd688
 - `d49a229` feat: add Analyze game button inside AI Analysis tab panel
+- `42274dc` feat: lobby form — liquid glass redesign, auth-form.png background
 
 ## Next
 

@@ -35,6 +35,7 @@
 - `c368a4a` docs: update ROADMAP with commits a9c3260–c310097
 - `f06db05` feat: SVG icons replace emoji, transparent board holes, unlock 8×7/6×5 board sizes
 - `0a4de39` feat: win state — purple winner chips, grey loser chips frozen; AI Coach button purple +25%
+- `0d7a446` fix: restore truncated aiPlayer.js getBestMove tail — auth broken due to SyntaxError
 
 ## Next
 

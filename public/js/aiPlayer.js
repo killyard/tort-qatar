@@ -1,13 +1,25 @@
 // ── Tört Qatar — AI Player (Minimax + Alpha-Beta Pruning) ────────────────────
 // Runs entirely in the browser. No server round-trip needed.
 
-const ROWS = 6, COLS = 7, EMPTY = 0;
+// Board dimensions read from globals set by setBoardSize (default 6×7)
+const getR = () => (typeof window !== 'undefined' && window.BOARD_ROWS) || 6;
+const getC = () => (typeof window !== 'undefined' && window.BOARD_COLS) || 7;
+const EMPTY = 0;
 
 // Search depth by difficulty
 const DEPTH = { easy: 2, medium: 4, hard: 7 };
 
-// Column order: prefer center columns (better opening moves)
-const COL_ORDER = [3, 2, 4, 1, 5, 0, 6];
+// Column order: prefer center columns — regenerated per board width
+function getColOrder() {
+  const c = getC();
+  const mid = Math.floor(c / 2);
+  const order = [mid];
+  for (let d = 1; d <= mid; d++) {
+    if (mid - d >= 0) order.push(mid - d);
+    if (mid + d < c)  order.push(mid + d);
+  }
+  return order;
+}
 
 // ── Board helpers ─────────────────────────────────────────────────────────────
 
@@ -21,14 +33,14 @@ function isValidCol(board, col) {
 
 function dropPiece(board, col, player) {
   const b = cloneBoard(board);
-  for (let r = ROWS - 1; r >= 0; r--) {
+  for (let r = getR() - 1; r >= 0; r--) {
     if (b[r][col] === EMPTY) { b[r][col] = player; return { board: b, row: r }; }
   }
   return { board: b, row: -1 };
 }
 
 function validCols(board) {
-  return COL_ORDER.filter(c => isValidCol(board, c));
+  return getColOrder().filter(c => isValidCol(board, c));
 }
 
 // ── Win detection ─────────────────────────────────────────────────────────────
@@ -39,12 +51,12 @@ function checkWin(board, row, col, player) {
     let cnt = 1;
     for (let i = 1; i < 4; i++) {
       const r = row + dr*i, c = col + dc*i;
-      if (r < 0 || r >= ROWS || c < 0 || c >= COLS || board[r][c] !== player) break;
+      if (r < 0 || r >= getR() || c < 0 || c >= getC() || board[r][c] !== player) break;
       cnt++;
     }
     for (let i = 1; i < 4; i++) {
       const r = row - dr*i, c = col - dc*i;
-      if (r < 0 || r >= ROWS || c < 0 || c >= COLS || board[r][c] !== player) break;
+      if (r < 0 || r >= getR() || c < 0 || c >= getC() || board[r][c] !== player) break;
       cnt++;
     }
     if (cnt >= 4) return true;
@@ -58,8 +70,8 @@ function isBoardFull(board) {
 
 function isTerminal(board) {
   // Check every filled cell for a win
-  for (let r = 0; r < ROWS; r++)
-    for (let c = 0; c < COLS; c++)
+  for (let r = 0; r < getR(); r++)
+    for (let c = 0; c < getC(); c++)
       if (board[r][c] !== EMPTY && checkWin(board, r, c, board[r][c])) return true;
   return isBoardFull(board);
 }
@@ -88,23 +100,23 @@ function scoreBoard(board, player) {
   score += center.filter(x => x === player).length * 6;
 
   // Horizontal
-  for (let r = 0; r < ROWS; r++)
-    for (let c = 0; c <= COLS - 4; c++)
+  for (let r = 0; r < getR(); r++)
+    for (let c = 0; c <= getC() - 4; c++)
       score += scoreWindow([board[r][c], board[r][c+1], board[r][c+2], board[r][c+3]], player);
 
   // Vertical
-  for (let c = 0; c < COLS; c++)
-    for (let r = 0; r <= ROWS - 4; r++)
+  for (let c = 0; c < getC(); c++)
+    for (let r = 0; r <= getR() - 4; r++)
       score += scoreWindow([board[r][c], board[r+1][c], board[r+2][c], board[r+3][c]], player);
 
   // Diagonal ↘
-  for (let r = 0; r <= ROWS - 4; r++)
-    for (let c = 0; c <= COLS - 4; c++)
+  for (let r = 0; r <= getR() - 4; r++)
+    for (let c = 0; c <= getC() - 4; c++)
       score += scoreWindow([board[r][c], board[r+1][c+1], board[r+2][c+2], board[r+3][c+3]], player);
 
   // Diagonal ↙
-  for (let r = 0; r <= ROWS - 4; r++)
-    for (let c = 3; c < COLS; c++)
+  for (let r = 0; r <= getR() - 4; r++)
+    for (let c = 3; c < getC(); c++)
       score += scoreWindow([board[r][c], board[r+1][c-1], board[r+2][c-2], board[r+3][c-3]], player);
 
   return score;
@@ -119,8 +131,8 @@ function minimax(board, depth, alpha, beta, maximizing, aiPlayer) {
   if (isTerminal(board) || depth === 0) {
     if (depth === 0) return scoreBoard(board, aiPlayer);
     // Check who won
-    for (let r = 0; r < ROWS; r++)
-      for (let c = 0; c < COLS; c++) {
+    for (let r = 0; r < getR(); r++)
+      for (let c = 0; c < getC(); c++) {
         const p = board[r][c];
         if (p !== EMPTY && checkWin(board, r, c, p))
           return p === aiPlayer ? 100_000 + depth : -(100_000 + depth);
@@ -180,16 +192,4 @@ export function getBestMove(board, aiPlayer, difficulty = 'medium') {
   // Immediate block check
   const human = aiPlayer === 1 ? 2 : 1;
   for (const col of cols) {
-    const { board: next, row } = dropPiece(board, col, human);
-    if (checkWin(next, row, col, human)) return col;
-  }
-
-  // Full search
-  let bestCol = cols[0], bestScore = -Infinity;
-  for (const col of cols) {
-    const { board: next } = dropPiece(board, col, aiPlayer);
-    const score = minimax(next, depth - 1, -Infinity, Infinity, false, aiPlayer);
-    if (score > bestScore) { bestScore = score; bestCol = col; }
-  }
-  return bestCol;
-}
+    const { board: next, 

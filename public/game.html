@@ -18,7 +18,7 @@
   --p1:#e8a020;   /* gold — Player 1 */
   --p2:#c0392b;   /* crimson — Player 2 */
   --board-bg:#1a3a2a;
-  --cell-bg:#0f2218;
+  --cell-bg:transparent;
   --glass:rgba(255,255,255,.62);
   --glass-border:rgba(255,255,255,.7);
 }
@@ -340,7 +340,7 @@ html,body{height:100%;background:#8dbfdb;font-family:var(--sans);color:var(--ink
 
 .cell{
   width:58px;height:58px;border-radius:999px;
-  background:var(--cell-bg);
+  background:transparent;
   cursor:pointer;
   border:none;outline:none;
   position:relative;
@@ -1054,7 +1054,7 @@ html,body{height:100%;background:#8dbfdb;font-family:var(--sans);color:var(--ink
 
 <!-- ── User button + dropdown (shown after first login) ── -->
 <div class="top-bar-cluster" id="topBarCluster" style="display:none">
-  <button class="pro-upgrade-pill" id="proUpgradePill" onclick="openStripe()">✦ Upgrade to PRO</button>
+  <button class="pro-upgrade-pill" id="proUpgradePill" onclick="openStripe()" style="display:inline-flex;align-items:center;gap:5px"><svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" style="vertical-align:-1px;display:inline-block"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg> Upgrade to PRO</button>
   <button class="user-btn" id="userBtn" onclick="toggleUserDropdown()">
     <div class="user-avatar" id="userAvatar">?</div>
     <span id="userBtnName">Guest</span>
@@ -1108,7 +1108,7 @@ html,body{height:100%;background:#8dbfdb;font-family:var(--sans);color:var(--ink
   <!-- ── Left panel: Player 1 ── -->
   <div class="glass player-panel" id="leftPanel">
     <div class="panel-head">
-      <div class="avatar p1" id="av1">☀</div>
+      <div class="avatar p1" id="av1"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="display:block"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg></div>
       <div class="player-name-wrap">
         <div class="player-name" id="name1">Waiting…</div>
         <div class="player-city" id="city1">—</div>
@@ -1138,8 +1138,8 @@ html,body{height:100%;background:#8dbfdb;font-family:var(--sans);color:var(--ink
     <div class="panel-section-label">Board size</div>
     <div class="board-size-row">
       <button class="board-size-btn active" onclick="setBoardSize(this,7,6)">7×6</button>
-      <button class="board-size-btn locked" title="PRO feature" onclick="openStripe()">8×7 ✦</button>
-      <button class="board-size-btn locked" title="PRO feature" onclick="openStripe()">6×5 ✦</button>
+      <button class="board-size-btn" onclick="setBoardSize(this,8,7)">8×7</button>
+      <button class="board-size-btn" onclick="setBoardSize(this,6,5)">6×5</button>
     </div>
 
     <!-- Mini leaderboard -->
@@ -1159,7 +1159,7 @@ html,body{height:100%;background:#8dbfdb;font-family:var(--sans);color:var(--ink
     </div>
 
     <div class="p2-bar" id="p2Bar">
-      <div class="p2-avatar" id="av2sm">🌙</div>
+      <div class="p2-avatar" id="av2sm"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="display:block"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></div>
       <span class="p2-name" id="p2BarName">Waiting…</span>
       <span class="p2-city" id="p2BarCity"></span>
       <span class="p2-timer-sm" id="p2BarTimer">—:——</span>
@@ -1180,7 +1180,7 @@ html,body{height:100%;background:#8dbfdb;font-family:var(--sans);color:var(--ink
       </div>
 
       <!-- AI thinking -->
-      <div class="ai-thinking" id="aiThinking">🤖 Thinking…</div>
+      <div class="ai-thinking" id="aiThinking" style="display:flex;align-items:center;gap:6px"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:-1px;display:inline-block"><rect x="3" y="8" width="18" height="13" rx="2"/><path d="M12 8V5"/><circle cx="12" cy="4" r="1"/><path d="M8 13h.01M16 13h.01M8 17h8"/></svg> Thinking…</div>
 
       <!-- Column drop indicator -->
       <div class="col-indicator" id="colIndicator">
@@ -1197,8 +1197,8 @@ html,body{height:100%;background:#8dbfdb;font-family:var(--sans);color:var(--ink
     </button>
 
     <div class="game-controls">
-      <button class="ctrl-btn" id="btnRematch" style="display:none" onclick="sendRematch()">↺ Rematch</button>
-      <button class="ctrl-btn" id="btnCoach" style="display:none" onclick="openCoach()">🧠 AI Coach</button>
+      <button class="ctrl-btn" id="btnRematch" style="display:none" onclick="sendRematch()" style="display:inline-flex;align-items:center;gap:5px"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:-1px;display:inline-block"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg> Rematch</button>
+      <button class="ctrl-btn" id="btnCoach" style="display:none" onclick="openCoach()" style="display:inline-flex;align-items:center;gap:5px"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:-1px;display:inline-block"><path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96-.46 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 1.44-4.14z"/><path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96-.46 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-1.44-4.14z"/></svg> AI Coach</button>
       <button class="ctrl-btn danger" id="btnResign" onclick="sendResign()">Resign</button>
       <button class="ctrl-btn" onclick="openNewGame()">New game</button>
     </div>
@@ -1207,7 +1207,7 @@ html,body{height:100%;background:#8dbfdb;font-family:var(--sans);color:var(--ink
   <!-- ── Right panel: Player 2 + Move History ── -->
   <div class="glass player-panel" id="rightPanel">
     <div class="panel-head">
-      <div class="avatar p2" id="av2">🌙</div>
+      <div class="avatar p2" id="av2"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="display:block"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></div>
       <div class="player-name-wrap">
         <div class="player-name" id="name2">Waiting…</div>
         <div class="player-city" id="city2">—</div>
@@ -1268,7 +1268,7 @@ html,body{height:100%;background:#8dbfdb;font-family:var(--sans);color:var(--ink
 <div class="coach-modal" id="coachModal">
   <div class="coach-card">
     <button class="coach-close" onclick="closeCoach()">✕</button>
-    <div class="coach-title">🧠 AI Coach</div>
+    <div class="coach-title" style="display:flex;align-items:center;gap:6px"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96-.46 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 1.44-4.14z"/><path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96-.46 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-1.44-4.14z"/></svg> AI Coach</div>
     <div class="coach-subtitle">Post-game analysis powered by Gemini 2.5 Pro</div>
     <div id="coachContent">
       <div class="coach-loading">
@@ -1278,7 +1278,7 @@ html,body{height:100%;background:#8dbfdb;font-family:var(--sans);color:var(--ink
     </div>
     <div class="coach-actions" id="coachActions" style="display:none">
       <button class="coach-action" onclick="closeCoach()">Close</button>
-      <button class="coach-action primary" onclick="sendRematch();closeCoach()">↺ Rematch</button>
+      <button class="coach-action primary" onclick="sendRematch();closeCoach()" style="display:inline-flex;align-items:center;gap:5px"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:-1px;display:inline-block"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg> Rematch</button>
     </div>
   </div>
 </div>
@@ -1590,6 +1590,8 @@ window.setDiff = (d) => {
 const boardEl = document.getElementById('board');
 const colIndicator = document.getElementById('colIndicator');
 const cells = [];
+let boardCols = 7, boardRows = 6;
+window.BOARD_COLS = 7; window.BOARD_ROWS = 6;
 
 for (let r = 0; r < 6; r++) {
   cells[r] = [];
@@ -1938,7 +1940,7 @@ function startSoloGame() {
 
   lobby.classList.add('hidden');
   waitOverlay.classList.add('hidden');
-  document.getElementById('roomIdLabel').textContent = 'vs 🤖';
+  document.getElementById('roomIdLabel').innerHTML = 'vs <svg width='13' height='13' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' style='vertical-align:-1px;display:inline-block'><rect x='3' y='8' width='18' height='13' rx='2'/><path d='M12 8V5'/><circle cx='12' cy='4' r='1'/><path d='M8 13h.01M16 13h.01M8 17h8'/></svg>';
   document.getElementById('copyBtn').style.display = 'none';
 
   // Player info
@@ -2150,14 +2152,14 @@ function updateStatusBar(state) {
     bar.textContent = 'Waiting for opponent…'; bar.style.color = '';
   } else if (state.status === 'playing') {
     const isMine = state.currentTurn === myPlayerNumber;
-    bar.textContent = isMine ? '⚔ Your turn — choose a column' : (soloMode ? '🤖 AI is thinking…' : `Opponent's turn…`);
+    bar.innerHTML = isMine ? 'Your turn — choose a column' : (soloMode ? `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:-1px;display:inline-block"><rect x="3" y="8" width="18" height="13" rx="2"/><path d="M12 8V5"/><circle cx="12" cy="4" r="1"/><path d="M8 13h.01M16 13h.01M8 17h8"/></svg> AI is thinking…` : `Opponent's turn…`);
     bar.style.color = isMine ? '#a9eb88' : 'rgba(255,255,255,.8)';
   } else if (state.status === 'finished') {
     if (state.winner === 0) {
       bar.textContent = 'Draw — the steppe remains undecided.'; bar.style.color = '#f5c842';
     } else {
       const isMine = state.winner === myPlayerNumber;
-      bar.textContent = isMine ? '🏆 You win! Well played.' : (soloMode ? '🤖 AI wins this round.' : 'Opponent wins!');
+      bar.innerHTML = isMine ? `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:-1px;display:inline-block"><path d="M8 21h8M12 17v4M17 3H7l2 9a3 3 0 006 0l2-9zM5 3H3a2 2 0 000 4h2M19 3h2a2 2 0 010 4h-2"/></svg> You win! Well played.` : (soloMode ? `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:-1px;display:inline-block"><rect x="3" y="8" width="18" height="13" rx="2"/><path d="M12 8V5"/><circle cx="12" cy="4" r="1"/><path d="M8 13h.01M16 13h.01M8 17h8"/></svg> AI wins this round.` : 'Opponent wins!');
       bar.style.color = isMine ? '#a9eb88' : '#e8877c';
     }
   }
@@ -2432,7 +2434,7 @@ window.openCoach = async function openCoach() {
   if (coachRequested) return;
   coachRequested = true;
   // Show loading message in chat
-  const loadDiv = appendCoachMsg('🧠 Analyzing your game\u2026', 'coach');
+  const loadDiv = appendCoachMsg('Analyzing your game\u2026', 'coach');
   try {
     const data = await fetchCoachData();
     lastCoachData = data;
@@ -2560,7 +2562,37 @@ window.setPlayerToken = function(el) {
 window.setBoardSize = function(el, cols, rows) {
   document.querySelectorAll('.board-size-btn').forEach(b => b.classList.remove('active'));
   el.classList.add('active');
-  // Board resize is PRO — for now only 7×6 is active, others open Stripe
+  if (cols === boardCols && rows === boardRows) return;
+  boardCols = cols; boardRows = rows;
+  window.BOARD_COLS = cols; window.BOARD_ROWS = rows;
+  // Rebuild grid CSS
+  const board = document.getElementById('board');
+  const colInd = document.getElementById('colIndicator');
+  board.style.gridTemplateColumns = `repeat(${cols},1fr)`;
+  colInd.style.gridTemplateColumns = `repeat(${cols},1fr)`;
+  // Rebuild cell grid
+  board.innerHTML = ''; colInd.innerHTML = ''; cells.length = 0;
+  for (let r = 0; r < rows; r++) {
+    cells[r] = [];
+    for (let c = 0; c < cols; c++) {
+      const cell = document.createElement('button');
+      cell.className = 'cell'; cell.dataset.col = c;
+      cell.addEventListener('click', () => handleCellClick(c));
+      cell.addEventListener('mouseenter', () => highlightCol(c, true));
+      cell.addEventListener('mouseleave', () => highlightCol(c, false));
+      board.appendChild(cell); cells[r][c] = cell;
+    }
+  }
+  for (let c = 0; c < cols; c++) {
+    const arrow = document.createElement('div');
+    arrow.className = 'col-arrow'; arrow.id = `arrow-${c}`;
+    arrow.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="rgba(255,255,255,.7)" style="display:block"><path d="M12 4v12M6 14l6 6 6-6"/></svg>`;
+    colInd.appendChild(arrow);
+  }
+  // Reset solo board state
+  soloBoard = Array.from({length:rows}, () => Array(cols).fill(0));
+  soloHistory = []; soloWinCells = null; soloCurrentTurn = 1; soloStatus = 'playing';
+  renderBoard(soloBoard, null);
 };
 
 async function loadMiniLeaderboard() {
@@ -2571,10 +2603,11 @@ async function loadMiniLeaderboard() {
     if (!lb) return;
     const rows = (data.leaders || data).slice(0, 6);
     lb.innerHTML = rows.map((p, i) => {
-      const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : '';
+      const medal = '';
       const rankStr = medal || `<span class="mini-lb-rank">${i+1}</span>`;
+      const rankColor = i===0?'#f5c842':i===1?'#c0c0c0':i===2?'#cd7f32':'rgba(255,255,255,.4)';
       return `<div class="mini-lb-row">
-        ${medal ? `<span style="font-size:13px">${medal}</span>` : `<span class="mini-lb-rank">${i+1}</span>`}
+        <span class="mini-lb-rank" style="color:${rankColor};font-weight:${i<3?700:400}">${i+1}</span>
         <span class="mini-lb-name">${p.name || p.playerName || 'Unknown'}</span>
         <span class="mini-lb-score">${p.wins || p.score || 0}W</span>
       </div>`;

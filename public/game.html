@@ -3155,4 +3155,22 @@ async function loadMiniLeaderboard() {
     }).join('');
   } catch(e) { /* silent */ }
 }
-// Lo
+// Load leaderboard on init
+document.addEventListener('DOMContentLoaded', () => {
+  setTimeout(loadMiniLeaderboard, 1500);
+  initTokenGrid();
+  // Restore saved token
+  const u = loadUser();
+  if (u && u.token && ORNAMENTS[u.token]) {
+    p1Token = u.token;
+    const btn = document.querySelector(`.token-opt[data-token="${u.token}"]`);
+    if (btn) {
+      document.querySelectorAll('.token-opt').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+    }
+  }
+});
+
+</script>
+</body>
+</html>

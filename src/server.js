@@ -43,39 +43,45 @@ app.use(passport.session());
 passport.serializeUser((user, done) => done(null, user));
 passport.deserializeUser((user, done) => done(null, user));
 
-// Google OAuth strategy
-passport.use(new GoogleStrategy(
-  {
-    clientID:     process.env.GOOGLE_CLIENT_ID,
-    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    callbackURL:  (process.env.BASE_URL || 'http://localhost:3000') + '/auth/google/callback',
-    scope: ['profile', 'email'],
-  },
-  (_accessToken, _refreshToken, profile, done) => {
-    const user = {
-      id:     'google_' + profile.id,
-      name:   profile.displayName || profile.emails?.[0]?.value?.split('@')[0] || 'Guest',
-      email:  profile.emails?.[0]?.value || '',
-      avatar: profile.photos?.[0]?.value || '',
-      city:   '',
-      provider: 'google',
-    };
-    done(null, user);
-  }
-));
+// Google OAuth strategy — only register if credentials are present
+const GOOGLE_ENABLED = !!(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET);
+
+if (GOOGLE_ENABLED) {
+  passport.use(new GoogleStrategy(
+    {
+      clientID:     process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      callbackURL:  (process.env.BASE_URL || 'http://localhost:3000') + '/auth/google/callback',
+      scope: ['profile', 'email'],
+    },
+    (_accessToken, _refreshToken, profile, done) => {
+      const user = {
+        id:       'google_' + profile.id,
+        name:     profile.displayName || profile.emails?.[0]?.value?.split('@')[0] || 'Guest',
+        email:    profile.emails?.[0]?.value || '',
+        avatar:   profile.photos?.[0]?.value || '',
+        city:     '',
+        provider: 'google',
+      };
+      done(null, user);
+    }
+  ));
+} else {
+  console.warn('[Auth] GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET not set — Google OAuth disabled');
+}
 
 // ── Auth routes ─────────────────────────────────────────────────────────────
-app.get('/auth/google',
-  passport.authenticate('google', { scope: ['profile', 'email'] })
-);
+app.get('/auth/google', (req, res, next) => {
+  if (!GOOGLE_ENABLED) return res.redirect('/game.html?auth=error&reason=no_credentials');
+  passport.authenticate('google', { scope: ['profile', 'email'] })(req, res, next);
+});
 
-app.get('/auth/google/callback',
-  passport.authenticate('google', { failureRedirect: '/game.html?auth=error' }),
-  (req, res) => {
-    // Merge saved city from query if present, then redirect
-    res.redirect('/game.html?auth=google');
-  }
-);
+app.get('/auth/google/callback', (req, res, next) => {
+  if (!GOOGLE_ENABLED) return res.redirect('/game.html?auth=error');
+  passport.authenticate('google', { failureRedirect: '/game.html?auth=error' })(req, res, next);
+}, (req, res) => {
+  res.redirect('/game.html?auth=google');
+});
 
 app.get('/auth/logout', (req, res, next) => {
   req.logout(err => {

@@ -1933,6 +1933,8 @@ window.ngmJoin = function() {
   myName = u?.name || 'Nomad';
   myCity = u?.city || 'Almaty';
   myPlayerNumber = 2;
+  roomId = code;           // ← fix: joiner must know their roomId
+  soloMode = false;
   socket.emit('room:join', { roomId: code, name: myName, city: myCity });
   lobby.classList.add('hidden');
 };
@@ -2041,6 +2043,8 @@ function joinRoom() {
   myName = n; myCity = document.getElementById('lobbyCity').value.trim() || 'Steppe';
   saveUser(myName, myCity, selectedLang);
   myPlayerNumber = 2;
+  roomId = code;           // ← fix: joiner must know their roomId
+  soloMode = false;
   socket.emit('room:join', { roomId: code, name: myName, city: myCity });
 }
 
@@ -2395,6 +2399,8 @@ socket.on('room:chat', (msg) => { appendChat(msg); });
 
 // ── State rendering (multiplayer) ──────────────────────────────────────────
 function renderState(state) {
+  // Ensure roomId is always set for the joining player
+  if (!soloMode && state.id) roomId = state.id;
   // AI Coach not available during multiplayer — only at game end
   if (state.status !== 'finished') {
     document.getElementById('btnCoach').style.display = 'none';

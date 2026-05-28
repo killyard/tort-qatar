@@ -25,6 +25,7 @@
 - `d823b96` docs: update ROADMAP with a8bd688
 - `d49a229` feat: add Analyze game button inside AI Analysis tab panel
 - `42274dc` feat: lobby form — liquid glass redesign, auth-form.png background
+- `be1af9f` fix: lobby form — dark text on light glass, narrower card fits door frame
 
 ## Next
 

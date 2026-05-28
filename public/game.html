@@ -321,27 +321,35 @@ html,body{height:100%;background:#8dbfdb;font-family:var(--sans);color:var(--ink
 /* ── Lobby overlay (initial) ───────────────────────────── */
 .lobby{
   position:fixed;inset:0;z-index:100;
-  background:rgba(8,18,12,.88);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  background:url('/assets/auth-form.png') center/cover no-repeat;
   display:flex;align-items:center;justify-content:center;
   transition:opacity .4s;
 }
+.lobby::before{
+  content:'';position:absolute;inset:0;
+  background:rgba(8,18,12,.38);
+  backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px);
+}
 .lobby.hidden{opacity:0;pointer-events:none}
 .lobby-card{
-  background:rgba(14,32,20,.97);border:.5px solid rgba(255,255,255,.13);
-  border-radius:20px;padding:32px 28px;max-width:380px;width:92vw;
-  box-shadow:0 40px 100px rgba(0,0,0,.8);
+  position:relative;z-index:1;
+  background:rgba(255,255,255,.18);
+  backdrop-filter:blur(28px) saturate(180%);-webkit-backdrop-filter:blur(28px) saturate(180%);
+  border:.5px solid rgba(255,255,255,.55);
+  border-radius:24px;padding:32px 28px;max-width:380px;width:92vw;
+  box-shadow:0 1px 0 rgba(255,255,255,.6) inset,0 32px 80px rgba(0,0,0,.35);
 }
-.lobby-title{font-family:var(--serif);font-size:28px;font-weight:400;color:#fff;margin-bottom:2px}
-.lobby-sub{font-size:12px;color:rgba(255,255,255,.4);margin-bottom:22px;letter-spacing:.04em}
+.lobby-title{font-family:var(--serif);font-size:28px;font-weight:400;color:#fff;margin-bottom:2px;text-shadow:0 2px 12px rgba(0,0,0,.4)}
+.lobby-sub{font-size:12px;color:rgba(255,255,255,.6);margin-bottom:22px;letter-spacing:.04em}
 .lobby-input{
-  width:100%;padding:10px 13px;border-radius:9px;box-sizing:border-box;
-  border:.5px solid rgba(255,255,255,.15);
-  background:rgba(255,255,255,.07);color:#fff;font-size:13.5px;
+  width:100%;padding:10px 13px;border-radius:10px;box-sizing:border-box;
+  border:.5px solid rgba(255,255,255,.35);
+  background:rgba(255,255,255,.18);color:#fff;font-size:13.5px;
   font-family:var(--sans);outline:none;margin-bottom:9px;transition:border-color .15s,background .15s;
 }
-.lobby-input::placeholder{color:rgba(255,255,255,.28)}
-.lobby-input:focus{border-color:rgba(255,255,255,.38);background:rgba(255,255,255,.11)}
-.lobby-label{font-size:10px;color:rgba(255,255,255,.35);letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;margin-top:4px}
+.lobby-input::placeholder{color:rgba(255,255,255,.45)}
+.lobby-input:focus{border-color:rgba(255,255,255,.65);background:rgba(255,255,255,.28)}
+.lobby-label{font-size:10px;color:rgba(255,255,255,.55);letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;margin-top:4px}
 /* Unified tab-group style for Language / Mode / Difficulty — liquid glass pill */
 .lobby-tab-group{
   display:flex;gap:4px;
@@ -360,30 +368,37 @@ html,body{height:100%;background:#8dbfdb;font-family:var(--sans);color:var(--ink
 .lobby-tab.active{background:rgba(255,255,255,.92);color:#1d2a23;font-weight:600}
 /* CTA button */
 .lobby-btn{
-  width:100%;padding:11px;border-radius:10px;border:none;box-sizing:border-box;
+  width:100%;padding:11px;border-radius:999px;border:none;box-sizing:border-box;
   font-size:14px;font-weight:600;font-family:var(--sans);cursor:pointer;
-  margin-bottom:8px;transition:transform .15s,background .15s;
+  margin-bottom:8px;transition:transform .15s,background .15s,box-shadow .15s;
 }
-.lobby-btn.primary{background:var(--ink);color:#f3efe6}
-.lobby-btn.primary:hover{background:#0f1a14;transform:translateY(-1px)}
-.lobby-btn.outline{background:rgba(255,255,255,.08);color:rgba(255,255,255,.7);border:.5px solid rgba(255,255,255,.18)}
-.lobby-btn.outline:hover{background:rgba(255,255,255,.14);color:#fff}
-.lobby-divider{text-align:center;color:rgba(255,255,255,.25);font-size:11px;margin:8px 0}
+.lobby-btn.primary{
+  background:rgba(255,255,255,.92);color:#1d2a23;
+  box-shadow:0 1px 0 rgba(255,255,255,.8) inset,0 8px 24px rgba(0,0,0,.2);
+}
+.lobby-btn.primary:hover{background:#fff;transform:translateY(-1px);box-shadow:0 12px 32px rgba(0,0,0,.28)}
+.lobby-btn.outline{
+  background:rgba(255,255,255,.14);color:rgba(255,255,255,.85);
+  border:.5px solid rgba(255,255,255,.32);
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+}
+.lobby-btn.outline:hover{background:rgba(255,255,255,.24);color:#fff}
+.lobby-divider{text-align:center;color:rgba(255,255,255,.4);font-size:11px;margin:8px 0}
 .join-row{display:flex;gap:8px}
 .join-code{
-  flex:1;padding:10px 12px;border-radius:9px;box-sizing:border-box;
-  border:.5px solid rgba(255,255,255,.15);
-  background:rgba(255,255,255,.07);color:#fff;font-size:13.5px;
-  font-family:var(--sans);outline:none;letter-spacing:.08em;text-transform:uppercase;transition:border-color .15s;
+  flex:1;padding:10px 12px;border-radius:10px;box-sizing:border-box;
+  border:.5px solid rgba(255,255,255,.35);
+  background:rgba(255,255,255,.18);color:#fff;font-size:13.5px;
+  font-family:var(--sans);outline:none;letter-spacing:.08em;text-transform:uppercase;transition:border-color .15s,background .15s;
 }
-.join-code::placeholder{color:rgba(255,255,255,.28);text-transform:none;letter-spacing:0}
-.join-code:focus{border-color:rgba(255,255,255,.38)}
+.join-code::placeholder{color:rgba(255,255,255,.45);text-transform:none;letter-spacing:0}
+.join-code:focus{border-color:rgba(255,255,255,.65);background:rgba(255,255,255,.28)}
 .join-btn{
-  padding:10px 16px;border-radius:9px;border:.5px solid rgba(255,255,255,.18);
-  background:rgba(255,255,255,.1);color:#fff;font-size:13.5px;font-weight:500;
+  padding:10px 16px;border-radius:999px;border:.5px solid rgba(255,255,255,.32);
+  background:rgba(255,255,255,.22);color:#fff;font-size:13.5px;font-weight:500;
   font-family:var(--sans);cursor:pointer;white-space:nowrap;transition:background .15s;
 }
-.join-btn:hover{background:rgba(255,255,255,.2)}
+.join-btn:hover{background:rgba(255,255,255,.35)}
 
 /* ── Difficulty pills (reuse from leaderboard) ─────────── */
 .city-pill{

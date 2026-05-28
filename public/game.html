@@ -92,14 +92,10 @@ html,body{height:100%;background:#8dbfdb;font-family:var(--sans);color:var(--ink
 .ngm-title{font-family:var(--serif);font-size:20px;font-weight:400;color:var(--ink);margin-bottom:4px}
 .ngm-sub{font-size:12px;color:var(--ink-mute);margin-bottom:20px}
 .ngm-close{
-  position:absolute;top:16px;right:18px;z-index:10;
-  background:rgba(255,255,255,.10);border:.5px solid rgba(255,255,255,.18);
-  border-radius:50%;width:28px;height:28px;
-  cursor:pointer;color:rgba(255,255,255,.70);font-size:14px;
-  display:flex;align-items:center;justify-content:center;
-  transition:background .12s;
+  float:right;background:none;border:none;cursor:pointer;
+  color:var(--ink-mute);font-size:18px;line-height:1;padding:0 2px;
+  margin-top:-2px;position:relative;z-index:10;
 }
-.ngm-close:hover{background:rgba(255,255,255,.22);color:#fff;}
 /* lobby covers game UI; background matches canvas palette */
 .lobby{background:linear-gradient(180deg,#0e0b1a 0%,#130a1f 55%,#0a0d18 100%)!important}
 
@@ -979,14 +975,10 @@ html,body{height:100%;background:#8dbfdb;font-family:var(--sans);color:var(--ink
 }
 .profile-modal-sub { font-size: 12px; color: var(--ink-mute); margin-bottom: 22px; }
 .profile-modal-close {
-  position:absolute;top:16px;right:18px;z-index:10;
-  background:rgba(255,255,255,.10);border:.5px solid rgba(255,255,255,.18);
-  border-radius:50%;width:28px;height:28px;
-  cursor:pointer;color:rgba(255,255,255,.70);font-size:14px;
-  display:flex;align-items:center;justify-content:center;
-  transition:background .12s;
+  float:right;background:none;border:none;cursor:pointer;
+  color:var(--ink-mute);font-size:18px;margin-top:-2px;padding:0 2px;
+  position:relative;z-index:10;
 }
-.profile-modal-close:hover{background:rgba(255,255,255,.22);color:#fff;}
 .profile-modal-input {
   width: 100%; padding: 10px 16px; border-radius: 999px; box-sizing: border-box;
   border: 1px solid rgba(255,255,255,.82);

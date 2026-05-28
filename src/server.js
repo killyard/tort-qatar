@@ -10,6 +10,7 @@ import { v4 as uuidv4 } from 'uuid';
 import {
   isDbEnabled, runMigrations,
   recordGame, getLeaderboardFromDB, getCitiesFromDB,
+  findPlayerByNameCity,
 } from './db.js';
 import {
   isCacheEnabled, lbSync, lbSeedFromDB, lbTop, getCitiesFromCache,
@@ -222,7 +223,16 @@ app.post('/api/leaderboard/score', async (req, res) => {
   try {
     if (isDbEnabled()) {
       // ── DB + Redis path ───────────────────────────────────────────────────
-      const playerId = id || uuidv4();
+      // Dedupe: prefer the explicit id sent by the client; if none, try to
+      // attach to an existing player with the same name+city before falling
+      // back to a fresh uuid. Prevents one player → many leaderboard rows.
+      let playerId = id;
+      if (!playerId) {
+        playerId = await findPlayerByNameCity(name, city);
+      }
+      if (!playerId) {
+        playerId = uuidv4();
+      }
       const gameKey  = gameType === 'pvp' ? 'pvp' : `ai/${difficulty}`;
       const { scoreRow, pointsEarned } = await recordGame({
         id: playerId, name, city,
@@ -607,6 +617,41 @@ io.on('connection', (socket) => {
       room.winner = player.playerNumber === 1 ? 2 : 1;
       broadcastRoom(room);
       io.to(room.id).emit('room:chat', { system: true, text: `${player.name} disconnected. The wind carries them away.` });
+    }
+    // Clean up stale rooms after 1 hour
+    setTimeout(() => {
+      if (Date.now() - room.createdAt > 3_600_000) rooms.delete(room.id);
+    }, 3_600_000);
+  });
+});
+
+// ── Start ──────────────────────────────────────────────────────────────────
+async function start() {
+  // Run DB migrations (no-op if DATABASE_URL not set)
+  await runMigrations();
+
+  // Seed Redis from PostgreSQL on every cold start
+  if (isDbEnabled() && isCacheEnabled()) {
+    try {
+      const rows = await getLeaderboardFromDB({ limit: 500 });
+      await lbSeedFromDB(rows);
+    } catch (err) {
+      console.warn('[Startup] Redis seed failed (non-fatal):', err.message);
+    }
+  }
+
+  httpServer.listen(PORT, () => {
+    console.log(`\n🏕️  Tört Qatar server running → http://localhost:${PORT}`);
+    console.log(`   DB:    ${isDbEnabled()  ? '✅ PostgreSQL' : '⚠️  JSON file (set DATABASE_URL to enable)'}`);
+    console.log(`   Cache: ${isCacheEnabled() ? '✅ Redis'      : '⚠️  disabled (set REDIS_URL to enable)'}\n`);
+  });
+}
+
+start().catch(err => {
+  console.error('[Fatal] startup error:', err);
+  process.exit(1);
+});
+chat', { system: true, text: `${player.name} disconnected. The wind carries them away.` });
     }
     // Clean up stale rooms after 1 hour
     setTimeout(() => {

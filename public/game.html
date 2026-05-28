@@ -2947,14 +2947,30 @@ function copyText(text) {
 
 function ptsKey(name, city) { return `pts_${name}_${city}`; }
 
+// Stable per-browser player id so each game appends to the same leaderboard row.
+// Prefer the session user's id (Google OAuth or earlier saved guest); otherwise
+// generate and persist a uuid in localStorage.
+function getOrCreatePlayerId() {
+  const u = (typeof loadUser === 'function') ? loadUser() : null;
+  if (u && u.id) return u.id;
+  let pid = localStorage.getItem('tq_pid');
+  if (!pid) {
+    pid = (crypto.randomUUID ? crypto.randomUUID()
+      : 'pid-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 10));
+    localStorage.setItem('tq_pid', pid);
+  }
+  return pid;
+}
+
 async function postScore(name, city, won, draw = false) {
   try {
     const gameType = soloMode ? 'ai' : 'pvp';
     const difficulty = soloMode ? (window.currentDifficulty || 'medium') : '';
+    const id = getOrCreatePlayerId();
     const res = await fetch('/api/leaderboard/score', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, city, won, draw, gameType, difficulty }),
+      body: JSON.stringify({ id, name, city, won, draw, gameType, difficulty }),
     });
     if (res.ok) {
       const data = await res.json();

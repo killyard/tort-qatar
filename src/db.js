@@ -178,26 +178,90 @@ export async function recordGame({ id, name, city, provider = 'guest', won, draw
   }
 }
 
+// ── Find player by name+city (case-insensitive) ─────────────────────────────
+// Used to dedupe leaderboard: same player coming back from a new browser/session
+// without a stored id should attach to their existing row instead of creating
+// a duplicate. Returns the most recently active player_id, or null.
+export async function findPlayerByNameCity(name, city) {
+  if (!name) return null;
+  const { rows } = await getPool().query(
+    `SELECT p.id
+     FROM players p
+     LEFT JOIN player_scores s ON s.player_id = p.id
+     WHERE LOWER(p.name) = LOWER($1)
+       AND LOWER(p.city) = LOWER($2)
+     ORDER BY s.updated_at DESC NULLS LAST, p.created_at DESC
+     LIMIT 1`,
+    [name, city || '']
+  );
+  return rows[0]?.id ?? null;
+}
+
 // ── Leaderboard query ───────────────────────────────────────────────────────
-// Returns top `limit` players optionally filtered by city.
+// Returns top `limit` UNIQUE players (aggregated by case-insensitive name+city
+// in case legacy duplicate rows exist), optionally filtered by city.
 export async function getLeaderboardFromDB({ city, limit = 50 } = {}) {
   const params = [limit];
   const cityClause = city
-    ? (params.push(city), `AND p.city = $${params.length}`)
+    ? (params.push(city), `AND LOWER(p.city) = LOWER($${params.length})`)
     : '';
 
   const { rows } = await getPool().query(
     `SELECT
-       p.id, p.name, p.city,
-       s.games_played AS "gamesPlayed",
-       s.wins,
-       s.points,
-       s.win_streak   AS "winStreak",
-       s.win_rate     AS "winRate"
+       (array_agg(p.id  ORDER BY s.updated_at DESC NULLS LAST))[1] AS id,
+       (array_agg(p.name ORDER BY s.updated_at DESC NULLS LAST))[1] AS name,
+       (array_agg(p.city ORDER BY s.updated_at DESC NULLS LAST))[1] AS city,
+       SUM(s.games_played)::int AS "gamesPlayed",
+       SUM(s.wins)::int         AS "wins",
+       SUM(s.points)::int       AS "points",
+       MAX(s.win_streak)::int   AS "winStreak",
+       CASE
+         WHEN SUM(s.games_played) > 0
+           THEN ROUND(SUM(s.wins)::numeric / SUM(s.games_played) * 100)::int
+         ELSE 0
+       END                       AS "winRate"
      FROM player_scores s
      JOIN players p ON p.id = s.player_id
      WHERE TRUE ${cityClause}
-     ORDER BY s.points DESC, s.win_rate DESC
+     GROUP BY LOWER(p.name), LOWER(p.city)
+     ORDER BY SUM(s.points) DESC, SUM(s.wins) DESC
+     LIMIT $1`,
+    params
+  );
+
+  return rows.map((r, i) => ({ ...r, rank: i + 1 }));
+}
+
+// ── Unique cities ────────────────────────────────────────────────────────────
+export async function getCitiesFromDB() {
+  const { rows } = await getPool().query(
+    `SELECT DISTINCT p.city
+     FROM player_scores s
+     JOIN players p ON p.id = s.player_id
+     WHERE p.city <> ''
+     ORDER BY p.city`
+  );
+  return rows.map(r => r.city);
+}
+Pool().query(
+    `SELECT
+       (array_agg(p.id  ORDER BY s.updated_at DESC NULLS LAST))[1] AS id,
+       (array_agg(p.name ORDER BY s.updated_at DESC NULLS LAST))[1] AS name,
+       (array_agg(p.city ORDER BY s.updated_at DESC NULLS LAST))[1] AS city,
+       SUM(s.games_played)::int AS "gamesPlayed",
+       SUM(s.wins)::int         AS "wins",
+       SUM(s.points)::int       AS "points",
+       MAX(s.win_streak)::int   AS "winStreak",
+       CASE
+         WHEN SUM(s.games_played) > 0
+           THEN ROUND(SUM(s.wins)::numeric / SUM(s.games_played) * 100)::int
+         ELSE 0
+       END                       AS "winRate"
+     FROM player_scores s
+     JOIN players p ON p.id = s.player_id
+     WHERE TRUE ${cityClause}
+     GROUP BY LOWER(p.name), LOWER(p.city)
+     ORDER BY SUM(s.points) DESC, SUM(s.wins) DESC
      LIMIT $1`,
     params
   );

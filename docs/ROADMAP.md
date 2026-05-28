@@ -26,4 +26,23 @@
 - `445159b` fix: guard Google OAuth strategy init behind env var check — server starts without credentials
 - `6c16b6d` fix: trust proxy for session cookies on Render + credentials:include on /api/me
 - `b856d7e` fix: session.save() before OAuth redirect + freeipapi.com for city detect + Google prompt=select_account
-- `5a1f19c` feat: re
+- `5a1f19c` feat: reference liquid glass on side panels + board; right panel height between profile and chat
+- `15c6343` fix: null refs to removed right panel elements (inlineCoachContent, tabAnalysis, btnCoachPanel) — unblocks AI game start
+- `99246d8` docs: sync ROADMAP with commits 37c1e1c–15c6343
+- `a9c3260` feat: 3D liquid glass chips with Kazakh ornaments + pendulum rotation — Shanyrak (P1), Koshkar Muiz (P2), rotateY(-30°↔+30°) animation
+- `9484485` fix: restore missing JS functions truncated in merge (authGoogle, enterAsGuest, renderCoachInChat, openStripe, loadMiniLeaderboard)
+- `c310097` fix: rebuild game.html clean — all missing functions restored + 3D chips finalised
+
+## Next
+
+- Email/password auth (or skip — Google + guest covers 90% of users)
+- Profile: save city after Google login (prompt on first entry)
+- Multiplayer room invite links
+- Leaderboard: real persistent DB (currently in-memory, resets on deploy)
+
+## Todo
+
+- Mobile responsive layout
+- Sound effects (move, win, draw)
+- Localization (Kazakh / Russian / English toggle)
+- Board size variants (8×7, 6×5) — PRO feature

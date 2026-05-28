@@ -1,5 +1,9 @@
 # Tört Qatar · Connect Four on the Steppe
 
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy)
+
+> 🎮 **Live demo:** _coming soon_ — deploy your own copy with the button above
+
 > *"Tört Qatar" (Төрт Қатар) means "Four in a Row" in Kazakh.*
 
 A full-stack, real-time Connect Four platform built for fast online duels — wrapped in a Kazakh Ghibli aesthetic. This is not just a game; it's a **prototype startup**: multiplayer by default, AI-coached, globally ranked, and ready to monetise.
@@ -15,7 +19,7 @@ A full-stack, real-time Connect Four platform built for fast online duels — wr
 - Resign and rematch without reloading
 
 ### AI Coach 🧠
-After each game the AI Coach (powered by **Claude**) analyses every move and delivers:
+After each game the AI Coach (powered by **Gemini 2.5 Pro**) analyses every move and delivers:
 - A one-sentence summary of the game
 - 3 specific observations referencing actual column numbers
 - The single most pivotal move and why
@@ -45,7 +49,7 @@ After each game the AI Coach (powered by **Claude**) analyses every move and del
 |-------|-----------|
 | Backend | Node.js 18+, Express, Socket.io |
 | Game Engine | Pure JS module (`gameEngine.js`) |
-| AI Coach | Anthropic Claude API (`claude-haiku`) |
+| AI Coach | Google Gemini 2.5 Pro |
 | Frontend | Vanilla HTML/CSS/JS — no build step |
 | Payments | Stripe (stub wired, needs key) |
 | Data | In-memory + JSON (swap for Postgres/Supabase in prod) |
@@ -60,7 +64,7 @@ npm install
 
 # 2. Configure environment
 cp .env.example .env
-# → add your ANTHROPIC_API_KEY
+# → add your GEMINI_API_KEY (get one free at https://aistudio.google.com/apikey)
 
 # 3. Start the server
 npm start

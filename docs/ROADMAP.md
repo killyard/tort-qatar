@@ -66,6 +66,8 @@
 - `677136d` feat: leaderboard shows one row per unique player — server-side dedupe by name+city + aggregated SUM query + stable client-side player id
 - `f06541a` feat(pvp): left panel always shows local player — name/city/points/wins/moves/timer/turn-dot all map to ME regardless of host/joiner
 - `cf5e99b` fix: remove duplicate tail in server.js — Render SyntaxError at line 654 (35 dup lines)
+- `c724160` docs: update ROADMAP with cf5e99b
+- `35e1f86` fix: remove duplicate tail in db.js — was blocking import with 'Illegal return statement' at module top level (Render fell back to old deploy without GROUP BY)
 
 ## Next
 

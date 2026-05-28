@@ -22,17 +22,8 @@
 - `90ece67` feat: 3-col layout — move history right panel, piece/board customization left panel, PRO upgrade pill
 - `065db54` feat: reference liquid glass — blur(6px) saturate(150%), ::before 135deg blik, inset inner shadow
 - `a5dcbed` feat: Google OAuth — passport + express-session, /auth/google routes, session check on load
-
-## Next
-
-- Email/password auth (or skip — Google + guest covers 90% of users)
-- Profile: save city after Google login (prompt on first entry)
-- Multiplayer room invite links
-- Leaderboard: real persistent DB (currently in-memory, resets on deploy)
-
-## Todo
-
-- Mobile responsive layout
-- Sound effects (move, win, draw)
-- Localization (Kazakh / Russian / English toggle)
-- Board size variants (8×7, 6×5) — PRO feature
+- `37c1e1c` fix: ESM import for passport-google-oauth20 (CJS pkg, use default import)
+- `445159b` fix: guard Google OAuth strategy init behind env var check — server starts without credentials
+- `6c16b6d` fix: trust proxy for session cookies on Render + credentials:include on /api/me
+- `b856d7e` fix: session.save() before OAuth redirect + freeipapi.com for city detect + Google prompt=select_account
+- `5a1f19c` feat: re

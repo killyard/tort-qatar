@@ -99,7 +99,7 @@ html,body{height:100%;background:#8dbfdb;font-family:var(--sans);color:var(--ink
 .lobby{background:linear-gradient(180deg,#0e0b1a 0%,#130a1f 55%,#0a0d18 100%)!important}
 
 /* ── Layout ────────────────────────────────────────────── */
-.ui{position:relative;z-index:1;display:grid;grid-template-columns:390px 1fr 390px;height:100vh;padding:14px;gap:12px;align-items:center}
+.ui{position:relative;z-index:1;display:grid;grid-template-columns:360px 1fr;height:100vh;padding:14px;gap:12px;align-items:center}
 
 /* ── Glass panel ───────────────────────────────────────── */
 .glass{
@@ -696,6 +696,52 @@ html,body{height:100%;background:#8dbfdb;font-family:var(--sans);color:var(--ink
 #btnStartGame.visible { display: inline-flex; }
 .board-locked { opacity: .65; pointer-events: none; filter: blur(.5px); transition: opacity .3s, filter .3s; }
 
+
+/* ── P2 mini info bar (center column) ───────────── */
+.p2-bar{
+  display:flex;align-items:center;gap:10px;
+  background:rgba(255,255,255,.1);border:.5px solid rgba(255,255,255,.18);
+  padding:7px 14px;border-radius:999px;
+  font-size:12px;color:rgba(255,255,255,.8);
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+}
+.p2-bar .p2-avatar{
+  width:22px;height:22px;border-radius:50%;
+  background:radial-gradient(circle,#e05c4a,#8b1a0f);
+  display:flex;align-items:center;justify-content:center;
+  font-size:11px;flex-shrink:0;
+}
+.p2-bar .p2-name{font-weight:500;color:#fff}
+.p2-bar .p2-city{color:rgba(255,255,255,.5);font-size:11px}
+.p2-bar .p2-timer-sm{
+  margin-left:auto;font-family:var(--serif);font-size:13px;
+  font-weight:300;color:rgba(255,255,255,.7);letter-spacing:.04em;
+}
+/* ── Coach messages inside chat ─────────────────── */
+.chat-msg.coach{
+  background:rgba(45,200,130,.08);
+  border:.5px solid rgba(45,200,130,.22);
+  border-radius:10px;padding:8px 10px;
+  color:rgba(255,255,255,.88);
+  white-space:pre-wrap;line-height:1.5;
+}
+.chat-msg.coach .msg-name{color:#6ddc82}
+.chat-msg.coach-section{
+  font-size:10px;letter-spacing:.1em;text-transform:uppercase;
+  color:rgba(255,255,255,.38);padding:4px 0 2px;background:none;
+}
+/* Chat widget — no separate tabs */
+.chat-widget-body { padding:0 0 10px; }
+.chat-widget-messages {
+  flex:1;overflow-y:auto;scrollbar-width:thin;
+  scrollbar-color:rgba(255,255,255,.15) transparent;
+  display:flex;flex-direction:column;gap:5px;
+  font-size:12px;padding:8px 10px 0;
+}
+.chat-widget-input-row {
+  display:flex;gap:6px;flex-shrink:0;padding:6px 10px 0;
+  border-top:.5px solid rgba(255,255,255,.08);margin-top:4px;
+}
 /* ── Responsive ────────────────────────────────────────── */
 @media(max-width:900px){
   .ui{grid-template-columns:1fr;grid-template-rows:auto 1fr auto;padding:8px;gap:8px;overflow-y:auto;height:auto;min-height:100vh}
@@ -870,6 +916,13 @@ html,body{height:100%;background:#8dbfdb;font-family:var(--sans);color:var(--ink
       <button class="copy-btn" id="copyBtn">Copy link</button>
     </div>
 
+    <div class="p2-bar" id="p2Bar">
+      <div class="p2-avatar" id="av2sm">🌙</div>
+      <span class="p2-name" id="p2BarName">Waiting…</span>
+      <span class="p2-city" id="p2BarCity"></span>
+      <span class="p2-timer-sm" id="p2BarTimer">—:——</span>
+    </div>
+
     <div class="status-bar" id="statusBar">Waiting for opponent…</div>
 
     <div class="board-wrap" id="boardWrap">
@@ -910,7 +963,7 @@ html,body{height:100%;background:#8dbfdb;font-family:var(--sans);color:var(--ink
   </div>
 
   <!-- ── Right panel: Player 2 + Chat ── -->
-  <div class="glass player-panel" id="rightPanel">
+  <div class="glass player-panel" id="rightPanel" style="display:none">
     <div class="panel-head">
       <div class="avatar p2" id="av2">🌙</div>
       <div class="player-name-wrap">
@@ -931,10 +984,8 @@ html,body{height:100%;background:#8dbfdb;font-family:var(--sans);color:var(--ink
       <button class="panel-tab" id="tabAnalysis" onclick="switchTab('analysis')">AI Analysis</button>
     </div>
 
-    <!-- Chat tab (messages rendered here; input is in floating widget) -->
-    <div class="tab-pane active" id="paneChat">
-      <div class="chat-area" id="chatArea"></div>
-    </div>
+    <!-- Chat pane (legacy; chatArea now in widget) -->
+    <div class="tab-pane active" id="paneChat" style="display:none"></div>
 
     <!-- AI Analysis tab -->
     <div class="tab-pane" id="paneAnalysis">
@@ -960,7 +1011,8 @@ html,body{height:100%;background:#8dbfdb;font-family:var(--sans);color:var(--ink
     <span class="chat-widget-chevron">▲</span>
   </div>
   <div class="chat-widget-body">
-    <div class="chat-input-row">
+    <div class="chat-widget-messages" id="chatArea"></div>
+    <div class="chat-widget-input-row">
       <input class="chat-input" id="chatInput" placeholder="Say something…" maxlength="200" />
       <button class="chat-send" id="chatSend">↑</button>
     </div>
@@ -1636,6 +1688,8 @@ function startSoloGame() {
   document.getElementById('city1').textContent = myCity;
   document.getElementById('name2').textContent = `AI (${aiDifficulty})`;
   document.getElementById('city2').textContent = 'Steppe Bot';
+  document.getElementById('p2BarName').textContent = `AI (${aiDifficulty})`;
+  document.getElementById('p2BarCity').textContent = 'Steppe Bot';
 
   renderSoloState();
   // Lock board until Start button is pressed
@@ -1675,7 +1729,6 @@ function renderSoloState() {
     document.getElementById('btnResign').style.display = 'none';
     document.getElementById('btnRematch').style.display = '';
     document.getElementById('btnCoach').style.display = '';
-    document.getElementById('btnCoachPanel').style.display = '';
     postScore(myName, myCity, soloWinner === 1);
     // Steppe Bot end-game message
     const endTrigger = soloWinner === 0 ? 'game_end_draw' : soloWinner === 1 ? 'game_end_win' : 'game_end_loss';
@@ -1746,6 +1799,8 @@ function renderState(state) {
   if (state.players[1]) {
     document.getElementById('name2').textContent = state.players[1].name;
     document.getElementById('city2').textContent = state.players[1].city;
+    document.getElementById('p2BarName').textContent = state.players[1].name;
+    document.getElementById('p2BarCity').textContent = state.players[1].city;
   }
   renderBoard(state.board, state.winCells);
   const mpNames = { 1: state.players[0]?.name ?? 'P1', 2: state.players[1]?.name ?? 'P2' };
@@ -1759,7 +1814,6 @@ function renderState(state) {
     document.getElementById('btnResign').style.display = 'none';
     document.getElementById('btnRematch').style.display = '';
     document.getElementById('btnCoach').style.display = '';
-    document.getElementById('btnCoachPanel').style.display = '';
     const myPlayer = state.players.find(p => p.playerNumber === myPlayerNumber);
     if (myPlayer && !coachRequested)
       postScore(myPlayer.name, myPlayer.city, state.winner === myPlayerNumber);
@@ -1874,15 +1928,15 @@ function updateTimerDisplay(playerIdx) {
     el.textContent = `${mm}:${ss}`;
     el.classList.toggle('urgent', s > 60 && gameState?.currentTurn === playerIdx + 1);
   }
+  if (playerIdx === 1) { const tb = document.getElementById('p2BarTimer'); if(tb) tb.textContent = `${mm}:${ss}`; }
 }
 
 // ── Tab switcher ───────────────────────────────────────────────────────────
 window.switchTab = function(tab) {
-  document.getElementById('tabChat').classList.toggle('active', tab === 'chat');
-  document.getElementById('tabAnalysis').classList.toggle('active', tab === 'analysis');
-  document.getElementById('paneChat').classList.toggle('active', tab === 'chat');
-  document.getElementById('paneAnalysis').classList.toggle('active', tab === 'analysis');
-  if (tab === 'analysis') document.getElementById('tabAnalysis').classList.remove('badge');
+  // Chat widget is the single UI — open it on any tab switch
+  const cw = document.getElementById('chatWidget');
+  if (cw && cw.classList.contains('collapsed')) cw.classList.remove('collapsed');
+  if (tab === 'analysis') window.openCoach();
 };
 
 window.toggleChatWidget = function() {
@@ -2094,8 +2148,74 @@ function renderInlineCoach(d) {
 // "AI Coach" button: switch to Analysis tab and fetch if needed (both modes)
 window.openCoach = async function openCoach() {
   if (!gameState) return;
-  switchTab('analysis');
-  if (!lastCoachData && !coachRequested) fetchInlineCoach();
+  // Make sure chat widget is open
+  const cw = document.getElementById('chatWidget');
+  if (cw && cw.classList.contains('collapsed')) cw.classList.remove('collapsed');
+  if (lastCoachData) { renderCoachInChat(lastCoachData); return; }
+  if (coachRequested) return;
+  coachRequested = true;
+  // Show loading message in chat
+  const loadDiv = appendCoachMsg('🧠 Analyzing your game\u2026', 'coach');
+  try {
+    const data = await fetchCoachData();
+    lastCoachData = data;
+    if (loadDiv && loadDiv.parentNode) loadDiv.parentNode.removeChild(loadDiv);
+    renderCoachInChat(data);
+  } catch(e) {
+    if (loadDiv) loadDiv.querySelector('.msg-body').textContent = 'Could not reach AI Coach.';
+  }
+};
+
+function appendCoachMsg(text, cls) {
+  const area = document.getElementById('chatArea');
+  if (!area) return null;
+  const div = document.createElement('div');
+  div.className = 'chat-msg ' + (cls || 'coach');
+  div.innerHTML = '<span class="msg-name coach">\ud83e\udde0\u00a0Coach</span><span class="msg-body">' + esc(text) + '</span>';
+  area.appendChild(div);
+  area.scrollTop = area.scrollHeight;
+  return div;
+}
+
+function renderCoachInChat(d) {
+  const area = document.getElementById('chatArea');
+  if (!area) return;
+  // Summary
+  const s1 = document.createElement('div');
+  s1.className = 'chat-msg coach'; s1.innerHTML = '<span class="msg-name coach">\ud83e\udde0\u00a0Coach</span><span class="msg-body">' + esc(d.summary) + '</span>';
+  area.appendChild(s1);
+  // Insights
+  if (d.insights && d.insights.length) {
+    const s2 = document.createElement('div');
+    s2.className = 'chat-msg coach';
+    s2.innerHTML = '<span class="msg-name coach">\ud83d\udcca\u00a0Observations</span><span class="msg-body">' + esc(d.insights.join('\n')) + '</span>';
+    area.appendChild(s2);
+  }
+  // Best play
+  if (d.smartMove) {
+    const s3 = document.createElement('div');
+    s3.className = 'chat-msg coach';
+    s3.innerHTML = '<span class="msg-name coach">\u2728\u00a0Best play (move #' + (d.smartMove.moveNumber ?? '?') + ')</span><span class="msg-body">' + esc(d.smartMove.description ?? '') + '</span>';
+    area.appendChild(s3);
+  }
+  // Key moment
+  if (d.keyMoment) {
+    const s4 = document.createElement('div');
+    s4.className = 'chat-msg coach';
+    s4.innerHTML = '<span class="msg-name coach">\u26a0\ufe0f\u00a0Key moment (move #' + (d.keyMoment.moveNumber ?? '?') + ')</span><span class="msg-body">' + esc(d.keyMoment.description ?? '') + '</span>';
+    area.appendChild(s4);
+  }
+  // Tip
+  if (d.tip) {
+    const s5 = document.createElement('div');
+    s5.className = 'chat-msg coach';
+    s5.innerHTML = '<span class="msg-name coach">\ud83d\udca1\u00a0Tip</span><span class="msg-body">' + esc(d.tip) + '</span>';
+    area.appendChild(s5);
+  }
+  area.scrollTop = area.scrollHeight;
+  // Show unread dot if widget collapsed
+  const cw = document.getElementById('chatWidget');
+  if (cw && cw.classList.contains('collapsed')) document.getElementById('chatUnreadDot').classList.add('visible');
 }
 
 function renderCoach(d) {

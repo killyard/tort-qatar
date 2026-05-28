@@ -333,7 +333,8 @@ html,body{height:100%;background:#8dbfdb;font-family:var(--sans);color:var(--ink
 .lobby.hidden{opacity:0;pointer-events:none}
 .lobby-card{
   position:absolute;z-index:1;
-  transform:translateX(-50%); /* left is set to center-x by JS */
+  left:50%;top:50%;transform:translate(-50%,-50%);
+  width:360px;max-width:90vw;max-height:90vh;
   background:rgba(255,255,255,.52);
   backdrop-filter:blur(32px) saturate(200%);-webkit-backdrop-filter:blur(32px) saturate(200%);
   border:.5px solid rgba(255,255,255,.75);
@@ -440,7 +441,7 @@ html,body{height:100%;background:#8dbfdb;font-family:var(--sans);color:var(--ink
 
 <!-- ════ LOBBY ════ -->
 <div class="lobby" id="lobby">
-  <img class="lobby-bg" id="lobbyBg" src="/assets/auth-form.png" alt="" />
+  <img class="lobby-bg" id="lobbyBg" src="/assets/auth.png" alt="" />
   <div class="lobby-card" id="lobbyCard">
     <div class="lobby-title">Tört Qatar</div>
     <div class="lobby-sub" id="lobbySub">Connect Four · steppe duels</div>
@@ -641,32 +642,6 @@ let isPro = localStorage.getItem('isPro') === 'true';
 // Selected UI language (set in lobby, used for AI chat)
 let selectedLang = localStorage.getItem('lang') || 'en';
 
-// ── Lobby card positioning (within yurt door frame) ────────────────────────
-// Image dimensions: 1916×821. Door inner rect measured from the image:
-const IMG_W = 1916, IMG_H = 821, IMG_ASPECT = IMG_W / IMG_H;
-const DOOR = { left: 0.433, right: 0.566, top: 0.262, bottom: 0.877 };
-const DOOR_MARGIN = 0.07; // 7% inner margin from door frame edges
-
-function positionLobbyCard() {
-  const vw = window.innerWidth, vh = window.innerHeight;
-  // Always scale by height — image fills full vh, centered horizontally
-  const rH = vh, rW = vh * IMG_ASPECT;
-  const oX = (vw - rW) / 2, oY = 0;
-  const dL = oX + DOOR.left  * rW, dR = oX + DOOR.right  * rW;
-  const dT = oY + DOOR.top   * rH, dB = oY + DOOR.bottom * rH;
-  const dW = dR - dL, dH = dB - dT;
-  const card = document.getElementById('lobbyCard');
-  const cardW    = dW * (1 - DOOR_MARGIN * 2);
-  const cardMaxH = dH * (1 - DOOR_MARGIN * 2);
-  card.style.left     = ((dL + dR) / 2) + 'px';   // translateX(-50%) centres it
-  card.style.top      = (dT + dH * DOOR_MARGIN) + 'px';
-  card.style.width    = cardW + 'px';
-  card.style.maxWidth = cardW + 'px';
-  card.style.maxHeight = cardMaxH + 'px';
-}
-window.addEventListener('resize', positionLobbyCard);
-document.getElementById('lobbyBg').addEventListener('load', positionLobbyCard);
-positionLobbyCard();
 
 const LOBBY_T = {
   en: {

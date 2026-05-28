@@ -20,6 +20,7 @@
 - `7eaeffa` feat: lobby UI refresh — unified tab-group style for Language/Mode/Difficulty
 - `dc90ef9` docs: update ROADMAP with 0876333, 0eb2065, 7eaeffa
 - `4be4312` feat: lobby tabs — liquid glass pill style matching nav button
+- `364205e` docs: update ROADMAP with 4be4312
 
 ## Next
 

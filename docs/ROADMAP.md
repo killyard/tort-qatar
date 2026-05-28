@@ -31,6 +31,7 @@
 - `3ee66c6` docs: update ROADMAP with eb23b44
 - `8ca933e` fix: center lobby card within yurt door opening
 - `2390ba1` docs: update ROADMAP with 3ee66c6, 8ca933e
+- `b17d4d3` fix: JS-based lobby card positioning within yurt door frame (object-fit contain)
 
 ## Next
 

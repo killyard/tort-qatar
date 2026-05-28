@@ -18,6 +18,7 @@
 - `0876333` feat: switch Steppe Bot chat to Groq llama-3.1-8b-instant
 - `0eb2065` feat: language picker in lobby (EN/RU/KK), Steppe Bot respects selected language
 - `7eaeffa` feat: lobby UI refresh — unified tab-group style for Language/Mode/Difficulty
+- `dc90ef9` docs: update ROADMAP with 0876333, 0eb2065, 7eaeffa
 
 ## Next
 

@@ -342,15 +342,22 @@ html,body{height:100%;background:#8dbfdb;font-family:var(--sans);color:var(--ink
 .lobby-input::placeholder{color:rgba(255,255,255,.28)}
 .lobby-input:focus{border-color:rgba(255,255,255,.38);background:rgba(255,255,255,.11)}
 .lobby-label{font-size:10px;color:rgba(255,255,255,.35);letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;margin-top:4px}
-/* Unified tab-group style for Language / Mode / Difficulty */
-.lobby-tab-group{display:flex;gap:2px;background:rgba(0,0,0,.3);border-radius:9px;padding:3px;margin-bottom:14px}
-.lobby-tab{
-  flex:1;padding:7px 4px;border:none;background:transparent;
-  color:rgba(255,255,255,.45);font-size:12.5px;font-family:var(--sans);
-  cursor:pointer;border-radius:7px;transition:background .15s,color .15s;white-space:nowrap;
+/* Unified tab-group style for Language / Mode / Difficulty — liquid glass pill */
+.lobby-tab-group{
+  display:flex;gap:4px;
+  background:rgba(255,255,255,.18);
+  backdrop-filter:blur(18px) saturate(160%);-webkit-backdrop-filter:blur(18px) saturate(160%);
+  border:.5px solid rgba(255,255,255,.38);
+  box-shadow:0 1px 0 rgba(255,255,255,.45) inset,0 8px 24px rgba(10,30,20,.2);
+  border-radius:999px;padding:5px;margin-bottom:14px;
 }
-.lobby-tab:hover:not(.active){color:rgba(255,255,255,.75)}
-.lobby-tab.active{background:rgba(255,255,255,.14);color:#fff;font-weight:500}
+.lobby-tab{
+  flex:1;padding:7px 6px;border:none;background:transparent;
+  color:rgba(255,255,255,.72);font-size:12.5px;font-family:var(--sans);
+  cursor:pointer;border-radius:999px;transition:background .18s,color .18s;white-space:nowrap;
+}
+.lobby-tab:hover:not(.active){background:rgba(255,255,255,.15);color:#fff}
+.lobby-tab.active{background:rgba(255,255,255,.92);color:#1d2a23;font-weight:600}
 /* CTA button */
 .lobby-btn{
   width:100%;padding:11px;border-radius:10px;border:none;box-sizing:border-box;

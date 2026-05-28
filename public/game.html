@@ -321,20 +321,24 @@ html,body{height:100%;background:#8dbfdb;font-family:var(--sans);color:var(--ink
 /* ── Lobby overlay (initial) ───────────────────────────── */
 .lobby{
   position:fixed;inset:0;z-index:100;
-  background:url('/assets/auth-form.png') center/cover no-repeat;
-  display:flex;align-items:center;justify-content:center;
-  /* center within door opening: arch ~16vh from top, bottom frame ~5vh from bottom */
-  padding-top:16vh;padding-bottom:5vh;
+  background:#87ceeb; /* sky-blue fills bars when image is contained */
+  overflow:hidden;
   transition:opacity .4s;
+}
+.lobby-bg{
+  position:absolute;inset:0;width:100%;height:100%;
+  object-fit:contain;object-position:center;z-index:0;
+  pointer-events:none;user-select:none;
 }
 .lobby.hidden{opacity:0;pointer-events:none}
 .lobby-card{
-  position:relative;z-index:1;
+  position:absolute;z-index:1;
+  transform:translateX(-50%); /* left is set to center-x by JS */
   background:rgba(255,255,255,.52);
   backdrop-filter:blur(32px) saturate(200%);-webkit-backdrop-filter:blur(32px) saturate(200%);
   border:.5px solid rgba(255,255,255,.75);
-  border-radius:24px;padding:28px 24px;max-width:310px;width:88vw;
-  max-height:88vh;overflow-y:auto;
+  border-radius:24px;padding:28px 24px;
+  overflow-y:auto;
   box-shadow:0 1px 0 rgba(255,255,255,.8) inset,0 16px 48px rgba(0,0,0,.18);
 }
 .lobby-title{font-family:var(--serif);font-size:26px;font-weight:400;color:var(--ink);margin-bottom:2px}
@@ -436,7 +440,8 @@ html,body{height:100%;background:#8dbfdb;font-family:var(--sans);color:var(--ink
 
 <!-- ════ LOBBY ════ -->
 <div class="lobby" id="lobby">
-  <div class="lobby-card">
+  <img class="lobby-bg" id="lobbyBg" src="/assets/auth-form.png" alt="" />
+  <div class="lobby-card" id="lobbyCard">
     <div class="lobby-title">Tört Qatar</div>
     <div class="lobby-sub" id="lobbySub">Connect Four · steppe duels</div>
 
@@ -635,6 +640,39 @@ let isPro = localStorage.getItem('isPro') === 'true';
 
 // Selected UI language (set in lobby, used for AI chat)
 let selectedLang = localStorage.getItem('lang') || 'en';
+
+// ── Lobby card positioning (within yurt door frame) ────────────────────────
+// Image dimensions: 1672×941. Door inner rect measured from the image:
+const IMG_W = 1672, IMG_H = 941, IMG_ASPECT = IMG_W / IMG_H;
+const DOOR = { left: 0.347, right: 0.652, top: 0.122, bottom: 0.893 };
+const DOOR_MARGIN = 0.07; // 7% inner margin from door frame edges
+
+function positionLobbyCard() {
+  const vw = window.innerWidth, vh = window.innerHeight;
+  const vpAspect = vw / vh;
+  let rW, rH, oX, oY;
+  if (vpAspect > IMG_ASPECT) {
+    // viewport wider → bars on left/right, image fills full height
+    rH = vh; rW = vh * IMG_ASPECT; oX = (vw - rW) / 2; oY = 0;
+  } else {
+    // viewport taller → bars on top/bottom, image fills full width
+    rW = vw; rH = vw / IMG_ASPECT; oX = 0; oY = (vh - rH) / 2;
+  }
+  const dL = oX + DOOR.left  * rW, dR = oX + DOOR.right  * rW;
+  const dT = oY + DOOR.top   * rH, dB = oY + DOOR.bottom * rH;
+  const dW = dR - dL, dH = dB - dT;
+  const card = document.getElementById('lobbyCard');
+  const cardW    = dW * (1 - DOOR_MARGIN * 2);
+  const cardMaxH = dH * (1 - DOOR_MARGIN * 2);
+  card.style.left     = ((dL + dR) / 2) + 'px';   // translateX(-50%) centres it
+  card.style.top      = (dT + dH * DOOR_MARGIN) + 'px';
+  card.style.width    = cardW + 'px';
+  card.style.maxWidth = cardW + 'px';
+  card.style.maxHeight = cardMaxH + 'px';
+}
+window.addEventListener('resize', positionLobbyCard);
+document.getElementById('lobbyBg').addEventListener('load', positionLobbyCard);
+positionLobbyCard();
 
 const LOBBY_T = {
   en: {

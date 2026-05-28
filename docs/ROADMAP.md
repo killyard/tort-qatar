@@ -30,6 +30,7 @@
 - `eb23b44` feat: lobby i18n EN/RU/KK, dark active tab, form centering in door
 - `3ee66c6` docs: update ROADMAP with eb23b44
 - `8ca933e` fix: center lobby card within yurt door opening
+- `2390ba1` docs: update ROADMAP with 3ee66c6, 8ca933e
 
 ## Next
 

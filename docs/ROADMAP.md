@@ -37,6 +37,7 @@
 - `39cac44` feat: remove door positioning logic, center lobby card simply, switch bg to auth.png
 - `6f2893b` docs: update ROADMAP with 39cac44
 - `f050cd5` docs: update ROADMAP with 6f2893b
+- `3c64b1a` feat: auth screen — Google / email / guest flow before lobby
 
 ## Next
 

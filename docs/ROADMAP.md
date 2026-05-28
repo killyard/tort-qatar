@@ -36,6 +36,9 @@
 - `f06db05` feat: SVG icons replace emoji, transparent board holes, unlock 8×7/6×5 board sizes
 - `0a4de39` feat: win state — purple winner chips, grey loser chips frozen; AI Coach button purple +25%
 - `0d7a446` fix: restore truncated aiPlayer.js getBestMove tail — auth broken due to SyntaxError
+- `2ee8284` docs: update ROADMAP with 0d7a446
+- `8861fcb` fix: SyntaxError on line 1975 — single quotes in SVG innerHTML string broke auth
+- `854809f` fix: dynamic board sizes (8×7/6×5 now play correctly), transparent holes, Thinking badge centered on board, AI Coach shows after first move in solo / only at game end in multiplayer
 
 ## Next
 

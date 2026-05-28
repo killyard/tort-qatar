@@ -11,6 +11,7 @@
 - rewrote AI Coach prompt: structured step-by-step analysis (tactical scan → strategy → best play → response), missed-win detection, optional smartMove field; added "Best play" section to UI
 
 - solo mode: replaced chat panel with inline AI Coach analysis — auto-fetches on game end, renders next to the board
+- AI Coach: pre-compute missed wins and missed blocks server-side using game engine, inject as verified facts into Gemini prompt
 
 ## Next
 

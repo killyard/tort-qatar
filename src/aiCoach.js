@@ -1,8 +1,49 @@
 // ── AI Coach — powered by Google Gemini 2.5 Pro ──────────────────────────────
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { createBoard, dropPiece, checkWinner, findThreats } from './gameEngine.js';
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 const model = genAI.getGenerativeModel({ model: 'gemini-2.5-pro' });
+
+/**
+ * Replay the game move by move and return a list of tactical annotations:
+ * - MISSED_WIN: coachFor had an immediate winning move but didn't take it
+ * - MISSED_BLOCK: opponent had a winning threat that coachFor didn't block
+ *
+ * These are computed deterministically by the game engine — no guessing.
+ */
+function buildTacticalAnnotations(history, coachFor) {
+  const opponent = coachFor === 1 ? 2 : 1;
+  let board = createBoard();
+  const annotations = [];
+
+  for (let i = 0; i < history.length; i++) {
+    const { player, col } = history[i];
+    const moveNum = i + 1;
+
+    if (player === coachFor) {
+      // Did coachFor have a winning move available?
+      const wins = findThreats(board, coachFor);
+      if (wins.size > 0 && !wins.has(col)) {
+        const winCols = [...wins].map(c => `col ${c + 1}`).join(', ');
+        annotations.push(`MISSED_WIN at move ${moveNum}: Player ${coachFor} could have won immediately by playing ${winCols}, but played col ${col + 1} instead.`);
+      }
+
+      // Did the opponent have a winning threat that coachFor ignored?
+      const oppThreats = findThreats(board, opponent);
+      if (oppThreats.size > 0 && !oppThreats.has(col)) {
+        const threatCols = [...oppThreats].map(c => `col ${c + 1}`).join(', ');
+        annotations.push(`MISSED_BLOCK at move ${moveNum}: Opponent had a winning threat at ${threatCols}, but Player ${coachFor} played col ${col + 1} instead of blocking.`);
+      }
+    }
+
+    // Advance board state
+    const result = dropPiece(board, col, player);
+    if (!result.error) board = result.board;
+  }
+
+  return annotations;
+}
 
 /**
  * Analyze a completed game and return coaching feedback.
@@ -18,12 +59,18 @@ const model = genAI.getGenerativeModel({ model: 'gemini-2.5-pro' });
 export async function analyzeGame({ winner, history, board, playerName, coachFor }) {
   const moveLines = history
     .map((m, i) => `${i + 1}. P${m.player} → col ${m.col + 1}`)
-    .join('  ');
+    .join('\n');
 
   const outcome =
     winner === 0 ? 'Draw'
     : winner === coachFor ? `Player ${coachFor} WON`
     : `Player ${coachFor} LOST`;
+
+  // Pre-compute tactical blunders using the game engine (100% accurate)
+  const tacticalAnnotations = buildTacticalAnnotations(history, coachFor);
+  const tacticalSection = tacticalAnnotations.length > 0
+    ? `PRE-COMPUTED TACTICAL FACTS (engine-verified, guaranteed accurate):\n${tacticalAnnotations.map(a => `  • ${a}`).join('\n')}`
+    : `PRE-COMPUTED TACTICAL FACTS: No missed immediate wins or missed blocks detected.`;
 
   const prompt = `You are a world-class Connect Four coach giving post-game analysis. Follow the steps below in exact order — do not skip ahead.
 
@@ -37,14 +84,15 @@ ${moveLines}
 FINAL BOARD (0=empty, 1=P1, 2=P2, row 0=top):
 ${board.map(r => r.join(' ')).join('\n')}
 
+${tacticalSection}
+
 ━━ ANALYSIS STEPS (execute in this order) ━━━━━━━━━━━━━━━━━━━━
 
-STEP 1 — TACTICAL SCAN (highest priority):
-Replay every move by Player ${coachFor} from move 1 to ${history.length}.
-At each of their turns ask two questions:
-  (a) Did Player ${coachFor} have an IMMEDIATE WIN available — i.e. already had 3-in-a-row (horizontal, vertical, or diagonal) with the 4th slot open and reachable? Did they take it or miss it?
-  (b) On the previous half-move, did the opponent create an immediate win threat? Did Player ${coachFor} block it or ignore it?
-Log every miss. A missed immediate win or a failed block is a BLUNDER and must be reported, no matter how early in the game it occurred.
+STEP 1 — TACTICAL FACTS (use the pre-computed section above, do not re-derive):
+The game engine has already calculated every move where Player ${coachFor} missed an immediate win or failed to block the opponent's winning threat. These are listed above as MISSED_WIN and MISSED_BLOCK entries.
+  - Treat every MISSED_WIN and MISSED_BLOCK as a confirmed BLUNDER.
+  - If any MISSED_WIN entries exist, the earliest one MUST appear in insights and MUST be the keyMoment (unless a MISSED_BLOCK on an even earlier move is present).
+  - Do not contradict or ignore these facts — they are engine-verified.
 
 STEP 2 — STRATEGIC PATTERNS:
 Look at the full sequence for recurring themes: over-stacking one column, neglecting center (col 4), building threats that got closed off, or inadvertently helping opponent build a fork. Identify 1-2 patterns.

@@ -8,12 +8,13 @@
 - deployed to Render — live at https://tort-qatar.onrender.com
 - added `GEMINI_API_KEY` to Render env vars
 - added live demo link + Deploy to Render button to README.md
-- rewrote AI Coach prompt: chronological move analysis, missed-win detection, smart move highlighting; added "Best play" section to UI
+- rewrote AI Coach prompt: structured step-by-step analysis (tactical scan → strategy → best play → response), missed-win detection, optional smartMove field; added "Best play" section to UI
+
+- solo mode: replaced chat panel with inline AI Coach analysis — auto-fetches on game end, renders next to the board
 
 ## Next
 
 - [ ] Rate limiting on `/api/coach/analyze` (prevent API key abuse)
-- [ ] Hide chat panel in solo (vs AI) mode
 
 ## Todo
 

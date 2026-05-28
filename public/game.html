@@ -89,6 +89,22 @@ html,body{height:100%;background:#8dbfdb;font-family:var(--sans);color:var(--ink
 
 /* ── Chat ──────────────────────────────────────────────── */
 .chat-area{flex:1;overflow-y:auto;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.2) transparent;display:flex;flex-direction:column;gap:5px;font-size:12px}
+#inlineCoach{display:none}
+#rightPanel.solo #chatLabel,#rightPanel.solo #chatArea,#rightPanel.solo #chatInputRow{display:none}
+#rightPanel.solo #inlineCoach{display:flex;flex-direction:column;flex:1;min-height:0;margin-top:2px}
+.inline-coach-content{flex:1;overflow-y:auto;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.2) transparent;display:flex;flex-direction:column;gap:8px;font-size:12px;padding-top:4px}
+.inline-coach-placeholder{color:rgba(255,255,255,.3);font-style:italic;font-size:12px;padding:8px 0}
+.inline-coach-loading{display:flex;align-items:center;gap:8px;color:rgba(255,255,255,.45);font-size:12px;padding:6px 0}
+.inline-coach-summary{background:rgba(255,255,255,.08);border-radius:8px;padding:8px 10px;color:rgba(255,255,255,.9);font-size:12px;line-height:1.5}
+.inline-coach-section{font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.4);margin-top:6px;margin-bottom:2px}
+.inline-coach-insight{display:flex;gap:6px;color:rgba(255,255,255,.75);font-size:11.5px;line-height:1.4}
+.inline-coach-insight::before{content:"•";color:rgba(255,255,255,.35);flex-shrink:0}
+.inline-coach-moment{border:.5px solid rgba(255,255,255,.18);border-radius:8px;padding:7px 9px;background:rgba(255,255,255,.05)}
+.inline-coach-moment.good{border-color:rgba(100,220,130,.35);background:rgba(100,220,130,.06)}
+.inline-coach-move{font-size:10px;font-weight:700;color:rgba(255,255,255,.55);margin-bottom:2px}
+.inline-coach-moment.good .inline-coach-move{color:#6ddc82}
+.inline-coach-desc{font-size:11.5px;color:rgba(255,255,255,.8);line-height:1.4}
+.inline-coach-tip{background:rgba(255,200,80,.08);border:.5px solid rgba(255,200,80,.2);border-radius:8px;padding:7px 10px;font-size:11.5px;color:rgba(255,255,255,.8);line-height:1.4}
 .chat-msg{padding:5px 8px;border-radius:8px;background:rgba(255,255,255,.1);color:rgba(255,255,255,.82)}
 .chat-msg.system{font-style:italic;color:rgba(255,255,255,.5);background:none;padding-left:0}
 .chat-msg .msg-name{font-weight:600;margin-right:4px}
@@ -504,11 +520,18 @@ html,body{height:100%;background:#8dbfdb;font-family:var(--sans);color:var(--ink
     <div class="stat-row"><span class="stat-label">Wins</span><span class="stat-value" id="wins2">0</span></div>
     <div class="stat-row"><span class="stat-label">Moves made</span><span class="stat-value" id="moves2">0</span></div>
 
-    <div style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.4);margin-top:4px">Chat</div>
+    <div id="chatLabel" style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.4);margin-top:4px">Chat</div>
     <div class="chat-area" id="chatArea"></div>
-    <div class="chat-input-row">
+    <div class="chat-input-row" id="chatInputRow">
       <input class="chat-input" id="chatInput" placeholder="Say something…" maxlength="200" />
       <button class="chat-send" id="chatSend">↑</button>
+    </div>
+
+    <div id="inlineCoach">
+      <div id="inlineCoachLabel" style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.4);margin-top:4px">AI Coach</div>
+      <div id="inlineCoachContent" class="inline-coach-content">
+        <div class="inline-coach-placeholder">Analysis will appear here when the game ends.</div>
+      </div>
     </div>
 
     <button class="pro-btn" onclick="openStripe()">✦ Upgrade to Pro</button>
@@ -652,6 +675,8 @@ function joinRoom() {
 
 function enterGame(rId) {
   roomId = rId;
+  soloMode = false;
+  document.getElementById('rightPanel').classList.remove('solo');
   lobby.classList.add('hidden');
   document.getElementById('roomIdLabel').textContent = rId;
   updateCopyBtn();
@@ -707,6 +732,8 @@ function startSoloGame() {
   lastCoachData = null;
   aiMovePending = false;
   timerSeconds = [0, 0];
+  document.getElementById('rightPanel').classList.add('solo');
+  document.getElementById('inlineCoachContent').innerHTML = '<div class="inline-coach-placeholder">Analysis will appear here when the game ends.</div>';
 
   lobby.classList.add('hidden');
   waitOverlay.classList.add('hidden');
@@ -753,6 +780,7 @@ function renderSoloState() {
     document.getElementById('btnRematch').style.display = '';
     document.getElementById('btnCoach').style.display = '';
     postScore(myName, myCity, soloWinner === 1);
+    fetchInlineCoach();
   } else if (currentTurn === 2 && !aiMovePending) {
     scheduleAIMove();
   }
@@ -1007,7 +1035,71 @@ async function postScore(name, city, won) {
 }
 
 // ── AI Coach ───────────────────────────────────────────────────────────────
+
+// Build the payload for the coach API
+function buildCoachPayload() {
+  if (soloMode) {
+    return { winner: soloWinner ?? 0, history: soloHistory, board: soloBoard, playerName: myName, coachFor: 1 };
+  }
+  if (!gameState) return null;
+  const myPlayer = gameState.players.find(p => p.playerNumber === myPlayerNumber);
+  return { winner: gameState.winner, history: gameState.history, board: gameState.board, playerName: myPlayer?.name ?? myName, coachFor: myPlayerNumber };
+}
+
+// Fetch from the API (shared by modal and inline paths)
+async function fetchCoachData() {
+  const payload = buildCoachPayload();
+  if (!payload) return null;
+  const res = await fetch('/api/coach/analyze', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+  return res.json();
+}
+
+// Solo: fetch and render inline in the right panel (auto-called on game end)
+async function fetchInlineCoach() {
+  if (lastCoachData) { renderInlineCoach(lastCoachData); return; }
+  const el = document.getElementById('inlineCoachContent');
+  el.innerHTML = '<div class="inline-coach-loading"><div class="spinner" style="width:14px;height:14px;border-width:2px"></div><span>Analyzing your game…</span></div>';
+  coachRequested = true;
+  try {
+    const data = await fetchCoachData();
+    lastCoachData = data;
+    renderInlineCoach(data);
+  } catch(e) {
+    el.innerHTML = '<div class="inline-coach-placeholder">Could not reach AI Coach.</div>';
+  }
+}
+
+// Render analysis into the inline panel (solo mode)
+function renderInlineCoach(d) {
+  const el = document.getElementById('inlineCoachContent');
+  const smartHtml = d.smartMove ? `
+    <div class="inline-coach-section">Best play</div>
+    <div class="inline-coach-moment good">
+      <div class="inline-coach-move">Move #${d.smartMove.moveNumber ?? '?'} ✦</div>
+      <div class="inline-coach-desc">${esc(d.smartMove.description ?? '')}</div>
+    </div>` : '';
+  el.innerHTML = `
+    <div class="inline-coach-summary">${esc(d.summary)}</div>
+    <div class="inline-coach-section">Observations</div>
+    ${d.insights.map(i => `<div class="inline-coach-insight">${esc(i)}</div>`).join('')}
+    ${smartHtml}
+    <div class="inline-coach-section">Biggest mistake</div>
+    <div class="inline-coach-moment">
+      <div class="inline-coach-move">Move #${d.keyMoment?.moveNumber ?? '?'}</div>
+      <div class="inline-coach-desc">${esc(d.keyMoment?.description ?? '')}</div>
+    </div>
+    <div class="inline-coach-section">Tip</div>
+    <div class="inline-coach-tip">💡 ${esc(d.tip)}</div>
+  `;
+}
+
+// "AI Coach" button: solo → scroll panel into view; multiplayer → open modal
 window.openCoach = async function openCoach() {
+  if (soloMode) {
+    document.getElementById('inlineCoach').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    if (!lastCoachData && !coachRequested) fetchInlineCoach();
+    return;
+  }
   if (!gameState) return;
   document.getElementById('coachModal').classList.add('open');
   document.getElementById('coachContent').innerHTML = `
@@ -1016,28 +1108,14 @@ window.openCoach = async function openCoach() {
       <div style="font-size:13px;color:rgba(255,255,255,.5)">Analyzing your game on the steppe…</div>
     </div>`;
   document.getElementById('coachActions').style.display = 'none';
-
   if (lastCoachData) { renderCoach(lastCoachData); return; }
-
   coachRequested = true;
   try {
-    const myPlayer = gameState.players.find(p => p.playerNumber === myPlayerNumber);
-    const res = await fetch('/api/coach/analyze', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        winner: gameState.winner,
-        history: gameState.history,
-        board: gameState.board,
-        playerName: myPlayer?.name ?? myName,
-        coachFor: myPlayerNumber,
-      }),
-    });
-    const data = await res.json();
+    const data = await fetchCoachData();
     lastCoachData = data;
     renderCoach(data);
   } catch(e) {
-    document.getElementById('coachContent').innerHTML = `<div style="color:rgba(255,255,255,.5);font-size:13px;text-align:center;padding:20px">Could not reach AI Coach. Check ANTHROPIC_API_KEY in .env</div>`;
+    document.getElementById('coachContent').innerHTML = `<div style="color:rgba(255,255,255,.5);font-size:13px;text-align:center;padding:20px">Could not reach AI Coach.</div>`;
   }
 }
 

@@ -434,13 +434,12 @@ html,body{height:100%;background:#8dbfdb;font-family:var(--sans);color:var(--ink
   border:none;outline:none;
   position:relative;
   transition:transform .1s;
-  /* Outward shadow = board frame (clearly purple, distinct from page bg) */
-  /* Inset ring = visible hole border; depth shadow = 3D depth */
+  /* Outward shadow = board frame; inset ring = visible hole border */
   box-shadow:
     0 0 0 500px rgb(28,18,66),
-    inset 0 0 0 1.5px rgba(255,255,255,.18),
-    inset 0 3px 10px rgba(0,0,0,.75),
-    inset 0 1px 0 rgba(255,255,255,.06);
+    inset 0 0 0 1.5px rgba(255,255,255,.38),
+    inset 0 4px 12px rgba(0,0,0,.80),
+    inset 0 -1px 4px rgba(255,255,255,.06);
 }
 .cell:hover:not(.filled){transform:scale(1.05)}
 /* ── 3D Liquid Glass Chips ──────────────────────────────── */
@@ -790,9 +789,12 @@ html,body{height:100%;background:#8dbfdb;font-family:var(--sans);color:var(--ink
 .city-pill.active{background:var(--ink);color:#f3efe6;border-color:var(--ink)}
 
 /* AI thinking indicator */
+.board-col{
+  display:flex;flex-direction:column;align-items:stretch;gap:6px;
+}
 .status-row{
   display:flex;align-items:center;justify-content:space-between;
-  width:100%;gap:10px;min-height:28px;
+  gap:10px;min-height:28px;
 }
 .ai-thinking{
   display:none;flex-shrink:0;
@@ -1297,6 +1299,8 @@ html,body{height:100%;background:#8dbfdb;font-family:var(--sans);color:var(--ink
       <span class="p2-timer-sm" id="p2BarTimer">—:——</span>
     </div>
 
+    <!-- Board column: status row + board, same width -->
+    <div class="board-col">
     <!-- Status row: status text left, Thinking pill right -->
     <div class="status-row">
       <div class="status-bar" id="statusBar">Waiting for opponent…</div>
@@ -1323,6 +1327,7 @@ html,body{height:100%;background:#8dbfdb;font-family:var(--sans);color:var(--ink
       <!-- Board grid (6×7 = 42 cells injected by JS) -->
       <div class="board" id="board"></div>
     </div>
+    </div><!-- /board-col -->
 
     <button id="btnStartGame" onclick="doStartGame()">
       <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>

@@ -150,6 +150,20 @@ html,body{height:100%;background:#8dbfdb;font-family:var(--sans);color:var(--ink
   text-shadow:0 2px 12px rgba(0,0,0,.4);
 }
 .timer.urgent{color:#f5a623;animation:pulse .6s ease-in-out infinite alternate}
+/* Left panel timer hidden — only right panel shows time */
+#timer1{display:none}
+/* Points display replaces left timer */
+.points-display{
+  text-align:center;padding:6px 0 4px;
+}
+.points-val{
+  font-family:var(--serif);font-size:28px;font-weight:300;color:#f5c842;letter-spacing:.04em;
+  text-shadow:0 2px 12px rgba(245,200,66,.35);
+}
+.points-lbl{
+  font-size:10px;letter-spacing:.12em;text-transform:uppercase;
+  color:rgba(255,255,255,.4);margin-top:2px;
+}
 @keyframes pulse{from{opacity:1}to{opacity:.55}}
 
 .moves-list{
@@ -1257,20 +1271,25 @@ html,body{height:100%;background:#8dbfdb;font-family:var(--sans);color:var(--ink
 
     <div class="timer" id="timer1">—:——</div>
 
+    <div class="points-display">
+      <div class="points-val" id="points1">0</div>
+      <div class="points-lbl">очки</div>
+    </div>
+
     <div class="stat-row"><span class="stat-label">Wins</span><span class="stat-value" id="wins1">0</span></div>
     <div class="stat-row"><span class="stat-label">Moves made</span><span class="stat-value" id="moves1">0</span></div>
 
     <!-- Customization: piece style -->
     <div class="panel-section-label">Piece style</div>
     <div class="token-grid" id="tokenGrid">
-      <button class="token-opt selected" data-token="☀" onclick="setPlayerToken(this)">☀</button>
-      <button class="token-opt" data-token="🦅" onclick="setPlayerToken(this)">🦅</button>
-      <button class="token-opt" data-token="🌸" onclick="setPlayerToken(this)">🌸</button>
-      <button class="token-opt" data-token="⭐" onclick="setPlayerToken(this)">⭐</button>
-      <button class="token-opt" data-token="🐺" onclick="setPlayerToken(this)">🐺</button>
-      <button class="token-opt" data-token="🔥" onclick="setPlayerToken(this)">🔥</button>
-      <button class="token-opt" data-token="💎" onclick="setPlayerToken(this)">💎</button>
-      <button class="token-opt" data-token="🏹" onclick="setPlayerToken(this)">🏹</button>
+      <button class="token-opt selected" data-token="shanyraq" onclick="setPlayerToken(this)" title="Шаңырақ"></button>
+      <button class="token-opt" data-token="koshkar"  onclick="setPlayerToken(this)" title="Қошқар мүйіз"></button>
+      <button class="token-opt" data-token="zhuldyz"  onclick="setPlayerToken(this)" title="Жұлдыз"></button>
+      <button class="token-opt" data-token="gul"      onclick="setPlayerToken(this)" title="Гүл"></button>
+      <button class="token-opt" data-token="tumar"    onclick="setPlayerToken(this)" title="Тұмар"></button>
+      <button class="token-opt" data-token="ornek"    onclick="setPlayerToken(this)" title="Өрнек"></button>
+      <button class="token-opt" data-token="tanbaly"  onclick="setPlayerToken(this)" title="Таңбалы"></button>
+      <button class="token-opt" data-token="arkar"    onclick="setPlayerToken(this)" title="Арқар"></button>
     </div>
 
     <!-- Customization: board size -->
@@ -1740,6 +1759,7 @@ window.setTab = (tab) => {
 
 window.setDiff = (d) => {
   aiDifficulty = d;
+  window.currentDifficulty = d;
   ['easy','medium','hard'].forEach(x => {
     document.getElementById('diff' + x.charAt(0).toUpperCase() + x.slice(1))
       .classList.toggle('active', x === d);
@@ -2410,13 +2430,46 @@ function renderState(state) {
 }
 
 // ── Kazakh ornament SVGs ─────────────────────────────────────────────────
-// P1: Shanyrak (yurt crown wheel, 8 spokes)
-const SHANYRAQ_SVG = `<svg class="chip-ornament" viewBox="0 0 56 56" xmlns="http://www.w3.org/2000/svg"><circle cx="28" cy="28" r="23.5" fill="none" stroke="rgba(255,255,255,.40)" stroke-width="1.5" stroke-dasharray="3.8 2.4"/><circle cx="28" cy="28" r="11" fill="none" stroke="rgba(255,255,255,.30)" stroke-width="1"/><line x1="28" y1="4.5" x2="28" y2="17" stroke="rgba(255,255,255,.42)" stroke-width="1.4" stroke-linecap="round"/><line x1="28" y1="39" x2="28" y2="51.5" stroke="rgba(255,255,255,.42)" stroke-width="1.4" stroke-linecap="round"/><line x1="4.5" y1="28" x2="17" y2="28" stroke="rgba(255,255,255,.42)" stroke-width="1.4" stroke-linecap="round"/><line x1="39" y1="28" x2="51.5" y2="28" stroke="rgba(255,255,255,.42)" stroke-width="1.4" stroke-linecap="round"/><line x1="35.8" y1="20.2" x2="44.6" y2="11.4" stroke="rgba(255,255,255,.28)" stroke-width="1.1" stroke-linecap="round"/><line x1="20.2" y1="20.2" x2="11.4" y2="11.4" stroke="rgba(255,255,255,.28)" stroke-width="1.1" stroke-linecap="round"/><line x1="35.8" y1="35.8" x2="44.6" y2="44.6" stroke="rgba(255,255,255,.28)" stroke-width="1.1" stroke-linecap="round"/><line x1="20.2" y1="35.8" x2="11.4" y2="44.6" stroke="rgba(255,255,255,.28)" stroke-width="1.1" stroke-linecap="round"/><circle cx="28" cy="28" r="4.5" fill="rgba(255,255,255,.42)" stroke="rgba(255,255,255,.58)" stroke-width=".9"/><circle cx="28" cy="4.5" r="2.2" fill="rgba(255,255,255,.50)"/><circle cx="28" cy="51.5" r="2.2" fill="rgba(255,255,255,.50)"/><circle cx="4.5" cy="28" r="2.2" fill="rgba(255,255,255,.50)"/><circle cx="51.5" cy="28" r="2.2" fill="rgba(255,255,255,.50)"/></svg>`;
-// P2: Koshkar Muiz (4-fold ram-horn pattern)
-const KOSHKAR_SVG = `<svg class="chip-ornament" viewBox="0 0 56 56" xmlns="http://www.w3.org/2000/svg"><circle cx="28" cy="28" r="23.5" fill="none" stroke="rgba(255,255,255,.35)" stroke-width="1.3"/><g fill="none" stroke-linecap="round"><g><line x1="28" y1="28" x2="28" y2="18" stroke="rgba(255,255,255,.38)" stroke-width="1.2"/><path d="M28,18 C22,12 10,14 8,20 C6,24 10,27 14,23" stroke="rgba(255,255,255,.46)" stroke-width="1.4"/><path d="M28,18 C34,12 46,14 48,20 C50,24 46,27 42,23" stroke="rgba(255,255,255,.46)" stroke-width="1.4"/></g><g transform="rotate(90,28,28)"><line x1="28" y1="28" x2="28" y2="18" stroke="rgba(255,255,255,.38)" stroke-width="1.2"/><path d="M28,18 C22,12 10,14 8,20 C6,24 10,27 14,23" stroke="rgba(255,255,255,.46)" stroke-width="1.4"/><path d="M28,18 C34,12 46,14 48,20 C50,24 46,27 42,23" stroke="rgba(255,255,255,.46)" stroke-width="1.4"/></g><g transform="rotate(180,28,28)"><line x1="28" y1="28" x2="28" y2="18" stroke="rgba(255,255,255,.38)" stroke-width="1.2"/><path d="M28,18 C22,12 10,14 8,20 C6,24 10,27 14,23" stroke="rgba(255,255,255,.46)" stroke-width="1.4"/><path d="M28,18 C34,12 46,14 48,20 C50,24 46,27 42,23" stroke="rgba(255,255,255,.46)" stroke-width="1.4"/></g><g transform="rotate(270,28,28)"><line x1="28" y1="28" x2="28" y2="18" stroke="rgba(255,255,255,.38)" stroke-width="1.2"/><path d="M28,18 C22,12 10,14 8,20 C6,24 10,27 14,23" stroke="rgba(255,255,255,.46)" stroke-width="1.4"/><path d="M28,18 C34,12 46,14 48,20 C50,24 46,27 42,23" stroke="rgba(255,255,255,.46)" stroke-width="1.4"/></g></g><polygon points="28,23.5 32.5,28 28,32.5 23.5,28" fill="rgba(255,255,255,.40)" stroke="rgba(255,255,255,.54)" stroke-width=".8"/></svg>`;
+const ORNAMENTS = {
+  // 1. Шаңырақ — yurt crown wheel, 8 spokes
+  shanyraq: `<svg class="chip-ornament" viewBox="0 0 56 56" xmlns="http://www.w3.org/2000/svg"><circle cx="28" cy="28" r="23.5" fill="none" stroke="rgba(255,255,255,.40)" stroke-width="1.5" stroke-dasharray="3.8 2.4"/><circle cx="28" cy="28" r="11" fill="none" stroke="rgba(255,255,255,.30)" stroke-width="1"/><line x1="28" y1="4.5" x2="28" y2="17" stroke="rgba(255,255,255,.42)" stroke-width="1.4" stroke-linecap="round"/><line x1="28" y1="39" x2="28" y2="51.5" stroke="rgba(255,255,255,.42)" stroke-width="1.4" stroke-linecap="round"/><line x1="4.5" y1="28" x2="17" y2="28" stroke="rgba(255,255,255,.42)" stroke-width="1.4" stroke-linecap="round"/><line x1="39" y1="28" x2="51.5" y2="28" stroke="rgba(255,255,255,.42)" stroke-width="1.4" stroke-linecap="round"/><line x1="35.8" y1="20.2" x2="44.6" y2="11.4" stroke="rgba(255,255,255,.28)" stroke-width="1.1" stroke-linecap="round"/><line x1="20.2" y1="20.2" x2="11.4" y2="11.4" stroke="rgba(255,255,255,.28)" stroke-width="1.1" stroke-linecap="round"/><line x1="35.8" y1="35.8" x2="44.6" y2="44.6" stroke="rgba(255,255,255,.28)" stroke-width="1.1" stroke-linecap="round"/><line x1="20.2" y1="35.8" x2="11.4" y2="44.6" stroke="rgba(255,255,255,.28)" stroke-width="1.1" stroke-linecap="round"/><circle cx="28" cy="28" r="4.5" fill="rgba(255,255,255,.42)" stroke="rgba(255,255,255,.58)" stroke-width=".9"/><circle cx="28" cy="4.5" r="2.2" fill="rgba(255,255,255,.50)"/><circle cx="28" cy="51.5" r="2.2" fill="rgba(255,255,255,.50)"/><circle cx="4.5" cy="28" r="2.2" fill="rgba(255,255,255,.50)"/><circle cx="51.5" cy="28" r="2.2" fill="rgba(255,255,255,.50)"/></svg>`,
+
+  // 2. Қошқар мүйіз — 4-fold ram-horn pattern
+  koshkar: `<svg class="chip-ornament" viewBox="0 0 56 56" xmlns="http://www.w3.org/2000/svg"><circle cx="28" cy="28" r="23.5" fill="none" stroke="rgba(255,255,255,.35)" stroke-width="1.3"/><g fill="none" stroke-linecap="round"><g><line x1="28" y1="28" x2="28" y2="18" stroke="rgba(255,255,255,.38)" stroke-width="1.2"/><path d="M28,18 C22,12 10,14 8,20 C6,24 10,27 14,23" stroke="rgba(255,255,255,.46)" stroke-width="1.4"/><path d="M28,18 C34,12 46,14 48,20 C50,24 46,27 42,23" stroke="rgba(255,255,255,.46)" stroke-width="1.4"/></g><g transform="rotate(90,28,28)"><line x1="28" y1="28" x2="28" y2="18" stroke="rgba(255,255,255,.38)" stroke-width="1.2"/><path d="M28,18 C22,12 10,14 8,20 C6,24 10,27 14,23" stroke="rgba(255,255,255,.46)" stroke-width="1.4"/><path d="M28,18 C34,12 46,14 48,20 C50,24 46,27 42,23" stroke="rgba(255,255,255,.46)" stroke-width="1.4"/></g><g transform="rotate(180,28,28)"><line x1="28" y1="28" x2="28" y2="18" stroke="rgba(255,255,255,.38)" stroke-width="1.2"/><path d="M28,18 C22,12 10,14 8,20 C6,24 10,27 14,23" stroke="rgba(255,255,255,.46)" stroke-width="1.4"/><path d="M28,18 C34,12 46,14 48,20 C50,24 46,27 42,23" stroke="rgba(255,255,255,.46)" stroke-width="1.4"/></g><g transform="rotate(270,28,28)"><line x1="28" y1="28" x2="28" y2="18" stroke="rgba(255,255,255,.38)" stroke-width="1.2"/><path d="M28,18 C22,12 10,14 8,20 C6,24 10,27 14,23" stroke="rgba(255,255,255,.46)" stroke-width="1.4"/><path d="M28,18 C34,12 46,14 48,20 C50,24 46,27 42,23" stroke="rgba(255,255,255,.46)" stroke-width="1.4"/></g></g><polygon points="28,23.5 32.5,28 28,32.5 23.5,28" fill="rgba(255,255,255,.40)" stroke="rgba(255,255,255,.54)" stroke-width=".8"/></svg>`,
+
+  // 3. Жұлдыз — 8-pointed geometric star
+  zhuldyz: `<svg class="chip-ornament" viewBox="0 0 56 56" xmlns="http://www.w3.org/2000/svg"><circle cx="28" cy="28" r="23.5" fill="none" stroke="rgba(255,255,255,.30)" stroke-width="1.2"/><g transform="translate(28,28)" fill="rgba(255,255,255,.50)" stroke="rgba(255,255,255,.65)" stroke-width=".7"><polygon points="0,-22 2.8,-8 -2.8,-8"/><polygon points="0,-22 2.8,-8 -2.8,-8" transform="rotate(45)"/><polygon points="0,-22 2.8,-8 -2.8,-8" transform="rotate(90)"/><polygon points="0,-22 2.8,-8 -2.8,-8" transform="rotate(135)"/><polygon points="0,-22 2.8,-8 -2.8,-8" transform="rotate(180)"/><polygon points="0,-22 2.8,-8 -2.8,-8" transform="rotate(225)"/><polygon points="0,-22 2.8,-8 -2.8,-8" transform="rotate(270)"/><polygon points="0,-22 2.8,-8 -2.8,-8" transform="rotate(315)"/><polygon points="-6,-6 6,-6 6,6 -6,6" transform="rotate(22.5)" fill="rgba(255,255,255,.28)" stroke="none"/><circle r="4.5" fill="rgba(255,255,255,.55)" stroke="rgba(255,255,255,.75)" stroke-width=".8"/></g></svg>`,
+
+  // 4. Гүл — 6-petal flower rosette
+  gul: `<svg class="chip-ornament" viewBox="0 0 56 56" xmlns="http://www.w3.org/2000/svg"><circle cx="28" cy="28" r="23.5" fill="none" stroke="rgba(255,255,255,.30)" stroke-width="1.2"/><g transform="translate(28,28)"><ellipse cx="0" cy="-13" rx="4.5" ry="8" fill="rgba(255,255,255,.42)" stroke="rgba(255,255,255,.55)" stroke-width=".8"/><ellipse cx="0" cy="-13" rx="4.5" ry="8" fill="rgba(255,255,255,.42)" stroke="rgba(255,255,255,.55)" stroke-width=".8" transform="rotate(60)"/><ellipse cx="0" cy="-13" rx="4.5" ry="8" fill="rgba(255,255,255,.42)" stroke="rgba(255,255,255,.55)" stroke-width=".8" transform="rotate(120)"/><ellipse cx="0" cy="-13" rx="4.5" ry="8" fill="rgba(255,255,255,.42)" stroke="rgba(255,255,255,.55)" stroke-width=".8" transform="rotate(180)"/><ellipse cx="0" cy="-13" rx="4.5" ry="8" fill="rgba(255,255,255,.42)" stroke="rgba(255,255,255,.55)" stroke-width=".8" transform="rotate(240)"/><ellipse cx="0" cy="-13" rx="4.5" ry="8" fill="rgba(255,255,255,.42)" stroke="rgba(255,255,255,.55)" stroke-width=".8" transform="rotate(300)"/><circle r="5.5" fill="rgba(255,255,255,.60)" stroke="rgba(255,255,255,.80)" stroke-width=".8"/><circle r="2.5" fill="rgba(255,255,255,.85)"/></g></svg>`,
+
+  // 5. Тұмар — triangular protective amulet with geometric fill
+  tumar: `<svg class="chip-ornament" viewBox="0 0 56 56" xmlns="http://www.w3.org/2000/svg"><circle cx="28" cy="28" r="23.5" fill="none" stroke="rgba(255,255,255,.30)" stroke-width="1.2"/><g transform="translate(28,28)" fill="none" stroke-linecap="round" stroke-linejoin="round"><polygon points="0,-20 17,12 -17,12" stroke="rgba(255,255,255,.55)" stroke-width="1.5" fill="rgba(255,255,255,.14)"/><polygon points="0,-12 10,7 -10,7" stroke="rgba(255,255,255,.45)" stroke-width="1"/><line x1="0" y1="-12" x2="0" y2="7" stroke="rgba(255,255,255,.38)" stroke-width=".9"/><line x1="-10" y1="7" x2="10" y2="7" stroke="rgba(255,255,255,.38)" stroke-width=".9"/><circle cx="0" cy="-20" r="2.5" fill="rgba(255,255,255,.60)"/><circle cx="17" cy="12" r="2" fill="rgba(255,255,255,.50)"/><circle cx="-17" cy="12" r="2" fill="rgba(255,255,255,.50)"/><circle cx="0" cy="-4" r="3" fill="rgba(255,255,255,.45)" stroke="rgba(255,255,255,.65)" stroke-width=".8"/></g></svg>`,
+
+  // 6. Өрнек — interlocking S-scroll wave pattern (4-fold)
+  ornek: `<svg class="chip-ornament" viewBox="0 0 56 56" xmlns="http://www.w3.org/2000/svg"><circle cx="28" cy="28" r="23.5" fill="none" stroke="rgba(255,255,255,.30)" stroke-width="1.2"/><g transform="translate(28,28)" fill="none" stroke="rgba(255,255,255,.55)" stroke-width="1.5" stroke-linecap="round"><path d="M0,-8 C-6,-8 -14,-4 -14,4 C-14,10 -8,12 -4,8 C0,4 0,-2 6,-4 C10,-6 14,-2 14,4"/><path d="M0,8 C6,8 14,4 14,-4 C14,-10 8,-12 4,-8 C0,-4 0,2 -6,4 C-10,6 -14,2 -14,-4"/><circle cx="0" cy="0" r="2.5" fill="rgba(255,255,255,.55)"/></g></svg>`,
+
+  // 7. Таңбалы — solar petroglyph: concentric rings + 12 rays
+  tanbaly: `<svg class="chip-ornament" viewBox="0 0 56 56" xmlns="http://www.w3.org/2000/svg"><circle cx="28" cy="28" r="23.5" fill="none" stroke="rgba(255,255,255,.28)" stroke-width="1.2"/><circle cx="28" cy="28" r="16" fill="none" stroke="rgba(255,255,255,.38)" stroke-width="1"/><circle cx="28" cy="28" r="9" fill="none" stroke="rgba(255,255,255,.42)" stroke-width="1"/><g transform="translate(28,28)" stroke="rgba(255,255,255,.45)" stroke-width="1.2" stroke-linecap="round"><line x1="0" y1="-23" x2="0" y2="-17"/><line x1="0" y1="-23" x2="0" y2="-17" transform="rotate(30)"/><line x1="0" y1="-23" x2="0" y2="-17" transform="rotate(60)"/><line x1="0" y1="-23" x2="0" y2="-17" transform="rotate(90)"/><line x1="0" y1="-23" x2="0" y2="-17" transform="rotate(120)"/><line x1="0" y1="-23" x2="0" y2="-17" transform="rotate(150)"/><line x1="0" y1="-23" x2="0" y2="-17" transform="rotate(180)"/><line x1="0" y1="-23" x2="0" y2="-17" transform="rotate(210)"/><line x1="0" y1="-23" x2="0" y2="-17" transform="rotate(240)"/><line x1="0" y1="-23" x2="0" y2="-17" transform="rotate(270)"/><line x1="0" y1="-23" x2="0" y2="-17" transform="rotate(300)"/><line x1="0" y1="-23" x2="0" y2="-17" transform="rotate(330)"/></g><circle cx="28" cy="28" r="4.5" fill="rgba(255,255,255,.55)" stroke="rgba(255,255,255,.75)" stroke-width=".8"/></svg>`,
+
+  // 8. Арқар — ibex/mountain goat: symmetric curved horns
+  arkar: `<svg class="chip-ornament" viewBox="0 0 56 56" xmlns="http://www.w3.org/2000/svg"><circle cx="28" cy="28" r="23.5" fill="none" stroke="rgba(255,255,255,.30)" stroke-width="1.2"/><g transform="translate(28,28)" fill="none" stroke-linecap="round"><path d="M0,8 C0,4 -2,0 -6,-4 C-10,-8 -16,-10 -18,-16 C-20,-22 -14,-24 -8,-18 C-4,-14 -2,-8 0,0" stroke="rgba(255,255,255,.55)" stroke-width="1.8"/><path d="M0,8 C0,4 2,0 6,-4 C10,-8 16,-10 18,-16 C20,-22 14,-24 8,-18 C4,-14 2,-8 0,0" stroke="rgba(255,255,255,.55)" stroke-width="1.8"/><circle cx="-18" cy="-16" r="2.2" fill="rgba(255,255,255,.50)"/><circle cx="18" cy="-16" r="2.2" fill="rgba(255,255,255,.50)"/><ellipse cx="0" cy="14" rx="5" ry="3" fill="rgba(255,255,255,.38)" stroke="rgba(255,255,255,.50)" stroke-width=".9"/><circle cx="0" cy="4" r="3.5" fill="rgba(255,255,255,.45)" stroke="rgba(255,255,255,.62)" stroke-width=".8"/></g></svg>`,
+};
+
+// Which ornament P1 uses (key into ORNAMENTS); P2 always uses koshkar as default
+let p1Token = 'shanyraq';
+
+// Inject mini-SVG previews into token buttons on load
+function initTokenGrid() {
+  document.querySelectorAll('.token-opt[data-token]').forEach(btn => {
+    const key = btn.dataset.token;
+    if (ORNAMENTS[key]) btn.innerHTML = ORNAMENTS[key];
+  });
+}
 
 function chipFaceHTML(playerNum) {
-  return `<div class="chip-face">${playerNum === 1 ? SHANYRAQ_SVG : KOSHKAR_SVG}</div>`;
+  const key = playerNum === 1 ? p1Token : 'koshkar';
+  return `<div class="chip-face">${ORNAMENTS[key] || ORNAMENTS.shanyraq}</div>`;
 }
 
 function renderBoard(board, winCells) {
@@ -2685,13 +2738,21 @@ function copyText(text) {
 }
 
 // ── Leaderboard / Score post ───────────────────────────────────────────────
-async function postScore(name, city, won) {
+async function postScore(name, city, won, draw = false) {
   try {
-    await fetch('/api/leaderboard/score', {
+    const gameType = soloMode ? 'ai' : 'pvp';
+    const difficulty = soloMode ? (window.currentDifficulty || 'medium') : '';
+    const res = await fetch('/api/leaderboard/score', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, city, won }),
+      body: JSON.stringify({ name, city, won, draw, gameType, difficulty }),
     });
+    if (res.ok) {
+      const data = await res.json();
+      // Update left-panel points display
+      const el = document.getElementById('points1');
+      if (el && data.points != null) el.textContent = data.points.toLocaleString();
+    }
   } catch(e) { /* offline */ }
 }
 
@@ -2881,13 +2942,14 @@ document.addEventListener('keydown', e => {
 window.setPlayerToken = function(el) {
   document.querySelectorAll('.token-opt').forEach(b => b.classList.remove('selected'));
   el.classList.add('selected');
-  const token = el.dataset.token;
-  // Update P1 avatar
-  document.getElementById('av1').textContent = token;
-  document.getElementById('userAvatar').textContent = token;
+  p1Token = el.dataset.token;
+  // Re-render all P1 chips already on board
+  document.querySelectorAll('.cell.p1.filled').forEach(cell => {
+    cell.innerHTML = chipFaceHTML(1);
+  });
   // Persist
   const u = loadUser();
-  if (u) { u.token = token; saveUser(u); }
+  if (u) { u.token = p1Token; saveUser(u); }
 };
 
 window.setBoardSize = function(el, cols, rows) {
@@ -2947,7 +3009,20 @@ async function loadMiniLeaderboard() {
   } catch(e) { /* silent */ }
 }
 // Load leaderboard on init
-document.addEventListener('DOMContentLoaded', () => setTimeout(loadMiniLeaderboard, 1500));
+document.addEventListener('DOMContentLoaded', () => {
+  setTimeout(loadMiniLeaderboard, 1500);
+  initTokenGrid();
+  // Restore saved token
+  const u = loadUser();
+  if (u && u.token && ORNAMENTS[u.token]) {
+    p1Token = u.token;
+    const btn = document.querySelector(`.token-opt[data-token="${u.token}"]`);
+    if (btn) {
+      document.querySelectorAll('.token-opt').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+    }
+  }
+});
 
 </script>
 </body>

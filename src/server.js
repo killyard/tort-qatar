@@ -105,18 +105,7 @@ app.get('/api/me', (req, res) => {
 const rooms = new Map();
 
 /** @type {Array<LeaderboardEntry>} */
-let leaderboard = [
-  { id: uuidv4(), name: 'Aibek',    city: 'Almaty',    wins: 47, gamesPlayed: 58, winRate: 81, points: 1180, winStreak: 3, rank: 1 },
-  { id: uuidv4(), name: 'Dinara',   city: 'Astana',    wins: 41, gamesPlayed: 52, winRate: 79, points: 1020, winStreak: 2, rank: 2 },
-  { id: uuidv4(), name: 'Yerlan',   city: 'Shymkent',  wins: 38, gamesPlayed: 50, winRate: 76, points:  890, winStreak: 1, rank: 3 },
-  { id: uuidv4(), name: 'Saule',    city: 'Almaty',    wins: 33, gamesPlayed: 44, winRate: 75, points:  760, winStreak: 0, rank: 4 },
-  { id: uuidv4(), name: 'Damir',    city: 'Karagandy', wins: 29, gamesPlayed: 40, winRate: 73, points:  620, winStreak: 0, rank: 5 },
-  { id: uuidv4(), name: 'Аida',     city: 'Aktobe',    wins: 25, gamesPlayed: 36, winRate: 69, points:  510, winStreak: 0, rank: 6 },
-  { id: uuidv4(), name: 'Nurzhan',  city: 'Pavlodar',  wins: 22, gamesPlayed: 33, winRate: 67, points:  430, winStreak: 0, rank: 7 },
-  { id: uuidv4(), name: 'Меруерт', city: 'Astana',    wins: 18, gamesPlayed: 28, winRate: 64, points:  330, winStreak: 0, rank: 8 },
-  { id: uuidv4(), name: 'Talgat',   city: 'Taraz',     wins: 15, gamesPlayed: 25, winRate: 60, points:  260, winStreak: 0, rank: 9 },
-  { id: uuidv4(), name: 'Zarina',   city: 'Atyrau',    wins: 12, gamesPlayed: 22, winRate: 55, points:  190, winStreak: 0, rank: 10 },
-];
+let leaderboard = [];
 
 /**
  * Points awarded for a WIN by game type / difficulty.

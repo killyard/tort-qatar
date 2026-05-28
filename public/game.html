@@ -91,11 +91,7 @@ html,body{height:100%;background:#8dbfdb;font-family:var(--sans);color:var(--ink
 }
 .ngm-title{font-family:var(--serif);font-size:20px;font-weight:400;color:var(--ink);margin-bottom:4px}
 .ngm-sub{font-size:12px;color:var(--ink-mute);margin-bottom:20px}
-.ngm-close{
-  float:right;background:none;border:none;cursor:pointer;
-  color:var(--ink-mute);font-size:18px;line-height:1;padding:0 2px;
-  margin-top:-2px;position:relative;z-index:10;
-}
+
 /* lobby covers game UI; background matches canvas palette */
 .lobby{background:linear-gradient(180deg,#0e0b1a 0%,#130a1f 55%,#0a0d18 100%)!important}
 
@@ -1007,7 +1003,7 @@ html,body{height:100%;background:#8dbfdb;font-family:var(--sans);color:var(--ink
 /* ── Profile modal ──────────────────────────────────────── */
 .profile-modal-overlay {
   position: fixed; inset: 0; z-index: 400;
-  background: rgba(8,18,12,.65);
+  background: rgba(10,8,20,.65);
   backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
   display: flex; align-items: center; justify-content: center;
   opacity: 0; pointer-events: none; transition: opacity .25s ease;
@@ -1017,7 +1013,7 @@ html,body{height:100%;background:#8dbfdb;font-family:var(--sans);color:var(--ink
   width: 340px; max-width: 92vw;
   background: rgba(255,255,255,.05);
   backdrop-filter: blur(6px) saturate(150%); -webkit-backdrop-filter: blur(6px) saturate(150%);
-  border: 1px solid rgba(255,255,255,.10); border-radius: 22px; padding: 28px 24px 22px;
+  border: 1px solid rgba(255,255,255,.10); border-radius: 24px; padding: 28px 24px 22px;
   overflow: hidden; position: relative;
   box-shadow: 0 3px 4px rgba(0,0,0,.15),inset 1.2px 1.2px 1px rgba(255,255,255,.22),inset -1.4px -1.4px 3px rgba(0,0,0,.28);
   transform: scale(.96); transition: transform .35s cubic-bezier(.34,1.56,.64,1);
@@ -1027,11 +1023,7 @@ html,body{height:100%;background:#8dbfdb;font-family:var(--sans);color:var(--ink
   font-family: var(--serif); font-size: 20px; font-weight: 400; color: var(--ink); margin-bottom: 4px;
 }
 .profile-modal-sub { font-size: 12px; color: var(--ink-mute); margin-bottom: 22px; }
-.profile-modal-close {
-  float:right;background:none;border:none;cursor:pointer;
-  color:var(--ink-mute);font-size:18px;margin-top:-2px;padding:0 2px;
-  position:relative;z-index:10;
-}
+
 .profile-modal-input {
   width: 100%; padding: 10px 16px; border-radius: 999px; box-sizing: border-box;
   border: 1px solid rgba(255,255,255,.82);
@@ -1236,7 +1228,6 @@ html,body{height:100%;background:#8dbfdb;font-family:var(--sans);color:var(--ink
 <!-- ── New game modal (return visits) ── -->
 <div class="ngm-overlay" id="ngmOverlay" onclick="ngmOutsideClick(event)">
   <div class="ngm-card">
-    <button class="ngm-close" onclick="closeNgm()">✕</button>
     <div class="ngm-title">New game</div>
     <div class="ngm-sub" id="ngmSub">Choose mode and difficulty</div>
     <div class="lobby-label">Mode</div>
@@ -1446,7 +1437,6 @@ html,body{height:100%;background:#8dbfdb;font-family:var(--sans);color:var(--ink
 <!-- ════ PROFILE MODAL ════ -->
 <div class="profile-modal-overlay" id="profileModalOverlay" onclick="profileModalBgClick(event)">
   <div class="profile-modal-card" id="profileModalCard">
-    <button class="profile-modal-close" onclick="closeProfileModal()">✕</button>
     <div class="profile-modal-title">Your profile</div>
     <div class="profile-modal-sub">Update your name and city</div>
     <div class="profile-modal-err" id="profileModalErr"></div>
@@ -3165,22 +3155,4 @@ async function loadMiniLeaderboard() {
     }).join('');
   } catch(e) { /* silent */ }
 }
-// Load leaderboard on init
-document.addEventListener('DOMContentLoaded', () => {
-  setTimeout(loadMiniLeaderboard, 1500);
-  initTokenGrid();
-  // Restore saved token
-  const u = loadUser();
-  if (u && u.token && ORNAMENTS[u.token]) {
-    p1Token = u.token;
-    const btn = document.querySelector(`.token-opt[data-token="${u.token}"]`);
-    if (btn) {
-      document.querySelectorAll('.token-opt').forEach(b => b.classList.remove('selected'));
-      btn.classList.add('selected');
-    }
-  }
-});
-
-</script>
-</body>
-</html>
+// Lo

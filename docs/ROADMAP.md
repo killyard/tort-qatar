@@ -13,7 +13,7 @@
 - `f85ca10` fix: AI Coach — pre-compute missed wins/blocks via game engine, inject as verified facts
 - `91d3d33` docs: sync ROADMAP with commit hashes, clean up todo/done sections
 - `c3aaced` feat: wider panels, richer move history (col/row/name), manual-only AI Coach
-- Chat/AI Analysis tab system in right panel; AI chat persona (Steppe Bot) in solo mode; proactive on critical mistakes and smart moves; Pro gate stub; AI Analysis works in both solo and multiplayer
+- `49e253e` feat: Chat/Analysis tabs, Steppe Bot AI persona, proactive chat on key moments, Pro gate stub
 
 ## Next
 

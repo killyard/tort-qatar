@@ -25,7 +25,7 @@ export async function analyzeGame({ winner, history, board, playerName, coachFor
     : winner === coachFor ? `Player ${coachFor} WON`
     : `Player ${coachFor} LOST`;
 
-  const prompt = `You are an expert Connect Four coach. Analyze this game and give concise, actionable feedback.
+  const prompt = `You are an expert Connect Four coach. Your job is a full chronological review of every move — not just the endgame.
 
 GAME OUTCOME: ${outcome}
 COACHING FOR: Player ${coachFor} (${playerName})
@@ -37,17 +37,29 @@ ${moveLines}
 FINAL BOARD (0=empty, 1=P1, 2=P2, row 0=top):
 ${board.map(r => r.join(' ')).join('\n')}
 
-Respond in JSON with exactly this shape — be specific, reference actual column numbers:
+ANALYSIS INSTRUCTIONS — follow these steps in order:
+1. Replay the game from move 1 to move ${history.length} mentally. For each move by Player ${coachFor}, rate it: BLUNDER / MISTAKE / NEUTRAL / GOOD / EXCELLENT.
+2. BLUNDER = missed an immediate win (3-in-a-row with an open 4th slot) OR allowed opponent to win next move without blocking.
+3. GOOD/EXCELLENT = created a fork threat, blocked opponent's winning move, secured center control, or set up a future trap.
+4. Pick the single WORST move (highest-priority blunder or mistake) → keyMoment.
+5. Pick the single BEST move by Player ${coachFor} (if any) → smartMove. If none stands out, pick the most solid defensive play.
+6. From your chronological pass, pick 3 observations: at least one must be a mistake/blunder, at least one must be a strength or smart play (even if the player lost).
+
+Respond in JSON with exactly this shape — be specific, always reference actual move numbers and column numbers:
 {
   "summary": "One sentence overall assessment (max 20 words)",
   "insights": [
-    "Specific observation about a key decision (mention column number)",
-    "Another key moment or pattern observed",
-    "A strength or repeated weakness noticed"
+    "A specific mistake or blunder with move number and column",
+    "Another mistake or pattern observed with move number",
+    "A strength or smart play noticed (even small ones count)"
   ],
+  "smartMove": {
+    "moveNumber": <integer — the best or most solid move by Player ${coachFor}>,
+    "description": "Why this was a good play (1-2 sentences)"
+  },
   "keyMoment": {
-    "moveNumber": <integer — the most pivotal move>,
-    "description": "What happened and why it was decisive (1-2 sentences)"
+    "moveNumber": <integer — the worst blunder or most decisive mistake>,
+    "description": "What happened and why it hurt (1-2 sentences)"
   },
   "tip": "One concrete improvement tip for next game (max 25 words)"
 }`;
@@ -63,10 +75,14 @@ Respond in JSON with exactly this shape — be specific, reference actual column
     return {
       summary: outcome === 'Draw' ? 'A hard-fought draw on the steppe.' : `${outcome} — well played.`,
       insights: [
-        'Both players fought hard until the end.',
         'Look for diagonal threats early — they are easy to miss.',
         'Center column control is key in Connect Four.',
+        'You showed resilience by staying in the game until the end.',
       ],
+      smartMove: {
+        moveNumber: Math.floor(history.length / 3),
+        description: 'An early center placement that kept your options open.',
+      },
       keyMoment: {
         moveNumber: Math.floor(history.length / 2),
         description: 'The midgame was the turning point of this match.',

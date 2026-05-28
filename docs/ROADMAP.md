@@ -8,6 +8,7 @@
 - deployed to Render — live at https://tort-qatar.onrender.com
 - added `GEMINI_API_KEY` to Render env vars
 - added live demo link + Deploy to Render button to README.md
+- rewrote AI Coach prompt: chronological move analysis, missed-win detection, smart move highlighting; added "Best play" section to UI
 
 ## Next
 

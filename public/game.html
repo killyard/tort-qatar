@@ -1042,13 +1042,21 @@ window.openCoach = async function openCoach() {
 }
 
 function renderCoach(d) {
+  const smartMoveHtml = d.smartMove ? `
+    <div class="coach-section-title">Best play</div>
+    <div class="key-moment" style="border-color:rgba(100,220,130,.35);background:rgba(100,220,130,.08)">
+      <div class="key-moment-move" style="color:#6ddc82">Move #${d.smartMove.moveNumber ?? '?'} ✦</div>
+      <div class="key-moment-desc">${esc(d.smartMove.description ?? '')}</div>
+    </div>` : '';
+
   document.getElementById('coachContent').innerHTML = `
     <div class="coach-summary">${esc(d.summary)}</div>
-    <div class="coach-section-title">Key observations</div>
+    <div class="coach-section-title">Observations</div>
     <div class="coach-insights">
       ${d.insights.map(i => `<div class="coach-insight"><span class="insight-dot"></span><span>${esc(i)}</span></div>`).join('')}
     </div>
-    <div class="coach-section-title">Pivotal moment</div>
+    ${smartMoveHtml}
+    <div class="coach-section-title">Biggest mistake</div>
     <div class="key-moment">
       <div class="key-moment-move">Move #${d.keyMoment?.moveNumber ?? '?'}</div>
       <div class="key-moment-desc">${esc(d.keyMoment?.description ?? '')}</div>

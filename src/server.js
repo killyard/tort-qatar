@@ -9,6 +9,7 @@ import { v4 as uuidv4 } from 'uuid';
 import cors from 'cors';
 import { createBoard, dropPiece, checkWinner, isDraw, findThreats, formatMoveHistory } from './gameEngine.js';
 import { analyzeGame } from './aiCoach.js';
+import { getChatReply } from './aiChat.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const PORT = process.env.PORT || 3000;
@@ -76,6 +77,89 @@ app.post('/api/leaderboard/score', (req, res) => {
   entry.winRate = Math.round((entry.wins / entry.gamesPlayed) * 100);
   recalcRanks();
   res.json(entry);
+});
+
+// ── Chat rate limiter (simple in-memory: 30 req / 10 min per IP) ──────────────
+const chatRateMap = new Map(); // ip → { count, resetAt }
+function checkChatRate(ip) {
+  const now = Date.now();
+  const entry = chatRateMap.get(ip);
+  if (!entry || entry.resetAt < now) {
+    chatRateMap.set(ip, { count: 1, resetAt: now + 10 * 60 * 1000 });
+    return true;
+  }
+  if (entry.count >= 30) return false;
+  entry.count++;
+  return true;
+}
+
+// ── PRO_GATE — set to true to enforce subscription check ────────────────────
+// Currently false for testing; flip to true in production
+const PRO_GATE = false;
+
+// AI Chat endpoint
+app.post('/api/chat', async (req, res) => {
+  const ip = req.headers['x-forwarded-for']?.split(',')[0]?.trim() ?? req.socket.remoteAddress;
+  if (!checkChatRate(ip)) return res.status(429).json({ error: 'Too many messages. Try again later.' });
+
+  const { trigger, userMessage, gameContext, isPro } = req.body;
+
+  // Pro gate (soft-check — real auth would verify server-side session)
+  if (PRO_GATE && !isPro) return res.status(403).json({ error: 'pro_required' });
+
+  // Validate user message length
+  if (userMessage && userMessage.length > 200) {
+    return res.status(400).json({ error: 'Message too long (max 200 chars)' });
+  }
+
+  // For auto_react: use game engine to classify the last player move
+  let resolvedTrigger = trigger;
+  if (trigger === 'auto_react') {
+    const { history, coachFor = 1 } = gameContext ?? {};
+    if (!history || history.length < 2) return res.json({ reply: null });
+
+    // Find the last move by coachFor
+    let lastPlayerMoveIdx = -1;
+    for (let i = history.length - 1; i >= 0; i--) {
+      if (history[i].player === coachFor) { lastPlayerMoveIdx = i; break; }
+    }
+    if (lastPlayerMoveIdx < 0) return res.json({ reply: null });
+
+    const opponent = coachFor === 1 ? 2 : 1;
+
+    // Replay board up to the move BEFORE the last player move
+    let board = createBoard();
+    for (let i = 0; i < lastPlayerMoveIdx; i++) {
+      const r = dropPiece(board, history[i].col, history[i].player);
+      if (!r.error) board = r.board;
+    }
+
+    const playerWinsBeforeMove = findThreats(board, coachFor);
+    const oppWinsBeforeMove    = findThreats(board, opponent);
+    const playedCol = history[lastPlayerMoveIdx].col;
+
+    // Advance board with the actual move
+    const afterR = dropPiece(board, playedCol, coachFor);
+    if (afterR.error) return res.json({ reply: null });
+    const boardAfter = afterR.board;
+    const playerWinsAfterMove = findThreats(boardAfter, coachFor);
+
+    const missedWin  = playerWinsBeforeMove.size > 0 && !playerWinsBeforeMove.has(playedCol);
+    const blockedOpp = oppWinsBeforeMove.size > 0 && oppWinsBeforeMove.has(playedCol);
+    const createdFork = playerWinsAfterMove.size >= 2;
+
+    if (missedWin) resolvedTrigger = 'critical_mistake';
+    else if (blockedOpp || createdFork) resolvedTrigger = 'smart_move';
+    else return res.json({ reply: null }); // nothing notable
+  }
+
+  try {
+    const reply = await getChatReply({ userMessage, trigger: resolvedTrigger, gameContext });
+    res.json({ reply });
+  } catch (err) {
+    console.error('[/api/chat]', err.message);
+    res.status(500).json({ error: 'chat_error' });
+  }
 });
 
 // AI Coach analysis

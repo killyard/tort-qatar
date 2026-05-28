@@ -323,6 +323,8 @@ html,body{height:100%;background:#8dbfdb;font-family:var(--sans);color:var(--ink
   position:fixed;inset:0;z-index:100;
   background:url('/assets/auth-form.png') center/cover no-repeat;
   display:flex;align-items:center;justify-content:center;
+  /* nudge center into the door opening (below arch, above bottom frame) */
+  padding-top:5vh;padding-bottom:2vh;
   transition:opacity .4s;
 }
 .lobby.hidden{opacity:0;pointer-events:none}
@@ -332,6 +334,7 @@ html,body{height:100%;background:#8dbfdb;font-family:var(--sans);color:var(--ink
   backdrop-filter:blur(32px) saturate(200%);-webkit-backdrop-filter:blur(32px) saturate(200%);
   border:.5px solid rgba(255,255,255,.75);
   border-radius:24px;padding:28px 24px;max-width:310px;width:88vw;
+  max-height:88vh;overflow-y:auto;
   box-shadow:0 1px 0 rgba(255,255,255,.8) inset,0 16px 48px rgba(0,0,0,.18);
 }
 .lobby-title{font-family:var(--serif);font-size:26px;font-weight:400;color:var(--ink);margin-bottom:2px}
@@ -360,7 +363,7 @@ html,body{height:100%;background:#8dbfdb;font-family:var(--sans);color:var(--ink
   cursor:pointer;border-radius:999px;transition:background .18s,color .18s;white-space:nowrap;
 }
 .lobby-tab:hover:not(.active){background:rgba(255,255,255,.45);color:var(--ink)}
-.lobby-tab.active{background:rgba(255,255,255,.9);color:var(--ink);font-weight:600;box-shadow:0 1px 4px rgba(0,0,0,.1)}
+.lobby-tab.active{background:var(--ink);color:#f3efe6;font-weight:600;box-shadow:0 2px 8px rgba(0,0,0,.25)}
 /* CTA button */
 .lobby-btn{
   width:100%;padding:11px;border-radius:999px;border:none;box-sizing:border-box;
@@ -435,13 +438,13 @@ html,body{height:100%;background:#8dbfdb;font-family:var(--sans);color:var(--ink
 <div class="lobby" id="lobby">
   <div class="lobby-card">
     <div class="lobby-title">Tört Qatar</div>
-    <div class="lobby-sub">Connect Four · steppe duels</div>
+    <div class="lobby-sub" id="lobbySub">Connect Four · steppe duels</div>
 
     <input class="lobby-input" id="lobbyName" placeholder="Your name" maxlength="24" />
     <input class="lobby-input" id="lobbyCity" placeholder="Your city (e.g. Almaty)" maxlength="32" />
 
     <!-- Language -->
-    <div class="lobby-label">Language</div>
+    <div class="lobby-label" id="labelLang">Language</div>
     <div class="lobby-tab-group">
       <button class="lobby-tab active" id="langEn" onclick="setLang('en')">🇬🇧 English</button>
       <button class="lobby-tab"        id="langRu" onclick="setLang('ru')">🇷🇺 Русский</button>
@@ -449,7 +452,7 @@ html,body{height:100%;background:#8dbfdb;font-family:var(--sans);color:var(--ink
     </div>
 
     <!-- Mode -->
-    <div class="lobby-label">Mode</div>
+    <div class="lobby-label" id="labelMode">Mode</div>
     <div class="lobby-tab-group">
       <button class="lobby-tab active" id="tabVsAI"     onclick="setTab('ai')"    >🤖 vs Computer</button>
       <button class="lobby-tab"        id="tabVsFriend" onclick="setTab('friend')">👥 vs Friend</button>
@@ -457,7 +460,7 @@ html,body{height:100%;background:#8dbfdb;font-family:var(--sans);color:var(--ink
 
     <!-- AI options -->
     <div id="aiOptions">
-      <div class="lobby-label">Difficulty</div>
+      <div class="lobby-label" id="labelDiff">Difficulty</div>
       <div class="lobby-tab-group">
         <button class="lobby-tab active" id="diffEasy"   onclick="setDiff('easy')"  >🌱 Easy</button>
         <button class="lobby-tab"        id="diffMedium" onclick="setDiff('medium')">⚔ Medium</button>
@@ -469,7 +472,7 @@ html,body{height:100%;background:#8dbfdb;font-family:var(--sans);color:var(--ink
     <!-- Friend options -->
     <div id="friendOptions" style="display:none">
       <button class="lobby-btn primary" id="btnCreate">Create new room</button>
-      <div class="lobby-divider">— or join with a code —</div>
+      <div class="lobby-divider" id="joinDivider">— or join with a code —</div>
       <div class="join-row">
         <input class="join-code" id="joinCode" placeholder="Room code" maxlength="8" />
         <button class="join-btn" id="btnJoin">Join</button>
@@ -477,7 +480,7 @@ html,body{height:100%;background:#8dbfdb;font-family:var(--sans);color:var(--ink
     </div>
 
     <div style="margin-top:10px">
-      <button class="lobby-btn outline" onclick="window.location='/'">← Back</button>
+      <button class="lobby-btn outline" id="btnBack" onclick="window.location='/'">← Back</button>
     </div>
   </div>
 </div>
@@ -633,12 +636,64 @@ let isPro = localStorage.getItem('isPro') === 'true';
 // Selected UI language (set in lobby, used for AI chat)
 let selectedLang = localStorage.getItem('lang') || 'en';
 
+const LOBBY_T = {
+  en: {
+    sub:'Connect Four · steppe duels',
+    name:'Your name', city:'Your city (e.g. Almaty)',
+    labelLang:'Language', labelMode:'Mode', labelDiff:'Difficulty',
+    vsAI:'🤖 vs Computer', vsFriend:'👥 vs Friend',
+    easy:'🌱 Easy', medium:'⚔ Medium', hard:'🔥 Hard',
+    playVsAI:'Play vs Computer', createRoom:'Create new room',
+    joinDiv:'— or join with a code —', joinCode:'Room code', join:'Join',
+    back:'← Back',
+  },
+  ru: {
+    sub:'Четыре в ряд · дуэли в степи',
+    name:'Ваше имя', city:'Ваш город (напр. Алматы)',
+    labelLang:'Язык', labelMode:'Режим', labelDiff:'Сложность',
+    vsAI:'🤖 против ИИ', vsFriend:'👥 против друга',
+    easy:'🌱 Легко', medium:'⚔ Средне', hard:'🔥 Сложно',
+    playVsAI:'Играть против ИИ', createRoom:'Создать комнату',
+    joinDiv:'— или введите код комнаты —', joinCode:'Код комнаты', join:'Войти',
+    back:'← Назад',
+  },
+  kk: {
+    sub:'Төрт қатар · дала дуэлі',
+    name:'Атыңыз', city:'Қалаңыз (мыс. Алматы)',
+    labelLang:'Тіл', labelMode:'Режим', labelDiff:'Қиындық',
+    vsAI:'🤖 ИИ-ға қарсы', vsFriend:'👥 досқа қарсы',
+    easy:'🌱 Оңай', medium:'⚔ Орташа', hard:'🔥 Қиын',
+    playVsAI:'ИИ-ға қарсы ойна', createRoom:'Бөлме жасау',
+    joinDiv:'— немесе код енгізіңіз —', joinCode:'Бөлме коды', join:'Кіру',
+    back:'← Артқа',
+  },
+};
+
 window.setLang = function(lang) {
   selectedLang = lang;
   localStorage.setItem('lang', lang);
   document.getElementById('langEn').classList.toggle('active', lang === 'en');
   document.getElementById('langRu').classList.toggle('active', lang === 'ru');
   document.getElementById('langKk').classList.toggle('active', lang === 'kk');
+  // Apply translations
+  const t = LOBBY_T[lang] || LOBBY_T.en;
+  document.getElementById('lobbySub').textContent      = t.sub;
+  document.getElementById('lobbyName').placeholder     = t.name;
+  document.getElementById('lobbyCity').placeholder     = t.city;
+  document.getElementById('labelLang').textContent     = t.labelLang;
+  document.getElementById('labelMode').textContent     = t.labelMode;
+  document.getElementById('labelDiff').textContent     = t.labelDiff;
+  document.getElementById('tabVsAI').textContent       = t.vsAI;
+  document.getElementById('tabVsFriend').textContent   = t.vsFriend;
+  document.getElementById('diffEasy').textContent      = t.easy;
+  document.getElementById('diffMedium').textContent    = t.medium;
+  document.getElementById('diffHard').textContent      = t.hard;
+  document.getElementById('btnVsAI').textContent       = t.playVsAI;
+  document.getElementById('btnCreate').textContent     = t.createRoom;
+  document.getElementById('joinDivider').textContent   = t.joinDiv;
+  document.getElementById('joinCode').placeholder      = t.joinCode;
+  document.getElementById('btnJoin').textContent       = t.join;
+  document.getElementById('btnBack').textContent       = t.back;
 };
 // Apply saved language on load
 setLang(selectedLang);
